@@ -16,5 +16,5 @@ const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPA
 const loading=document.getElementById('loading'),login=document.getElementById('login'),msg=document.getElementById('msg');
 (async()=>{const {data}=await sb.auth.getSession();if(data.session){location.replace('index.html')}else{loading.classList.add('hide');login.classList.remove('hide')}})();
 signin.onclick=async()=>{msg.textContent='Ingresando…';const {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:password.value});if(error){msg.textContent='No fue posible ingresar: '+error.message;return}location.replace('index.html')};
-magic.onclick=async()=>{msg.textContent='Enviando enlace…';const {error}=await sb.auth.signInWithOtp({email:email.value.trim(),options:{emailRedirectTo:new URL('index.html',location.href).href}});msg.textContent=error?'No fue posible enviar el enlace: '+error.message:'Revisa tu correo. Te enviamos un enlace seguro de acceso.'};
+magic.onclick=async()=>{msg.textContent='Enviando enlace…';const {error}=await sb.auth.signInWithOtp({email:email.value.trim(),options:{emailRedirectTo:new URL('index.html',location.href).href,shouldCreateUser:false}});msg.textContent=error?'No fue posible enviar el enlace: '+error.message:'Revisa tu correo. Te enviamos un enlace seguro de acceso.'};
 </script></body></html>
