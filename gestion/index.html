@@ -103,4 +103,20 @@ function render(){const m=pages.find(p=>p[0]===route);title.textContent=m[2];sub
 function newTask(){const t=prompt('Nueva tarea');if(!t)return;const owner=prompt('Responsable','Dirección')||'Dirección';db.localTasks.unshift([t,'Tarea local','ALTA','Sin fecha',owner]);localStorage.setItem(K,JSON.stringify(db));route='tareas';render()}
 render();
 </script>
+<script src="../config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+(async function secureControlCenter(){
+  if(!window.GIGANTES_SUPABASE_URL||!window.GIGANTES_SUPABASE_PUBLISHABLE_KEY){location.replace('login.html');return}
+  const client=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY);
+  const {data:{session}}=await client.auth.getSession();
+  if(!session){location.replace('login.html');return}
+  const {data:profile,error}=await client.from('profiles').select('display_name,role,active').eq('user_id',session.user.id).maybeSingle();
+  if(error||!profile||!profile.active){await client.auth.signOut();location.replace('login.html');return}
+  window.GIGANTES_DB=client; window.GIGANTES_PROFILE=profile;
+  const actions=document.querySelector('.actions');
+  if(actions){const b=document.createElement('button');b.className='btn dark';b.textContent='Salir';b.onclick=async()=>{await client.auth.signOut();location.replace('login.html')};actions.appendChild(b)}
+  const p=document.querySelector('.top p'); if(p)p.textContent='Sesión: '+(profile.display_name||session.user.email)+' · '+profile.role;
+})();
+</script>
 </body></html>
