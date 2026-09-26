@@ -31,12 +31,12 @@ main{padding:22px 24px;max-width:1500px;margin:auto}.hero{background:linear-grad
   <div class="nav" id="nav"></div>
 </aside>
 <div class="main">
-  <div class="top"><div><h1 id="title">Centro de Control</h1><p id="sub">Dirección, operación y seguimiento</p></div><div class="actions"><a class="btn secondary" href="../index.html">Ver sitio público</a><button class="btn primary" onclick="newTask()">+ Tarea local</button></div></div>
+  <div class="top"><div><h1 id="title">Centro de Control</h1><p id="sub">Dirección, operación y seguimiento</p></div><div class="actions"><a class="btn secondary" href="../index.html">Ver sitio público</a><button class="btn primary" onclick="newTask()">+ Nueva tarea</button></div></div>
   <main id="app"></main>
 </div>
 <script>
 const K='gigantes_control_center_v3';
-const TODAY='25-09-2026';
+const TODAY=new Date().toLocaleDateString('es-CL');
 const seed={
  projects:[
   {n:'Copa FUFY 2026',p:24,s:'CRÍTICO',owner:'Dirección',due:'24/10/2026'},
@@ -100,7 +100,30 @@ function finance(){return header()+'<div class="grid3"><div class="mini"><strong
 function audit(){return header()+'<div class="grid3"><div class="mini"><strong>✓ Repositorio auditado</strong><small>Arquitectura estática, Apps Script y módulos existentes revisados.</small></div><div class="mini"><strong>✓ Privacidad reforzada</strong><small>No se incorpora información sensible al repositorio público.</small></div><div class="mini"><strong>✓ Fuente única definida</strong><small>Se separan fuente Club, Federación, FUFY y Gira.</small></div><div class="mini"><strong>⚠ Backend pendiente de endurecer</strong><small>Apps Script sirve al MVP; autenticación real debe migrar a backend privado.</small></div><div class="mini"><strong>⚠ Datos por depurar</strong><small>Duplicados y fechas incoherentes deben corregirse en las fuentes privadas.</small></div><div class="mini"><strong>⚠ FUFY atrasado</strong><small>La gestión requiere asignación inmediata de responsables.</small></div></div><div class="panel"><h2>Definición de terminado</h2><p>La app está lista como portal y centro de mando cuando: 1) cada fuente tiene un dueño; 2) el Registro Maestro está depurado; 3) FUFY y Santiago tienen responsables y fechas; 4) la información sensible está autenticada; 5) los indicadores se alimentan desde backend y no desde valores estáticos.</p></div>'}
 function view(){return route==='dash'?dash():route==='personas'?personas():route==='proyectos'?projects():route==='tareas'?tasks():route==='docs'?docs():route==='chile'?chile():route==='finanzas'?finance():audit()}
 function render(){const m=pages.find(p=>p[0]===route);title.textContent=m[2];sub.textContent=m[3];document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.r===route));app.innerHTML=view()}
-function newTask(){const t=prompt('Nueva tarea');if(!t)return;const owner=prompt('Responsable','Dirección')||'Dirección';db.localTasks.unshift([t,'Tarea local','ALTA','Sin fecha',owner]);localStorage.setItem(K,JSON.stringify(db));route='tareas';render()}
+async function newTask(){
+ const t=prompt('Nueva tarea'); if(!t)return;
+ const owner=prompt('Responsable','Dirección')||'Dirección';
+ if(window.GIGANTES_DB){
+   const {data:pr}=await window.GIGANTES_DB.from('projects').select('id').eq('code','FUFY2026').maybeSingle();
+   const {error}=await window.GIGANTES_DB.from('tasks').insert({project_id:pr&&pr.id,title:t,owner_name:owner,priority:'ALTA',status:'NO INICIADO',source:'Control Center'});
+   if(error){alert('No se pudo guardar: '+error.message);return}
+   await loadLiveData(); route='tareas'; render(); return;
+ }
+ alert('La sesión segura todavía no está lista.');
+}
+async function loadLiveData(){
+ if(!window.GIGANTES_DB)return;
+ const [{data:ps},{data:ts}]=await Promise.all([
+   window.GIGANTES_DB.from('projects').select('id,code,name,status,event_date,owner_name').order('event_date',{ascending:true,nullsFirst:false}),
+   window.GIGANTES_DB.from('tasks').select('title,priority,due_date,status,owner_name,project_id').order('due_date',{ascending:true,nullsFirst:false})
+ ]);
+ if(ps){
+   const map={}; ps.forEach(p=>map[p.id]=p.name);
+   db.projects=ps.map(p=>({n:p.name,p:0,s:String(p.status||'active').toUpperCase(),owner:p.owner_name||'Sin responsable',due:p.event_date||'Continuo'}));
+   if(ts)db.tasks=ts.map(t=>[t.title,map[t.project_id]||'Club',String(t.priority||t.status||'PENDIENTE').toUpperCase(),t.due_date||'Sin fecha',t.owner_name||'Sin responsable']);
+   db.localTasks=[];
+ }
+}
 render();
 </script>
 <script src="../config.js"></script>
@@ -113,7 +136,7 @@ render();
   if(!session){location.replace('login.html');return}
   const {data:profile,error}=await client.from('profiles').select('display_name,role,active').eq('user_id',session.user.id).maybeSingle();
   if(error||!profile||!profile.active){await client.auth.signOut();location.replace('login.html');return}
-  window.GIGANTES_DB=client; window.GIGANTES_PROFILE=profile;
+  window.GIGANTES_DB=client; window.GIGANTES_PROFILE=profile; await loadLiveData(); render();
   const actions=document.querySelector('.actions');
   if(actions){const b=document.createElement('button');b.className='btn dark';b.textContent='Salir';b.onclick=async()=>{await client.auth.signOut();location.replace('login.html')};actions.appendChild(b)}
   const p=document.querySelector('.top p'); if(p)p.textContent='Sesión: '+(profile.display_name||session.user.email)+' · '+profile.role;
