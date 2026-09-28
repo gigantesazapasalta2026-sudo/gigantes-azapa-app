@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /gestion/
+Disallow: /mi_jugador.html
+Disallow: /mis_eventos.html
+Disallow: /novedades.html
+Disallow: /lesionado.html
+Sitemap: https://www.gigantesdeazapa.cl/sitemap.xml
