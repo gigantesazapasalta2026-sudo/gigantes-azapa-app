@@ -1,4 +1,4 @@
-// form-bridge.js — Gigantes de Azapa · Club 2030 / Santiago 2026
+// form-bridge.js — Gigantes de Azapa · Club Deportivo · Plataforma Central
 const GIGANTES = {
   LOGO: "LOGO GIGANTES.jpeg",
   BASE: new URL("./", window.location.href).href,
@@ -33,12 +33,12 @@ function injectTopbar(){
   const B=GIGANTES.BASE;
   const bar=document.createElement('header');
   bar.id='gb-topbar';
-  bar.innerHTML=`<a class="gb-brand" href="${B}index.html"><img src="LOGO GIGANTES.jpeg" alt="Gigantes de Azapa" onerror="this.src='https://placehold.co/42/f36b21/fff?text=G'"><div><small>Gigantes de Azapa</small><span>Club 2030 · Santiago 2026</span></div></a><button class="gb-btn" onclick="document.getElementById('gb-drawer').classList.toggle('open')">☰</button>`;
+  bar.innerHTML=`<a class="gb-brand" href="${B}index.html"><img src="LOGO GIGANTES.jpeg" alt="Gigantes de Azapa" onerror="this.src='https://placehold.co/42/f36b21/fff?text=G'"><div><small>Gigantes de Azapa</small><span>Club Deportivo · Arica</span></div></a><button class="gb-btn" onclick="document.getElementById('gb-drawer').classList.toggle('open')">☰</button>`;
   document.body.insertBefore(bar,document.body.firstChild);
   const nav=document.createElement('nav');
   nav.id='gb-drawer';
   nav.innerHTML=`<div class="gb-dh"><strong>Menú</strong><button class="gb-x" onclick="document.getElementById('gb-drawer').classList.remove('open')">✕</button></div>
-    <a href="${B}index.html">🏠 Portada</a>\n    <a href="${B}santiago.html">✈️ Santiago 2026</a>\n    <a href="${B}actividades.html">🌭 Actividades</a>\n    <a href="${B}grupos.html">👥 Grupos A–D</a>\n    <a href="${B}inscripcion.html">🏉 Inscribir jugador</a>
+    <a href="${B}index.html">🏠 Portada</a>\n    <a href="${B}proyectos.html">🗂️ Proyectos y giras</a>\n    <a href="${B}inscripcion.html">🏉 Inscribir jugador</a>
     <a href="${B}album_equipo.html">⭐ Álbum del equipo</a>
     <a href="${B}mi_jugador.html">👤 Mi Gigantes</a>
     <a href="${B}lesionado.html">🚑 Jugador lesionado</a>
