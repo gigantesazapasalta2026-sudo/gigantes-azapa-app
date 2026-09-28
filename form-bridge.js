@@ -40,8 +40,8 @@ function injectTopbar(){
   nav.innerHTML=`<div class="gb-dh"><strong>Menú</strong><button class="gb-x" onclick="document.getElementById('gb-drawer').classList.remove('open')">✕</button></div>
     <a href="${B}index.html">🏠 Portada</a>\n    <a href="${B}santiago.html">✈️ Santiago 2026</a>\n    <a href="${B}actividades.html">🌭 Actividades</a>\n    <a href="${B}grupos.html">👥 Grupos A–D</a>\n    <a href="${B}inscripcion.html">🏉 Inscribir jugador</a>
     <a href="${B}album_equipo.html">⭐ Álbum del equipo</a>
-    <a href="${B}documentos_carga.html">📄 Subir documentos</a>
-    <a href="${B}mi_estado.html">🔍 Mi estado</a>
+    <a href="${B}mi_jugador.html">👤 Mi Gigantes</a>
+    <a href="${B}lesionado.html">🚑 Jugador lesionado</a>
     <a href="${B}itinerario.html">🗓 Itinerario</a>
     <a href="${B}actividades.html">🤝 Actividades</a>
     <a href="${B}aportes.html">💛 Hacer un aporte</a>
@@ -50,8 +50,8 @@ function injectTopbar(){
     <a href="${B}sponsors.html">🏢 Sponsors</a>
     <a href="${B}avance.html">📊 Avance de meta</a>
     <a href="${B}galeria_club.html">📸 Galería</a>
-    <a href="${B}gestion/index.html">🧠 Control Center</a>\n    <a href="${B}directiva.html">🔐 Directiva</a>
-    <a href="${B}index.html">🏠 Portada</a>`;
+    <a href="${B}gestion/login.html">🔐 Acceso privado</a>
+    `;
   document.body.appendChild(nav);
   document.addEventListener('click',e=>{const d=document.getElementById('gb-drawer');if(d&&!d.contains(e.target)&&!e.target.classList.contains('gb-btn'))d.classList.remove('open');});
 }
