@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Club Deportivo Gigantes de Azapa — Arica, Chile</title>
+  <link rel="manifest" href="manifest.webmanifest"><title>Club Deportivo Gigantes de Azapa — Arica, Chile</title>
   <script src="config.js"></script>
   <script src="form-bridge.js"></script>
   <style>
@@ -209,5 +209,5 @@ async function cargarDatos(){
 }
 cargarDatos();
 </script>
-</body>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}</script></body>
 </html>
