@@ -7,7 +7,7 @@
 <div class="card wide"><h2>📄 Documentos requeridos</h2><div id="documents"></div></div>
 <div class="card"><h2>💳 Cuotas</h2><div id="dues"></div></div>
 <div class="card wide"><h2>🧾 Mis comprobantes</h2><div id="payments"></div></div></div>
-<div class="notice">Los documentos quedan almacenados de forma privada. Un archivo subido queda “pendiente de revisión” hasta que la Directiva/Tesorería lo valide.</div></section></main>
+<div class="card" style="margin-top:14px;border:2px solid #fecaca"><h2>🚑 ¿Te lesionaste?</h2><p class="empty">Activa el protocolo del seguro, llama a GEA y registra el accidente sin perder tiempo.</p><a class="btn" style="display:inline-block;text-decoration:none" href="lesionado.html">JUGADOR LESIONADO · ACTIVAR SEGURO</a></div><div class="notice">Los documentos quedan almacenados de forma privada. Un archivo subido queda “pendiente de revisión” hasta que la Directiva/Tesorería lo valide.</div></section></main>
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);let person;
 const req=[['profile_photo','Foto jugador','image/*'],['identity_card','Cédula vigente','image/*,application/pdf'],['insurance','Seguro','image/*,application/pdf'],['medical_authorization','Autorización médica','image/*,application/pdf'],['image_authorization','Autorización de imagen','image/*,application/pdf']];
