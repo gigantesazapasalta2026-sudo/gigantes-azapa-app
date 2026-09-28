@@ -10,6 +10,6 @@ const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHAB
 const [{data:g},{data:m},{data:media}]=await Promise.all([sb.from('project_goals').select('*').eq('project_id',p.id),sb.from('project_milestones').select('*').eq('project_id',p.id).order('due_date'),sb.from('project_media').select('*').eq('project_id',p.id).eq('public_approved',true).order('taken_at',{ascending:false})]);
 if(g&&g.length)goals.innerHTML=g.map(x=>'<p><b>'+x.title+'</b><br><span class="empty">'+Number(x.current_value||0)+' / '+Number(x.target_value||0)+' '+(x.unit||'')+' · '+(x.status||'')+'</span></p>').join('');
 if(m&&m.length)milestones.innerHTML=m.map(x=>'<p><b>'+x.title+'</b><br><span class="empty">'+(x.due_date||'')+' · '+(x.progress||0)+'% · '+(x.status||'')+'</span></p>').join('');
-if(media&&media.length)gallery.innerHTML=media.map(x=>'<div><b>'+(x.title||'Imagen')+'</b><p class="empty">'+(x.caption||'')+'</p></div>').join('');
+if(media&&media.length)gallery.innerHTML=media.map(x=>{const u=sb.storage.from('project-public').getPublicUrl(x.storage_path).data.publicUrl;return '<div><img src="'+u+'" alt="'+(x.title||'Imagen')+'" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px"><b>'+(x.title||'Imagen')+'</b><p class="empty">'+(x.caption||'')+'</p></div>'}).join('');
 })();
 </script></body></html>
