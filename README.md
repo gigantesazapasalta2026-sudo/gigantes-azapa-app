@@ -6,7 +6,7 @@ Plataforma central **Mi Gigantes**.
 
 Este repositorio es el **staging temporal de desarrollo** mientras consolidamos la aplicación bajo la cuenta institucional del club.
 
-- Staging actual: `rogerlazo-astor/gigantes-azapa-app`
+- Staging actual: `gigantesazapasalta2026-sudo/gigantes-azapa-app`
 - Cuenta institucional destino: `gigantesazapasalta2026-sudo`
 - Repositorio institucional definitivo pendiente de crear: `gigantes-azapa-app`
 - Dominio oficial reservado: `www.gigantesdeazapa.cl`
