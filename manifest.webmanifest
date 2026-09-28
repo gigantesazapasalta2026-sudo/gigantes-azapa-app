@@ -1,0 +1,13 @@
+{
+  "name":"Club Deportivo Gigantes de Azapa",
+  "short_name":"Mi Gigantes",
+  "start_url":"./index.html",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#0b0f14",
+  "theme_color":"#0b0f14",
+  "description":"Plataforma central del Club Deportivo Gigantes de Azapa",
+  "icons":[
+    {"src":"LOGO GIGANTES.jpeg","sizes":"any","type":"image/jpeg","purpose":"any"}
+  ]
+}
