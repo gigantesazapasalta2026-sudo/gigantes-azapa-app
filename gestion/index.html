@@ -39,8 +39,8 @@ const K='gigantes_control_center_v3';
 const TODAY=new Date().toLocaleDateString('es-CL');
 const seed={
  projects:[
-  {n:'Copa FUFY 2026',p:24,s:'CRÍTICO',owner:'Dirección',due:'24/10/2026'},
-  {n:'Gira Santiago 2026',p:38,s:'URGENTE',owner:'Comisión Gira',due:'06/11/2026'},
+  {n:'Copa FUFY 2026',p:25,s:'CRÍTICO',owner:'Dirección',due:'24/10/2026'},
+  {n:'Gira Santiago 2026',p:51,s:'URGENTE',owner:'Comisión Gira',due:'06/11/2026'},
   {n:'Chile Rugby · Desarrollo Arica',p:46,s:'EN PROCESO',owner:'Dirección',due:'Continuo'},
   {n:'Registro Maestro del Club',p:62,s:'EN DEPURACIÓN',owner:'Secretaría',due:'30/09/2026'},
   {n:'Gigantes 2030 · Fondos y Alianzas',p:42,s:'EN PROCESO',owner:'Directiva',due:'2026–2030'}
@@ -76,7 +76,7 @@ function taskRows(){const all=db.localTasks.concat(db.tasks);return all.map(t=>'
 function header(){return '<section class="hero"><div><div class="date">ACTUALIZADO · '+TODAY+'</div><h2>Gigantes de Azapa · Control Center</h2><p>Una sola vista para dirigir club, jugadores, Copa FUFY, Gira Santiago, Chile Rugby, finanzas, fondos y documentación. La app pública no almacena datos sensibles.</p></div><div><a class="btn primary" href="../index.html">Abrir app del club</a></div></section>'}
 function dash(){
  return header()+
- '<div class="kpis"><div class="card"><span>FUFY · tareas</span><b>68</b><small>5 completadas en último control</small></div><div class="card"><span>FUFY · vencidas</span><b>52</b><small>requieren reasignación</small></div><div class="card"><span>Sin responsable</span><b>42</b><small>principal riesgo operativo</small></div><div class="card"><span>Chile Rugby</span><b>34+</b><small>registros a conciliar</small></div><div class="card"><span>Gira Santiago</span><b>06/11</b><small>fecha de salida</small></div><div class="card"><span>Fuentes maestras</span><b>4</b><small>club · federación · FUFY · gira</small></div></div>'+
+ '<div class="kpis"><div class="card"><span>FUFY · tareas</span><b>68</b><small>5 completadas en último control</small></div><div class="card"><span>FUFY · vencidas</span><b>58</b><small>requieren reasignación</small></div><div class="card"><span>Sin responsable</span><b>42</b><small>principal riesgo operativo</small></div><div class="card"><span>Chile Rugby</span><b>34+</b><small>registros a conciliar</small></div><div class="card"><span>Gira Santiago</span><b>06/11</b><small>fecha de salida</small></div><div class="card"><span>Fuentes maestras</span><b>4</b><small>club · federación · FUFY · gira</small></div></div>'+
  '<div class="grid2"><div class="panel"><h2>Prioridades de dirección</h2><p>Acciones que destraban más trabajo hoy.</p>'+
  '<div class="alert"><i class="dot bad"></i><div><b>Asignar responsables FUFY</b><p>42 tareas siguen sin responsable. Ningún tablero sirve si la tarea no tiene dueño.</p></div></div>'+
  '<div class="alert"><i class="dot bad"></i><div><b>Cerrar alojamiento y presupuesto Santiago</b><p>Son los dos componentes que determinan la meta real de recaudación.</p></div></div>'+
@@ -97,7 +97,7 @@ function tasks(){return header()+'<div class="panel"><h2>Backlog ejecutivo</h2><
 function docs(){return header()+'<div class="panel"><h2>Mapa de fuentes oficiales</h2><p>Se evita copiar la misma información en múltiples archivos.</p><table class="table"><thead><tr><th>Fuente</th><th>Rol</th><th>Estado</th></tr></thead><tbody>'+db.docs.map(d=>'<tr><td><b>'+d[0]+'</b></td><td>'+badge(d[1])+'</td><td>'+badge(d[2])+'</td></tr>').join('')+'</tbody></table></div>'}
 function chile(){return header()+'<div class="kpis"><div class="card"><span>Base federativa</span><b>✓</b><small>recibida 21/09/2026</small></div><div class="card"><span>Conciliación</span><b>↔</b><small>con Registro Maestro</small></div><div class="card"><span>Seguro</span><b>!</b><small>varios estados pendientes</small></div><div class="card"><span>EPC</span><b>!</b><small>validación necesaria</small></div><div class="card"><span>Desarrollo</span><b>+</b><small>programa colegios</small></div><div class="card"><span>Capacitación</span><b>+</b><small>apoyo Federación</small></div></div><div class="panel"><h2>Chile Rugby como módulo permanente</h2><p>La base federativa deja de ser un Excel aislado: debe funcionar como capa de cumplimiento del Registro Maestro. Un jugador queda “operativamente habilitado” sólo cuando los requisitos correspondientes están validados.</p></div>'}
 function finance(){return header()+'<div class="grid3"><div class="mini"><strong>Ingresos</strong><small>Cuotas · rifas · ventas · sponsors · aportes.</small></div><div class="mini"><strong>Egresos</strong><small>Alojamiento · alimentación · transporte · arbitraje · producción.</small></div><div class="mini"><strong>Centro de costo</strong><small>Club · FUFY · Santiago · proyectos · fondos.</small></div></div><div class="panel"><h2>Regla financiera</h2><p>Cada movimiento debe registrar fecha, proyecto, actividad, responsable, monto y evidencia. El sitio público sólo muestra indicadores autorizados; no datos bancarios privados ni comprobantes.</p></div>'}
-function audit(){return header()+'<div class="grid3"><div class="mini"><strong>✓ Repositorio auditado</strong><small>Arquitectura estática, Apps Script y módulos existentes revisados.</small></div><div class="mini"><strong>✓ Privacidad reforzada</strong><small>No se incorpora información sensible al repositorio público.</small></div><div class="mini"><strong>✓ Fuente única definida</strong><small>Se separan fuente Club, Federación, FUFY y Gira.</small></div><div class="mini"><strong>⚠ Backend pendiente de endurecer</strong><small>Apps Script sirve al MVP; autenticación real debe migrar a backend privado.</small></div><div class="mini"><strong>⚠ Datos por depurar</strong><small>Duplicados y fechas incoherentes deben corregirse en las fuentes privadas.</small></div><div class="mini"><strong>⚠ FUFY atrasado</strong><small>La gestión requiere asignación inmediata de responsables.</small></div></div><div class="panel"><h2>Definición de terminado</h2><p>La app está lista como portal y centro de mando cuando: 1) cada fuente tiene un dueño; 2) el Registro Maestro está depurado; 3) FUFY y Santiago tienen responsables y fechas; 4) la información sensible está autenticada; 5) los indicadores se alimentan desde backend y no desde valores estáticos.</p></div>'}
+function audit(){return header()+'<div class="grid3"><div class="mini"><strong>✓ Repositorio auditado</strong><small>Arquitectura estática, Apps Script y módulos existentes revisados.</small></div><div class="mini"><strong>✓ Privacidad reforzada</strong><small>No se incorpora información sensible al repositorio público.</small></div><div class="mini"><strong>✓ Fuente única definida</strong><small>Se separan fuente Club, Federación, FUFY y Gira.</small></div><div class="mini"><strong>✓ Backend privado operativo</strong><small>Supabase Auth + RLS protegen personas, documentos, pagos, seguro y gestión.</small></div><div class="mini"><strong>⚠ Datos por depurar</strong><small>Duplicados y fechas incoherentes deben corregirse en las fuentes privadas.</small></div><div class="mini"><strong>⚠ FUFY atrasado</strong><small>La gestión requiere asignación inmediata de responsables.</small></div></div><div class="panel"><h2>Definición de terminado</h2><p>La plataforma ya usa backend privado y fuentes públicas separadas. Para producción final faltan: 1) completar depuración del Registro Maestro; 2) cerrar responsables y fechas críticas de FUFY/Santiago; 3) activar Leaked Password Protection en Supabase Auth; 4) probar Directiva y familias; 5) conectar el dominio oficial sólo después de la auditoría final.</p></div>'}
 function view(){return route==='dash'?dash():route==='personas'?personas():route==='proyectos'?projects():route==='tareas'?tasks():route==='docs'?docs():route==='chile'?chile():route==='finanzas'?finance():audit()}
 function render(){const m=pages.find(p=>p[0]===route);title.textContent=m[2];sub.textContent=m[3];document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.r===route));app.innerHTML=view()}
 async function newTask(){
@@ -113,13 +113,15 @@ async function newTask(){
 }
 async function loadLiveData(){
  if(!window.GIGANTES_DB)return;
- const [{data:ps},{data:ts}]=await Promise.all([
+ const [{data:ps},{data:ts},{data:ms}]=await Promise.all([
    window.GIGANTES_DB.from('projects').select('id,code,name,status,event_date,owner_name').order('event_date',{ascending:true,nullsFirst:false}),
-   window.GIGANTES_DB.from('tasks').select('title,priority,due_date,status,owner_name,project_id').order('due_date',{ascending:true,nullsFirst:false})
+   window.GIGANTES_DB.from('tasks').select('title,priority,due_date,status,owner_name,project_id').order('due_date',{ascending:true,nullsFirst:false}),
+   window.GIGANTES_DB.from('project_milestones').select('project_id,progress,status')
  ]);
  if(ps){
-   const map={}; ps.forEach(p=>map[p.id]=p.name);
-   db.projects=ps.map(p=>({n:p.name,p:0,s:String(p.status||'active').toUpperCase(),owner:p.owner_name||'Sin responsable',due:p.event_date||'Continuo'}));
+   const map={},prog={}; ps.forEach(p=>map[p.id]=p.name);
+   for(const m of ms||[]){if(!prog[m.project_id])prog[m.project_id]=[];prog[m.project_id].push(Number(m.progress||0))}
+   db.projects=ps.map(p=>{const a=prog[p.id]||[];const avg=a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):0;return {n:p.name,p:avg,s:String(p.status||'active').toUpperCase(),owner:p.owner_name||'Sin responsable',due:p.event_date||'Continuo'}});
    if(ts)db.tasks=ts.map(t=>[t.title,map[t.project_id]||'Club',String(t.priority||t.status||'PENDIENTE').toUpperCase(),t.due_date||'Sin fecha',t.owner_name||'Sin responsable']);
    db.localTasks=[];
  }
