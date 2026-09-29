@@ -1,8 +1,119 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0f14"><title>Solicitud de ingreso · Gigantes de Azapa</title>
-<style>:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f6f8;color:#111827}.hero{background:linear-gradient(135deg,#0b0f14,#2a1b13);color:#fff;padding:72px 20px 42px}.in{max-width:860px;margin:auto}.hero h1{margin:0;font-size:clamp(2rem,6vw,4rem)}.hero p{color:#d1d5db;max-width:650px;line-height:1.5}.main{max-width:860px;margin:auto;padding:20px}.card{background:#fff;border:1px solid var(--l);border-radius:16px;padding:22px}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px;font-size:12px;line-height:1.5;margin-bottom:16px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}label{display:block;font-size:12px;font-weight:900;margin-bottom:4px}input,select,textarea{width:100%;padding:12px;border:1px solid #d0d5dd;border-radius:9px;font:inherit}textarea{min-height:90px}.wide{grid-column:1/-1}.btn{margin-top:16px;border:0;border-radius:10px;background:var(--o);color:#fff;padding:13px 18px;font-weight:900;cursor:pointer}.msg{margin-top:12px;font-size:12px;color:var(--m)}@media(max-width:650px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}}</style></head>
-<body><section class="hero"><div class="in"><h1>Quiero ser Gigante</h1><p>Solicitud inicial de ingreso al club. Aquí sólo pedimos los datos mínimos de contacto. RUT, antecedentes médicos, documentos, seguro y autorizaciones se completarán después en Mi Gigantes, dentro del área privada.</p></div></section>
-<main class="main"><div class="card"><div class="notice"><b>Privacidad primero.</b> Esta solicitud no pide información médica ni documentos de identidad.</div>
-<div class="grid"><div><label>Nombre del jugador</label><input id="player" required></div><div><label>Fecha de nacimiento</label><input id="dob" type="date"></div><div><label>Categoría aproximada</label><select id="cat"><option value="">Por definir</option><option>M6</option><option>M8</option><option>M10</option><option>M12</option><option>M14</option><option>M16</option><option>M18</option><option>Classic</option></select></div><div><label>Nombre del apoderado / contacto</label><input id="guardian"></div><div><label>Correo de contacto</label><input id="email" type="email" required></div><div><label>WhatsApp</label><input id="phone" type="tel"></div><div class="wide"><label>Comentario opcional</label><textarea id="notes" placeholder="Ej: quiere asistir a una práctica de prueba"></textarea></div></div>
-<button class="btn" id="send">Enviar solicitud</button><div class="msg" id="msg"></div></div></main>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0f14"><title>Incorporación al club · Gigantes de Azapa</title>
+<style>
+:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085;--ok:#166534;--warn:#92400e}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f6f8;color:#111827}.hero{background:linear-gradient(135deg,#0b0f14,#2a1b13);color:#fff;padding:76px 20px 46px}.in,.main{max-width:980px;margin:auto}.hero h1{margin:0;font-size:clamp(2.2rem,6vw,4.5rem);line-height:.95}.hero p{color:#d1d5db;max-width:760px;line-height:1.55}.hero .k{color:#f6a16f;font-size:.72rem;font-weight:900;letter-spacing:.7px;text-transform:uppercase}.main{padding:22px 20px 70px}.card{background:#fff;border:1px solid var(--l);border-radius:16px;padding:22px;margin-bottom:16px}.card h2{margin:0 0 5px;font-size:1.25rem}.sub{color:var(--m);font-size:.86rem;line-height:1.5;margin:0 0 16px}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px;font-size:.82rem;line-height:1.5;margin-bottom:16px}.okbox{background:#f0fdf4;border-color:#bbf7d0}.reqgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}.req{background:#111827;color:#fff;border-radius:14px;padding:16px}.req b{display:block;margin:6px 0}.req p{color:#cbd5e1;font-size:.78rem;line-height:1.45;min-height:52px}.req a{display:inline-flex;background:#f36b21;color:#fff;text-decoration:none;border-radius:8px;padding:8px 10px;font-size:.78rem;font-weight:900;margin:3px 4px 0 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.wide{grid-column:1/-1}label{display:block;font-size:.76rem;font-weight:900;margin-bottom:5px}input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d0d5dd;border-radius:9px;font:inherit;background:#fff}textarea{min-height:86px;resize:vertical}.hint{font-size:.7rem;color:var(--m);line-height:1.4;margin-top:4px}.check{display:flex;gap:9px;align-items:flex-start;margin:9px 0;font-size:.8rem;line-height:1.45}.check input{width:auto;margin-top:3px}.hidden{display:none}.filebox{border:1px dashed #f59e0b;border-radius:10px;padding:12px;background:#fffbeb}.btn{border:0;border-radius:10px;background:var(--o);color:#fff;padding:13px 18px;font-weight:900;cursor:pointer}.btn:disabled{opacity:.55;cursor:not-allowed}.msg{margin-top:14px;padding:12px;border-radius:10px;font-size:.82rem;line-height:1.5;display:none}.msg.show{display:block}.msg.good{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}.msg.bad{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}.statusline{display:flex;gap:7px;flex-wrap:wrap}.pill{display:inline-block;background:#f3f4f6;border-radius:999px;padding:5px 8px;font-size:.68rem;font-weight:900;color:#374151}.dangertext{color:#b91c1c;font-weight:800}.footer-note{font-size:.75rem;color:var(--m);line-height:1.5}@media(max-width:760px){.grid,.reqgrid{grid-template-columns:1fr}.wide{grid-column:auto}.req p{min-height:0}}
+</style></head><body>
+<section class="hero"><div class="in"><div class="k">Ingreso oficial · Gigantes de Azapa</div><h1>Quiero ser Gigante</h1><p>Esta ficha reúne los antecedentes necesarios para crear un registro completo del jugador, preparar su incorporación a la base del club y controlar los requisitos federativos, seguro y pase desde otro club cuando corresponda.</p></div></section>
+<main class="main">
+<section class="card"><h2>Antes de enviar la ficha</h2><p class="sub">La solicitud de ingreso no significa habilitación automática. Para quedar incorporado y habilitado deportivamente, la Directiva debe validar los antecedentes y los requisitos aplicables.</p>
+<div class="reqgrid">
+<div class="req"><span>1️⃣</span><b>BD Chile Rugby</b><p>Registro nacional utilizado por Chile Rugby para jugadores, clubes y competencias.</p><a href="https://bd.chile.rugby/registro" target="_blank" rel="noopener">Crear registro</a><a href="https://bd.chile.rugby/users/login" target="_blank" rel="noopener">Acceso BD</a></div>
+<div class="req"><span>2️⃣</span><b>Rugby Seguro</b><p>Debes mantener el seguro exigido para la actividad. La Federación publica la información, protocolo y póliza vigente.</p><a href="https://chile.rugby/bd-chile-rugby/" target="_blank" rel="noopener">Seguro Chile Rugby</a></div>
+<div class="req"><span>3️⃣</span><b>Pase desde otro club</b><p>Si vienes de otro club, Gigantes exige carta de desvinculación que confirme que no mantienes cuotas ni compromisos pendientes.</p><span class="pill">Pase de club obligatorio</span></div>
+</div></section>
+
+<section class="card"><h2>1. Datos del jugador</h2><p class="sub">Datos de identificación que se utilizarán para el Registro Maestro y la gestión federativa.</p>
+<div class="grid">
+<div><label>Nombre completo *</label><input id="player" autocomplete="name"></div>
+<div><label>Fecha de nacimiento *</label><input id="dob" type="date"></div>
+<div><label>Tipo de documento *</label><select id="docType"><option value="RUT">RUT chileno</option><option value="PASAPORTE">Pasaporte / documento extranjero</option></select></div>
+<div><label>N° documento *</label><input id="docNumber" placeholder="12.345.678-9"></div>
+<div><label>Sexo *</label><select id="sex"><option value="">Seleccionar</option><option>Masculino</option><option>Femenino</option><option>Otro</option><option>Prefiero no indicar</option></select></div>
+<div><label>Nacionalidad</label><input id="nationality" value="Chilena"></div>
+<div><label>Categoría *</label><select id="cat"><option value="">Seleccionar</option><option>M6</option><option>M8</option><option>M10</option><option>M12</option><option>M14</option><option>M16</option><option>M18</option><option>Adulto</option><option>Classic</option></select></div>
+<div><label>Comuna *</label><input id="commune" value="Arica"></div>
+<div class="wide"><label>Dirección *</label><input id="address" autocomplete="street-address"></div>
+</div></section>
+
+<section class="card"><h2>2. Apoderados y contactos</h2><p class="sub">Para menores de 18 años el apoderado principal es obligatorio. En jugadores adultos, usa estos campos como contacto principal.</p>
+<div class="grid">
+<div><label>Apoderado / contacto principal <span id="guardianReq">*</span></label><input id="guardian"></div>
+<div><label>Parentesco</label><select id="guardianRel"><option value="">Seleccionar</option><option>Madre</option><option>Padre</option><option>Tutor/a</option><option>Pareja/Cónyuge</option><option>Otro</option><option>No aplica · jugador adulto</option></select></div>
+<div><label>Correo principal *</label><input id="email" type="email" autocomplete="email"></div>
+<div><label>WhatsApp / teléfono *</label><input id="phone" type="tel" autocomplete="tel"></div>
+<div><label>Apoderado 2</label><input id="guardian2"></div>
+<div><label>Parentesco 2</label><input id="guardian2Rel"></div>
+<div><label>Teléfono 2</label><input id="guardian2Phone" type="tel"></div>
+<div><label>Correo 2</label><input id="guardian2Email" type="email"></div>
+<div><label>Contacto de emergencia *</label><input id="emergencyName"></div>
+<div><label>Teléfono de emergencia *</label><input id="emergencyPhone" type="tel"></div>
+</div></section>
+
+<section class="card"><h2>3. Salud y autorizaciones</h2><p class="sub">Estos antecedentes son privados y sólo quedan disponibles para personal autorizado del club.</p>
+<div class="grid">
+<div><label>Previsión / sistema de salud *</label><select id="health"><option value="">Seleccionar</option><option>Fonasa</option><option>Isapre</option><option>PRAIS</option><option>Otro</option><option>Sin previsión</option></select></div>
+<div><label>Alergias o condiciones relevantes</label><input id="conditions" placeholder="Ninguna, asma, alergias, medicamentos, etc."></div>
+<div><label>Autorización de atención médica de urgencia *</label><select id="medicalAuth"><option value="">Seleccionar</option><option value="yes">Sí autorizo</option><option value="no">No autorizo</option></select></div>
+<div><label>Autorización de uso de imagen *</label><select id="imageAuth"><option value="">Seleccionar</option><option value="yes">Sí autorizo</option><option value="no">No autorizo</option></select></div>
+<div><label>Autorización general de viajes/actividades *</label><select id="travelAuth"><option value="">Seleccionar</option><option value="yes">Sí autorizo</option><option value="no">No autorizo</option></select></div>
+</div></section>
+
+<section class="card"><h2>4. Chile Rugby y seguro</h2><p class="sub">Esta información permite controlar si el jugador ya está registrado y asegurado. La Directiva hará la validación final.</p>
+<div class="grid">
+<div><label>Estado en BD Chile Rugby *</label><select id="fedStatus"><option value="pending">Aún no me registro</option><option value="registered">Ya estoy registrado</option><option value="needs_help">Necesito ayuda para registrarme</option></select><div class="hint">Registro: <a href="https://bd.chile.rugby/registro" target="_blank" rel="noopener">bd.chile.rugby/registro</a></div></div>
+<div><label>Correo usado en BD Chile Rugby</label><input id="fedEmail" type="email"></div>
+<div><label>Estado Rugby Seguro *</label><select id="insuranceStatus"><option value="pending">Aún no lo compro / activo</option><option value="active">Ya tengo seguro vigente</option><option value="needs_help">Necesito ayuda para comprarlo / activarlo</option></select><div class="hint">Información oficial: <a href="https://chile.rugby/bd-chile-rugby/" target="_blank" rel="noopener">Chile Rugby · Rugby Seguro</a></div></div>
+<div><label>N° póliza / referencia / comprobante</label><input id="insuranceRef"></div>
+<div class="wide filebox"><label>Comprobante de Rugby Seguro (opcional)</label><input id="insuranceFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"><div class="hint">PDF o imagen, máximo 8 MB. El archivo queda privado.</div></div>
+</div>
+<div class="notice"><b>Importante:</b> declarar que el seguro está vigente no lo valida automáticamente. Antes de habilitar al jugador, el club comprobará su situación federativa y de seguro.</div></section>
+
+<section class="card"><h2>5. ¿Viene de otro club?</h2><p class="sub">El pase protege al jugador y a los clubes, dejando constancia de que el vínculo anterior está regularizado.</p>
+<div class="grid">
+<div><label>¿Ha pertenecido a otro club de rugby? *</label><select id="previousClub"><option value="no">No</option><option value="yes">Sí</option></select></div>
+</div>
+<div id="transferBlock" class="hidden" style="margin-top:14px">
+<div class="notice"><b>Pase de club obligatorio.</b> La carta debe ser emitida por el club anterior e indicar que el jugador está desvinculado y que <b>no mantiene cuotas pendientes ni otros compromisos que deba regularizar</b>. Sin pase validado, el jugador no podrá quedar habilitado como incorporado.</div>
+<div class="grid">
+<div><label>Club anterior *</label><input id="previousClubName"></div>
+<div><label>Contacto del club anterior</label><input id="previousClubContact" placeholder="Nombre, correo o teléfono"></div>
+<div class="wide filebox"><label>Pase / carta de desvinculación *</label><input id="transferFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"><div class="hint">PDF o imagen, máximo 8 MB. Debe permitir verificar la desvinculación y situación de cuotas/compromisos.</div></div>
+</div>
+<label class="check"><input id="transferDeclaration" type="checkbox"><span>Confirmo que el documento adjunto corresponde al pase/carta del club anterior y que debe señalar que no existen cuotas ni compromisos pendientes.</span></label>
+</div></section>
+
+<section class="card"><h2>6. Declaraciones y envío</h2>
+<label class="check"><input id="privacy" type="checkbox"><span>Acepto que estos datos personales y de salud sean tratados de forma privada por Gigantes de Azapa para la incorporación, seguridad del jugador, administración del club y gestiones deportivas/federativas.</span></label>
+<label class="check"><input id="truth" type="checkbox"><span>Declaro que la información entregada es verdadera y autorizo a la Directiva a verificar registro federativo, seguro y pase de club cuando corresponda.</span></label>
+<div class="notice okbox"><b>Después de enviar:</b> la solicitud quedará en revisión. Si faltan BD Chile Rugby, seguro o validación del pase, aparecerán como requisitos pendientes y el jugador todavía no se considerará habilitado.</div>
+<button class="btn" id="send">Enviar ficha de incorporación</button><div id="msg" class="msg"></div>
+<p class="footer-note">La ficha pública sólo permite ingresar información. Los antecedentes enviados no pueden ser consultados públicamente y los documentos se almacenan en un espacio privado.</p>
+</section>
+</main>
+
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
-<script>const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);send.onclick=async()=>{if(!player.value.trim()||!email.value.trim()){msg.textContent='Completa nombre del jugador y correo.';return}send.disabled=true;msg.textContent='Enviando…';const {error}=await sb.from('registration_requests').insert({player_name:player.value.trim(),birth_date:dob.value||null,category:cat.value||null,guardian_name:guardian.value.trim()||null,guardian_email:email.value.trim(),guardian_phone:phone.value.trim()||null,notes:notes.value.trim()||null});if(error){msg.textContent='No pudimos registrar la solicitud: '+error.message;send.disabled=false;return}msg.textContent='✅ Solicitud recibida. La Directiva podrá contactarte para habilitar Mi Gigantes y completar el registro privado.';send.disabled=true};</script></body></html>
+<script>
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY),$=id=>document.getElementById(id);
+function age(){if(!$('dob').value)return null;const d=new Date($('dob').value+'T12:00:00'),n=new Date();let a=n.getFullYear()-d.getFullYear();const m=n.getMonth()-d.getMonth();if(m<0||(m===0&&n.getDate()<d.getDate()))a--;return a}
+function minorUI(){const a=age();$('guardianReq').textContent=(a!==null&&a>=18)?'':'*'}
+function transferUI(){$('transferBlock').classList.toggle('hidden',$('previousClub').value!=='yes')}
+$('dob').addEventListener('change',minorUI);$('previousClub').addEventListener('change',transferUI);minorUI();transferUI();
+function trim(id){return $(id).value.trim()}
+function yes(id){return $(id).value==='yes'}
+function show(text,good=false){const m=$('msg');m.textContent=text;m.className='msg show '+(good?'good':'bad')}
+function normalizeRut(v){return String(v||'').toUpperCase().replace(/[^0-9K]/g,'')}
+function validRut(v){const r=normalizeRut(v);if(r.length<2)return false;const body=r.slice(0,-1),dv=r.slice(-1);let sum=0,m=2;for(let i=body.length-1;i>=0;i--){sum+=Number(body[i])*m;m=m===7?2:m+1}const x=11-(sum%11),calc=x===11?'0':x===10?'K':String(x);return dv===calc}
+function fileExt(file){const map={'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp'};return map[file.type]||String(file.name||'').split('.').pop().toLowerCase()}
+function validFile(file){return !file||(file.size<=8*1024*1024&&['pdf','jpg','jpeg','png','webp'].includes(fileExt(file)))}
+$('send').onclick=async()=>{
+ const required=[['player','nombre completo'],['dob','fecha de nacimiento'],['docNumber','documento'],['sex','sexo'],['cat','categoría'],['commune','comuna'],['address','dirección'],['email','correo principal'],['phone','teléfono'],['emergencyName','contacto de emergencia'],['emergencyPhone','teléfono de emergencia'],['health','previsión de salud'],['medicalAuth','autorización médica'],['imageAuth','autorización de imagen'],['travelAuth','autorización de viajes']];
+ for(const [id,label] of required){if(!trim(id)){show('Falta completar: '+label+'.');$(id).focus();return}}
+ const a=age();if(a===null||a<0){show('Revisa la fecha de nacimiento.');return}
+ if(a<18&&!trim('guardian')){show('Para un menor de 18 años debes indicar el apoderado principal.');$('guardian').focus();return}
+ if($('docType').value==='RUT'&&!validRut(trim('docNumber'))){show('El RUT ingresado no es válido. Revísalo o selecciona Pasaporte/documento extranjero.');$('docNumber').focus();return}
+ const isTransfer=$('previousClub').value==='yes',passFile=$('transferFile').files[0]||null,insFile=$('insuranceFile').files[0]||null;
+ if(isTransfer&&(!trim('previousClubName')||!passFile||!$('transferDeclaration').checked)){show('Si el jugador viene de otro club debes indicar el club anterior, adjuntar el pase y aceptar la declaración correspondiente.');return}
+ if(!validFile(passFile)||!validFile(insFile)){show('Los documentos deben ser PDF/JPG/PNG/WEBP y pesar máximo 8 MB.');return}
+ if(!$('privacy').checked||!$('truth').checked){show('Debes aceptar privacidad y declaración de veracidad antes de enviar.');return}
+ const id=crypto.randomUUID(),passPath=passFile?'registration/'+id+'/pase_club.'+fileExt(passFile):null,insPath=insFile?'registration/'+id+'/seguro_rugby.'+fileExt(insFile):null;
+ const payload={id,player_name:trim('player'),birth_date:$('dob').value,category:$('cat').value,document_type:$('docType').value,document_number:$('docType').value==='RUT'?normalizeRut(trim('docNumber')):trim('docNumber'),sex:$('sex').value,nationality:trim('nationality')||null,address:trim('address'),commune:trim('commune'),guardian_name:trim('guardian')||null,guardian_relationship:$('guardianRel').value||null,guardian_email:trim('email'),guardian_phone:trim('phone'),guardian2_name:trim('guardian2')||null,guardian2_relationship:trim('guardian2Rel')||null,guardian2_phone:trim('guardian2Phone')||null,guardian2_email:trim('guardian2Email')||null,health_system:$('health').value,allergies_conditions:trim('conditions')||null,emergency_contact_name:trim('emergencyName'),emergency_contact_phone:trim('emergencyPhone'),medical_authorization:yes('medicalAuth'),image_authorization:yes('imageAuth'),travel_authorization:yes('travelAuth'),previous_club:isTransfer,previous_club_name:isTransfer?trim('previousClubName'):null,previous_club_contact:isTransfer?(trim('previousClubContact')||null):null,transfer_pass_declaration:isTransfer?$('transferDeclaration').checked:false,transfer_pass_status:isTransfer?'pending':'not_required',transfer_pass_storage_path:passPath,federation_registration_status:$('fedStatus').value,federation_account_email:trim('fedEmail')||null,insurance_status:$('insuranceStatus').value,insurance_reference:trim('insuranceRef')||null,insurance_proof_storage_path:insPath,privacy_accepted:true,declaration_accepted:true,notes:null,status:'pending'};
+ $('send').disabled=true;show('Registrando ficha…',true);
+ const {error}=await sb.from('registration_requests').insert(payload);
+ if(error){$('send').disabled=false;show('No pudimos registrar la ficha: '+error.message);return}
+ const errs=[];
+ if(passFile){const {error:e}=await sb.storage.from('member-private').upload(passPath,passFile,{upsert:false,contentType:passFile.type});if(e)errs.push('pase de club')}
+ if(insFile){const {error:e}=await sb.storage.from('member-private').upload(insPath,insFile,{upsert:false,contentType:insFile.type});if(e)errs.push('comprobante de seguro')}
+ if(errs.length){show('✅ La ficha quedó registrada, pero no se pudo cargar: '+errs.join(' y ')+'. La Directiva verá el requisito pendiente y deberá solicitar el documento nuevamente.',true);return}
+ const pending=[];if($('fedStatus').value!=='registered')pending.push('registro BD Chile Rugby');if($('insuranceStatus').value!=='active')pending.push('Rugby Seguro');if(isTransfer)pending.push('validación del pase de club');
+ show('✅ Ficha recibida. Código de solicitud: '+id.slice(0,8).toUpperCase()+'.'+(pending.length?' Quedan por validar: '+pending.join(', ')+'.':' La Directiva deberá validar los antecedentes antes de habilitar al jugador.'),true);
+};
+</script><script src="form-bridge.js"></script></body></html>
