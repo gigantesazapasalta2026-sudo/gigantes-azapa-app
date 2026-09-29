@@ -1,0 +1,49 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0f14">
+<title>Álbum del Equipo · Gigantes de Azapa</title>
+<meta name="description" content="Álbum oficial de jugadores de Gigantes de Azapa, organizado por categoría y con publicación de imágenes sólo cuando existe autorización.">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--o:#f36b21;--d:#0b0f14;--ink:#111827;--m:#667085;--line:#e5e7eb;--bg:#f5f6f8}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:1180px;margin:auto;padding:0 18px}
+.hero{background:linear-gradient(135deg,#0b0f14,#332014);color:#fff;padding:72px 0 42px}
+.kicker{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.6px;color:#f6a16f}
+h1{font-size:clamp(2.6rem,7vw,5rem);line-height:.95;margin:10px 0 12px;letter-spacing:-.045em}
+.hero p{max-width:800px;color:#d1d5db;line-height:1.55}
+.back{display:inline-flex;margin-top:16px;color:#fff;text-decoration:none;font-weight:900}
+.main{padding:28px 0 64px}
+.toolbar{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:22px}
+.counter{font-weight:900}.counter span{color:#c2410c}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filter{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-weight:800;cursor:pointer}
+.filter.active{background:var(--d);color:#fff;border-color:var(--d)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 8px 24px #1018280d;position:relative}
+.photo{aspect-ratio:4/5;background:linear-gradient(145deg,#171717,#2d2d2d);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.photo img{width:100%;height:100%;object-fit:cover}
+.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;text-align:center;padding:24px}
+.placeholder .ball{font-size:3rem}.placeholder small{color:#d1d5db;line-height:1.4}
+.meta{padding:14px 15px 16px}.cat{display:inline-flex;background:#fff7ed;color:#c2410c;border-radius:999px;padding:5px 8px;font-size:.67rem;font-weight:900;text-transform:uppercase}
+.name{font-size:1rem;font-weight:900;margin-top:9px;line-height:1.2}.privacy{margin-top:24px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;color:var(--m);font-size:.8rem;line-height:1.5}
+.empty{grid-column:1/-1;background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;text-align:center;color:var(--m)}
+@media(max-width:900px){.grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr);gap:12px}.meta{padding:11px}.name{font-size:.9rem}}
+</style></head><body>
+<section class="hero"><div class="wrap"><span class="kicker">Nuestro equipo</span><h1>Álbum Gigantes</h1><p>Jugadores organizados por categoría. Las fotografías se publican únicamente cuando existe autorización expresa de uso de imagen; de lo contrario, la tarjeta del jugador permanece sin fotografía.</p><a class="back" href="index.html">← Volver al inicio</a></div></section>
+<main class="main"><div class="wrap">
+<div class="toolbar"><div class="counter"><span id="total">0</span> jugadores visibles</div><div id="filters" class="filters"><button class="filter active" data-cat="all">Todos</button></div></div>
+<div id="grid" class="grid"><div class="empty">Cargando álbum…</div></div>
+<div class="privacy"><b>Privacidad:</b> esta página muestra únicamente nombre, categoría y fotografía autorizada. No publica RUT, fecha de nacimiento, teléfonos, domicilios, información médica ni datos de apoderados.</div>
+</div></main>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);
+const grid=document.getElementById('grid'),filters=document.getElementById('filters'),total=document.getElementById('total');
+let rows=[],active='all';
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function render(){const data=active==='all'?rows:rows.filter(x=>x.category_label===active);total.textContent=data.length;grid.innerHTML=data.length?data.map(x=>{
+const photo=x.photo_url&&x.image_authorized?'<img src="'+esc(x.photo_url)+'" alt="'+esc(x.display_name)+'" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=&quot;placeholder&quot;><div class=&quot;ball&quot;>🏉</div><small>Foto pendiente</small></div>\'">':'<div class="placeholder"><div class="ball">🏉</div><small>Foto pendiente</small></div>';
+return '<article class="card"><div class="photo">'+photo+'</div><div class="meta"><span class="cat">'+esc(x.category_label)+'</span><div class="name">'+esc(x.display_name)+'</div></div></article>'}).join(''):'<div class="empty">No hay jugadores visibles en esta categoría.</div>'}
+(async()=>{const {data,error}=await sb.from('team_album').select('display_name,category_label,photo_url,image_authorized,sort_order').eq('public_visible',true).order('sort_order').order('display_name');if(error){grid.innerHTML='<div class="empty">No pudimos cargar el álbum en este momento.</div>';return}rows=data||[];const cats=[...new Set(rows.map(x=>x.category_label).filter(Boolean))];filters.innerHTML='<button class="filter active" data-cat="all">Todos</button>'+cats.map(c=>'<button class="filter" data-cat="'+esc(c)+'">'+esc(c)+'</button>').join('');filters.addEventListener('click',e=>{if(!e.target.matches('.filter'))return;active=e.target.dataset.cat;filters.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b===e.target));render()});render()})();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
