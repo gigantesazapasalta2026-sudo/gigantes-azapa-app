@@ -24,6 +24,7 @@ function renderDetails(d){
  for(const [k,v] of Object.entries(d||{})){
    if(k==='headline') continue;
    if(Array.isArray(v)&&v.length)cards.push('<article class="detailCard"><h2>'+esc(labels[k]||k)+'</h2><ul>'+v.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></article>');
+   else if(v&&typeof v==='object'){const rows=Object.entries(v).map(([a,b])=>'<div class="status"><b>'+esc(a.replaceAll('_',' '))+'</b><span class="badge">'+esc(b)+'</span></div>').join('');cards.push('<article class="detailCard"><h2>'+esc(labels[k]||k)+'</h2>'+rows+'</article>')}
    else if(v)cards.push('<article class="detailCard"><h2>'+esc(labels[k]||k)+'</h2><p class="empty">'+esc(v)+'</p></article>');
  }
  if(d?.headline){const h=document.createElement('div');h.className='card';h.style.marginTop='14px';h.innerHTML='<h2>'+esc(d.headline)+'</h2>'+(d.summary?'<p class="empty">'+esc(d.summary)+'</p>':'');detailsSection.parentNode.insertBefore(h,detailsSection)}
