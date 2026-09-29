@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0f14">
+<title>Gigantes Control Center · Modo Presentación</title>
+<style>
+:root{--o:#f36b21;--d:#0b0f14;--d2:#141b24;--m:#667085;--l:#e5e7eb;--s:#f4f6f8;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--blue:#1d4ed8}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--s);color:#111827}
+aside{position:fixed;inset:0 auto 0 0;width:260px;background:linear-gradient(180deg,#0b0f14,#151c26);color:#fff;padding:18px 14px;overflow-y:auto}
+.brand{display:flex;gap:11px;align-items:center;padding:4px 8px 18px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:12px}.logo{width:45px;height:45px;border-radius:50%;object-fit:cover;background:#fff}.brand b{display:block;font-size:16px}.brand small{display:block;color:#f59b66;font-size:10px;margin-top:3px;text-transform:uppercase;letter-spacing:.6px}
+.nav button{width:100%;border:0;background:transparent;color:#cbd5e1;text-align:left;padding:11px 12px;border-radius:9px;margin:2px 0;cursor:pointer;font-weight:700}.nav button.active,.nav button:hover{background:#263140;color:white}.nav .sep{height:1px;background:rgba(255,255,255,.08);margin:9px 5px}
+.main{margin-left:260px}.top{min-height:80px;background:#fff;border-bottom:1px solid var(--l);display:flex;align-items:center;padding:14px 24px;position:sticky;top:0;z-index:20}.top h1{margin:0;font-size:22px}.top p{margin:4px 0 0;color:var(--m);font-size:12px}.actions{margin-left:auto;display:flex;gap:8px}.btn{border:0;border-radius:9px;padding:10px 13px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.primary{background:var(--o);color:white}.secondary{background:white;border:1px solid var(--l);color:#111827}.dark{background:#111827;color:white}
+main{padding:22px 24px;max-width:1500px;margin:auto}.hero{background:linear-gradient(135deg,#0b0f14 0%,#17202c 72%,#352014 100%);color:#fff;border-radius:18px;padding:24px;margin-bottom:16px;display:grid;grid-template-columns:1fr auto;gap:18px}.hero h2{margin:0 0 7px;font-size:25px}.hero p{margin:0;color:#cbd5e1;max-width:800px;line-height:1.5}.hero .date{font-weight:900;color:#f59b66;font-size:12px}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:12px;margin:16px 0}.card,.panel{background:white;border:1px solid var(--l);border-radius:14px}.card{padding:17px}.card span{font-size:10px;color:var(--m);text-transform:uppercase;font-weight:900;letter-spacing:.3px}.card b{display:block;font-size:28px;margin:7px 0}.card small{color:var(--m);font-size:11px}.panel{padding:17px;margin-bottom:14px}.panel h2{font-size:17px;margin:0 0 4px}.panel>p{font-size:12px;color:var(--m);margin:0 0 12px;line-height:1.45}
+.grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.mini{border:1px solid var(--l);border-radius:11px;padding:14px;background:#fff}.mini strong{display:block}.mini small{display:block;color:var(--m);margin-top:4px;line-height:1.35}
+.row{display:grid;grid-template-columns:minmax(220px,1fr) 125px 105px 95px;gap:10px;align-items:center;padding:11px 0;border-top:1px solid #eef0f2}.name{font-weight:900}.meta{font-size:11px;color:var(--m);margin-top:3px;line-height:1.35}.badge{display:inline-block;padding:5px 8px;border-radius:99px;font-size:10px;font-weight:900;white-space:nowrap}.ok{background:#dcfce7;color:#166534}.warn{background:#fef3c7;color:#92400e}.info{background:#dbeafe;color:#1e40af}.danger{background:#fee2e2;color:#991b1b}.neutral{background:#f3f4f6;color:#374151}
+.progress{height:8px;background:#eef0f3;border-radius:99px;margin-top:7px;overflow:hidden}.progress i{display:block;height:100%;background:var(--o)}
+.notice{background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid var(--o);padding:12px;border-radius:9px;color:#7c2d12;font-size:12px;line-height:1.45;margin-bottom:12px}
+.alert{display:flex;gap:10px;padding:11px 0;border-top:1px solid #eef0f2}.dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex:0 0 auto}.dot.bad{background:#ef4444}.dot.warn{background:#f59e0b}.dot.ok{background:#22c55e}.alert b{font-size:13px}.alert p{margin:3px 0 0;color:var(--m);font-size:11px}
+.quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.quick a{border:1px solid var(--l);border-radius:11px;padding:14px;text-decoration:none;color:#111827;background:#fff;font-weight:900}.quick a small{display:block;color:var(--m);font-weight:500;margin-top:5px;line-height:1.35}
+.table{width:100%;border-collapse:collapse;font-size:12px}.table th,.table td{text-align:left;padding:10px;border-top:1px solid #eef0f2}.table th{color:var(--m);font-size:10px;text-transform:uppercase}
+.hide{display:none}
+@media(max-width:1080px){.kpis{grid-template-columns:repeat(3,1fr)}.grid2,.grid3{grid-template-columns:1fr}}
+@media(max-width:760px){aside{position:static;width:auto}.brand{border-bottom:0}.nav{display:flex;overflow:auto;gap:5px}.nav button{min-width:max-content}.nav .sep{display:none}.main{margin-left:0}.top{position:static;padding:12px}.top .secondary{display:none}main{padding:12px}.hero{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr 110px}.row>*:nth-child(n+3){display:none}}
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand"><img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg" alt="Gigantes de Azapa"><div><b>Gigantes Control</b><small>Modo presentación · Arica</small></div></div>
+  <div class="nav" id="nav"></div>
+</aside>
+<div class="main"><div style="background:#fff7ed;border-bottom:1px solid #fed7aa;padding:10px 24px;font-size:12px;color:#9a3412;font-weight:800">MODO PRESENTACIÓN · Vista demostrativa segura. No expone datos personales ni permite modificaciones.</div>
+  <div class="top"><div><h1 id="title">Centro de Control</h1><p id="sub">Dirección, operación y seguimiento</p></div><div class="actions"><a class="btn" href="piloto.html">🚀 Piloto Mi Gigantes</a><a class="btn secondary" href="../index.html">Ver sitio público</a><a class="btn secondary" href="proyectos.html">Proyectos y giras</a><a class="btn secondary" href="calidad.html">Calidad de datos</a><a class="btn secondary" href="album.html">Álbum del equipo</a><a class="btn secondary" href="tesoreria.html">Tesorería</a><a class="btn secondary" href="recaudacion.html">Recaudación</a><a class="btn secondary" href="vuelos.html">Vuelos Santiago</a><a class="btn secondary" href="delegacion_santiago.html">Delegación Santiago</a><a class="btn secondary" href="eventos.html">Eventos y asistencia</a><a class="btn secondary" href="notificaciones.html">Notificaciones</a><a class="btn secondary" href="comunicaciones.html">Comunicaciones</a><a class="btn secondary" href="accesos.html">Accesos y roles</a><a class="btn secondary" href="inscripciones.html">Solicitudes de incorporación</a><a class="btn secondary" href="sponsors.html">Interesados auspicio</a><button class="btn primary" onclick="newTask()">+ Nueva tarea</button></div></div>
+  <main id="app"></main>
+</div>
+<script>
+const K='gigantes_control_center_v3';
+const TODAY=new Date().toLocaleDateString('es-CL');
+const seed={
+ projects:[
+  {n:'Copa FUFY 2026',p:25,s:'CRÍTICO',owner:'Dirección',due:'24/10/2026'},
+  {n:'Gira Santiago 2026',p:51,s:'URGENTE',owner:'Comisión Gira',due:'06/11/2026'},
+  {n:'Chile Rugby · Desarrollo Arica',p:46,s:'EN PROCESO',owner:'Dirección',due:'Continuo'},
+  {n:'Registro Maestro del Club',p:62,s:'EN DEPURACIÓN',owner:'Secretaría',due:'30/09/2026'},
+  {n:'Gigantes 2030 · Fondos y Alianzas',p:42,s:'EN PROCESO',owner:'Directiva',due:'2026–2030'}
+ ],
+ tasks:[
+  ['Cerrar nómina definitiva de clubes Copa FUFY','Copa FUFY','CRÍTICA','30/09/2026','Dirección'],
+  ['Actualizar Provincia 7 como confirmado','Copa FUFY','ALTA','HOY','Dirección'],
+  ['Cerrar responsables de 42 tareas sin dueño','Copa FUFY','CRÍTICA','HOY','Jefes de equipo'],
+  ['Cruzar Registro Maestro con base Chile Rugby','Registro Maestro','CRÍTICA','30/09/2026','Secretaría'],
+  ['Corregir duplicados y fechas inconsistentes','Registro Maestro','ALTA','30/09/2026','Secretaría'],
+  ['Cerrar alojamiento de delegación Santiago','Gira Santiago','CRÍTICA','05/10/2026','Comisión Gira'],
+  ['Cerrar presupuesto y meta de recaudación Santiago','Gira Santiago','CRÍTICA','30/09/2026','Tesorería'],
+  ['Consolidar EPC / Seguro / Fichaje Chile Rugby','Chile Rugby','ALTA','02/10/2026','Delegado federativo']
+ ],
+ docs:[
+  ['Registro_Maestro_Gigantes_Azapa_2026','FUENTE CLUB','En depuración'],
+  ['2026-09-21_Base_Oficial_Chile_Rugby_Gigantes_de_Azapa','FUENTE FEDERACIÓN','Oficial'],
+  ['TABLERO MAESTRO FUFY 2026','FUENTE PROYECTO','Operativo'],
+  ['Gigantes_Gira_Santiago_2026_Control','FUENTE GIRA','Operativo'],
+  ['01_BASES_OFICIALES_COPA_FUFY_2026_V1.2','VIGENTE','Oficial'],
+  ['02_REGLAMENTO_DE_JUEGO_COPA_FUFY_2026_V1.2','VIGENTE','Oficial']
+ ],
+ localTasks:[]
+};
+let db=JSON.parse(localStorage.getItem(K)||'null')||seed;
+if(!db.localTasks)db.localTasks=[];
+const pages=[['dash','▦','Centro de Control','Dirección, operación y alertas'],['personas','👥','Registro Maestro','Una persona, un registro'],['proyectos','🏆','Proyectos','FUFY, Santiago, Federación y Club 2030'],['tareas','✓','Tareas','Prioridades, dueños y vencimientos'],['docs','📄','Fuentes oficiales','Qué archivo manda en cada tema'],['chile','🇨🇱','Chile Rugby','Fichaje, EPC, seguro y desarrollo'],['finanzas','💰','Finanzas','Recaudación, gastos y sponsors'],['auditoria','🛡️','Auditoría','Riesgos, seguridad y cierre']];
+nav.innerHTML=pages.map(p=>'<button data-r="'+p[0]+'">'+p[1]+' <span>'+p[2]+'</span></button>').join('');
+let route='dash'; nav.onclick=e=>{const b=e.target.closest('button');if(b){route=b.dataset.r;render()}};
+function badge(t){const s=String(t);const c=/OFICIAL|VIGENTE|FUENTE|CONFIRMADO|COMPLETO/.test(s)?'ok':/CRÍT|URGENTE|VENCID|ERROR|OBSOLETO/.test(s)?'danger':/ALTA|REVIS|DEPUR|PENDIENTE/.test(s)?'warn':/PROCESO|OPERATIVO/.test(s)?'info':'neutral';return '<span class="badge '+c+'">'+s+'</span>'}
+function projectRows(){return db.projects.map(p=>'<div class="row"><div><div class="name">'+p.n+'</div><div class="meta">Responsable: '+p.owner+' · Hito: '+p.due+'</div><div class="progress"><i style="width:'+p.p+'%"></i></div></div><div>'+badge(p.s)+'</div><b>'+p.p+'%</b><small>'+p.due+'</small></div>').join('')}
+function taskRows(){const all=db.localTasks.concat(db.tasks);return all.map(t=>'<div class="row"><div><div class="name">'+t[0]+'</div><div class="meta">'+t[1]+' · '+(t[4]||'Sin responsable')+'</div></div><div>'+badge(t[2])+'</div><div>'+t[3]+'</div><small>'+(t[4]||'')+'</small></div>').join('')}
+function header(){return '<section class="hero"><div><div class="date">ACTUALIZADO · '+TODAY+'</div><h2>Gigantes de Azapa · Control Center</h2><p>Una sola vista para dirigir club, jugadores, Copa FUFY, Gira Santiago, Chile Rugby, finanzas, fondos y documentación. La app pública no almacena datos sensibles.</p></div><div><a class="btn primary" href="../index.html">Abrir app del club</a></div></section>'}
+function dash(){
+ return header()+
+ '<div class="kpis"><div class="card"><span>FUFY · tareas</span><b>68</b><small>5 completadas en último control</small></div><div class="card"><span>FUFY · vencidas</span><b>58</b><small>requieren reasignación</small></div><div class="card"><span>Sin responsable</span><b>42</b><small>principal riesgo operativo</small></div><div class="card"><span>Chile Rugby</span><b>34+</b><small>registros a conciliar</small></div><div class="card"><span>Gira Santiago</span><b>06/11</b><small>fecha de salida</small></div><div class="card"><span>Fuentes maestras</span><b>4</b><small>club · federación · FUFY · gira</small></div></div>'+
+ '<div class="grid2"><div class="panel"><h2>Prioridades de dirección</h2><p>Acciones que destraban más trabajo hoy.</p>'+
+ '<div class="alert"><i class="dot bad"></i><div><b>Asignar responsables FUFY</b><p>42 tareas siguen sin responsable. Ningún tablero sirve si la tarea no tiene dueño.</p></div></div>'+
+ '<div class="alert"><i class="dot bad"></i><div><b>Cerrar alojamiento y presupuesto Santiago</b><p>Son los dos componentes que determinan la meta real de recaudación.</p></div></div>'+
+ '<div class="alert"><i class="dot warn"></i><div><b>Depurar Registro Maestro ↔ Chile Rugby</b><p>Consolidar duplicados, fechas y estados de seguro/EPC antes de usar la base para viajes o habilitaciones.</p></div></div>'+
+ '<div class="alert"><i class="dot ok"></i><div><b>Provincia 7 / Arica Classic confirmado</b><p>Debe reflejarse en FUFY y reemplazar el estado antiguo “esperando tercero”.</p></div></div></div>'+
+ '<div class="panel"><h2>Accesos operativos</h2><p>El sistema queda organizado por función, no por archivos.</p><div class="quick">'+
+ '<a href="../santiago.html">✈️ Gira Santiago<small>Delegación, actividades, pasajes y avance.</small></a>'+
+ '<a href="../actividades.html">🌭 Recaudación<small>Actividades y turnos de familias.</small></a>'+
+ '<a href="../inscripcion.html">🏉 Inscripciones<small>Ingreso de jugadores y familias.</small></a><a href="album.html">📸 Álbum del equipo<small>Fotos autorizadas, categorías y visibilidad pública.</small></a>'+
+ '<a href="../mi_estado.html">🔎 Estado documental<small>Consulta individual sin exponer la base completa.</small></a>'+
+ '<a href="../sponsors.html">🏢 Sponsors<small>Paquetes y alianzas.</small></a>'+
+ '<a href="../directiva.html">🔐 Directiva<small>Herramientas internas ya existentes.</small></a></div></div></div>'+
+ '<div class="panel"><h2>Portafolio del club</h2><p>Prioridad y avance de las líneas activas.</p>'+projectRows()+'</div>';
+}
+function personas(){return header()+'<div class="notice"><b>Regla de diseño:</b> una persona = un ID único. Jugador, apoderado, entrenador, dirigente o colaborador son roles asociados a esa persona. GitHub Pages no debe contener RUT, salud, teléfonos, direcciones ni seguros.</div><div class="grid3"><div class="mini"><strong>1. Identidad</strong><small>Nombre, documento, nacimiento y contactos validados en fuente privada.</small></div><div class="mini"><strong>2. Roles</strong><small>Jugador · apoderado · coach · directiva · colaborador.</small></div><div class="mini"><strong>3. Cumplimiento</strong><small>Chile Rugby · EPC · seguro · autorizaciones · cuotas · viajes.</small></div></div><div class="panel"><h2>Flujo de depuración</h2><p>Registro Maestro → normalizar nombres/RUT → detectar duplicados → cruzar Chile Rugby → validar categoría/seguro/EPC → habilitar para proyectos.</p></div>'}
+function projects(){return header()+'<div class="panel"><h2>Proyectos activos</h2><p>Cada proyecto debe tener dueño, fecha, presupuesto, documentos y evidencia.</p>'+projectRows()+'</div>'}
+function tasks(){return header()+'<div class="panel"><h2>Backlog ejecutivo</h2><p>Primero resolver CRÍTICAS y tareas sin responsable.</p>'+taskRows()+'</div>'}
+function docs(){return header()+'<div class="panel"><h2>Mapa de fuentes oficiales</h2><p>Se evita copiar la misma información en múltiples archivos.</p><table class="table"><thead><tr><th>Fuente</th><th>Rol</th><th>Estado</th></tr></thead><tbody>'+db.docs.map(d=>'<tr><td><b>'+d[0]+'</b></td><td>'+badge(d[1])+'</td><td>'+badge(d[2])+'</td></tr>').join('')+'</tbody></table></div>'}
+function chile(){return header()+'<div class="kpis"><div class="card"><span>Base federativa</span><b>✓</b><small>recibida 21/09/2026</small></div><div class="card"><span>Conciliación</span><b>↔</b><small>con Registro Maestro</small></div><div class="card"><span>Seguro</span><b>!</b><small>varios estados pendientes</small></div><div class="card"><span>EPC</span><b>!</b><small>validación necesaria</small></div><div class="card"><span>Desarrollo</span><b>+</b><small>programa colegios</small></div><div class="card"><span>Capacitación</span><b>+</b><small>apoyo Federación</small></div></div><div class="panel"><h2>Chile Rugby como módulo permanente</h2><p>La base federativa deja de ser un Excel aislado: debe funcionar como capa de cumplimiento del Registro Maestro. Un jugador queda “operativamente habilitado” sólo cuando los requisitos correspondientes están validados.</p></div>'}
+function finance(){return header()+'<div class="grid3"><div class="mini"><strong>Ingresos</strong><small>Cuotas · rifas · ventas · sponsors · aportes.</small></div><div class="mini"><strong>Egresos</strong><small>Alojamiento · alimentación · transporte · arbitraje · producción.</small></div><div class="mini"><strong>Cierre por actividad</strong><small>Meta · ingreso bruto · gastos · neto · unidades · rendición.</small></div></div><div class="panel"><h2>Regla financiera</h2><p>Cada actividad debe cerrarse con fecha, responsable, ingresos, gastos y evidencia. Sólo después del cierre se autoriza publicar el resultado.</p><p><a class="btn primary" href="recaudacion.html">Abrir gestión de recaudación</a> <a class="btn secondary" href="tesoreria.html">Abrir tesorería</a></p></div>'}
+function audit(){return header()+'<div class="grid3"><div class="mini"><strong>✓ Repositorio auditado</strong><small>Arquitectura estática, Apps Script y módulos existentes revisados.</small></div><div class="mini"><strong>✓ Privacidad reforzada</strong><small>No se incorpora información sensible al repositorio público.</small></div><div class="mini"><strong>✓ Fuente única definida</strong><small>Se separan fuente Club, Federación, FUFY y Gira.</small></div><div class="mini"><strong>✓ Backend privado operativo</strong><small>Supabase Auth + RLS protegen personas, documentos, pagos, seguro y gestión.</small></div><div class="mini"><strong>⚠ Datos por depurar</strong><small>Duplicados y fechas incoherentes deben corregirse en las fuentes privadas.</small></div><div class="mini"><strong>⚠ FUFY atrasado</strong><small>La gestión requiere asignación inmediata de responsables.</small></div></div><div class="panel"><h2>Definición de terminado</h2><p>La plataforma ya usa backend privado y fuentes públicas separadas. Para producción final faltan: 1) completar depuración del Registro Maestro; 2) cerrar responsables y fechas críticas de FUFY/Santiago; 3) activar Leaked Password Protection en Supabase Auth; 4) probar Directiva y familias; 5) conectar el dominio oficial sólo después de la auditoría final.</p></div>'}
+function view(){return route==='dash'?dash():route==='personas'?personas():route==='proyectos'?projects():route==='tareas'?tasks():route==='docs'?docs():route==='chile'?chile():route==='finanzas'?finance():audit()}
+function render(){const m=pages.find(p=>p[0]===route);title.textContent=m[2];sub.textContent=m[3];document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.r===route));app.innerHTML=view()}
+async function newTask(){
+ const t=prompt('Nueva tarea'); if(!t)return;
+ const owner=prompt('Responsable','Dirección')||'Dirección';
+ if(window.GIGANTES_DB){
+   const {data:pr}=await window.GIGANTES_DB.from('projects').select('id').eq('code','FUFY2026').maybeSingle();
+   const {error}=await window.GIGANTES_DB.from('tasks').insert({project_id:pr&&pr.id,title:t,owner_name:owner,priority:'ALTA',status:'NO INICIADO',source:'Control Center'});
+   if(error){alert('No se pudo guardar: '+error.message);return}
+   await loadLiveData(); route='tareas'; render(); return;
+ }
+ alert('La sesión segura todavía no está lista.');
+}
+async function loadLiveData(){
+ if(!window.GIGANTES_DB)return;
+ const [{data:ps},{data:ts},{data:ms}]=await Promise.all([
+   window.GIGANTES_DB.from('projects').select('id,code,name,status,event_date,owner_name').order('event_date',{ascending:true,nullsFirst:false}),
+   window.GIGANTES_DB.from('tasks').select('title,priority,due_date,status,owner_name,project_id').order('due_date',{ascending:true,nullsFirst:false}),
+   window.GIGANTES_DB.from('project_milestones').select('project_id,progress,status')
+ ]);
+ if(ps){
+   const map={},prog={}; ps.forEach(p=>map[p.id]=p.name);
+   for(const m of ms||[]){if(!prog[m.project_id])prog[m.project_id]=[];prog[m.project_id].push(Number(m.progress||0))}
+   db.projects=ps.map(p=>{const a=prog[p.id]||[];const avg=a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):0;return {n:p.name,p:avg,s:String(p.status||'active').toUpperCase(),owner:p.owner_name||'Sin responsable',due:p.event_date||'Continuo'}});
+   if(ts)db.tasks=ts.map(t=>[t.title,map[t.project_id]||'Club',String(t.priority||t.status||'PENDIENTE').toUpperCase(),t.due_date||'Sin fecha',t.owner_name||'Sin responsable']);
+   db.localTasks=[];
+ }
+}
+render();
+</script>
+<script>
+window.GIGANTES_DB=null;
+const oldNewTask=newTask;
+newTask=function(){alert('Modo presentación: las acciones de escritura están deshabilitadas.');};
+const p=document.querySelector('.top p');
+if(p)p.textContent='MODO PRESENTACIÓN · vista segura sin datos personales';
+const a=document.querySelector('.actions');
+if(a){
+  a.innerHTML='<a class="btn secondary" href="../index.html">Ver sitio público</a><a class="btn primary" href="../vision.html">Visión 2030</a>';
+}
+render();
+</script>
+</body></html>
