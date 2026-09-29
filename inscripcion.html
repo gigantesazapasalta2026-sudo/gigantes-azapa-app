@@ -22,7 +22,7 @@
 <div><label>Categoría *</label><select id="cat"><option value="">Seleccionar</option><option>M6</option><option>M8</option><option>M10</option><option>M12</option><option>M14</option><option>M16</option><option>M18</option><option>Adulto</option><option>Classic</option></select></div>
 <div><label>Comuna *</label><input id="commune" value="Arica"></div>
 <div class="wide"><label>Dirección *</label><input id="address" autocomplete="street-address"></div>
-<div class="wide filebox"><label>Foto actual del jugador *</label><input id="playerPhoto" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"><img id="photoPreview" class="photoPreview" alt="Vista previa"><div class="hint">Foto individual, clara y reciente. JPG/PNG/WEBP, máximo 5 MB. Se guarda de forma privada.</div></div>
+<div id="photoBlock" class="wide filebox hidden"><label>Foto actual del jugador *</label><input id="playerPhoto" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"><img id="photoPreview" class="photoPreview" alt="Vista previa"><div class="hint">Se solicita solo cuando el apoderado autoriza el uso de imagen. Foto individual, clara y reciente. JPG/PNG/WEBP, máximo 5 MB.</div></div>
 </div></section>
 
 <section class="card"><h2>2. Apoderados y contactos</h2><div class="grid">
@@ -86,8 +86,8 @@
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY),$=id=>document.getElementById(id);
 function age(){if(!$('dob').value)return null;const d=new Date($('dob').value+'T12:00:00'),n=new Date();let a=n.getFullYear()-d.getFullYear();const m=n.getMonth()-d.getMonth();if(m<0||(m===0&&n.getDate()<d.getDate()))a--;return a}
 function minorUI(){const a=age();$('guardianReq').textContent=(a!==null&&a>=18)?'':'*'}
-function transferUI(){$('transferBlock').classList.toggle('hidden',$('previousClub').value!=='yes')}
-$('dob').addEventListener('change',minorUI);$('previousClub').addEventListener('change',transferUI);minorUI();transferUI();
+function transferUI(){$('transferBlock').classList.toggle('hidden',$('previousClub').value!=='yes')}function imageUI(){const ok=$('imageAuth').value==='yes';$('photoBlock').classList.toggle('hidden',!ok);if(!ok){$('playerPhoto').value='';$('photoPreview').style.display='none'}}
+$('dob').addEventListener('change',minorUI);$('previousClub').addEventListener('change',transferUI);$('imageAuth').addEventListener('change',imageUI);minorUI();transferUI();imageUI();
 $('playerPhoto').addEventListener('change',()=>{const f=$('playerPhoto').files[0];if(!f){$('photoPreview').style.display='none';return}const u=URL.createObjectURL(f);$('photoPreview').src=u;$('photoPreview').style.display='block'});
 function trim(id){return $(id).value.trim()}function yes(id){return $(id).value==='yes'}
 function show(text,good=false){const m=$('msg');m.textContent=text;m.className='msg show '+(good?'good':'bad')}
@@ -102,18 +102,18 @@ $('send').onclick=async()=>{
  if(a<18&&!trim('guardian')){show('Para un menor de 18 años debes indicar el apoderado principal.');return}
  if($('docType').value==='RUT'&&!validRut(trim('docNumber'))){show('El RUT ingresado no es válido.');return}
  const photo=$('playerPhoto').files[0]||null,bdPay=$('bdPaymentFile').files[0]||null,bdInc=$('bdIncorporatedFile').files[0]||null,ins=$('insuranceFile').files[0]||null;
- if(!photo||!validDoc(photo,5)||fileExt(photo)==='pdf'){show('Debes subir una foto del jugador en JPG/PNG/WEBP de máximo 5 MB.');return}
+ if(yes('imageAuth')&&(!photo||!validDoc(photo,5)||fileExt(photo)==='pdf')){show('Como autorizaste el uso de imagen, debes subir una foto del jugador en JPG/PNG/WEBP de máximo 5 MB.');return}if(!yes('imageAuth')&&photo){show('No se cargará una foto porque el uso de imagen no fue autorizado.');$('playerPhoto').value='';return}
  if(!validDoc(bdPay)||!validDoc(bdInc)||!validDoc(ins)){show('Debes adjuntar comprobante BD, pantallazo de incorporación y comprobante de Rugby Seguro. Cada archivo debe pesar máximo 8 MB.');return}
  const isTransfer=$('previousClub').value==='yes',pass=$('transferFile').files[0]||null;
  if(isTransfer&&(!trim('previousClubName')||!validDoc(pass)||!$('transferDeclaration').checked)){show('Si viene de otro club debes indicar el club anterior, adjuntar el pase y aceptar la declaración.');return}
  if(!$('privacy').checked||!$('truth').checked){show('Debes aceptar privacidad y declaración de veracidad.');return}
  const id=crypto.randomUUID(),base='registration/'+id+'/';
- const paths={photo:base+'foto_jugador.'+fileExt(photo),bdPay:base+'bd_pago.'+fileExt(bdPay),bdInc:base+'bd_incorporado.'+fileExt(bdInc),ins:base+'seguro_pago.'+fileExt(ins),pass:pass?base+'pase_club.'+fileExt(pass):null};
+ const paths={photo:photo?base+'foto_jugador.'+fileExt(photo):null,bdPay:base+'bd_pago.'+fileExt(bdPay),bdInc:base+'bd_incorporado.'+fileExt(bdInc),ins:base+'seguro_pago.'+fileExt(ins),pass:pass?base+'pase_club.'+fileExt(pass):null};
  const payload={id,player_name:trim('player'),birth_date:$('dob').value,category:$('cat').value,document_type:$('docType').value,document_number:$('docType').value==='RUT'?normalizeRut(trim('docNumber')):trim('docNumber'),sex:$('sex').value,nationality:trim('nationality')||null,address:trim('address'),commune:trim('commune'),guardian_name:trim('guardian')||null,guardian_relationship:$('guardianRel').value||null,guardian_email:trim('email').toLowerCase(),guardian_phone:trim('phone'),guardian2_name:trim('guardian2')||null,guardian2_relationship:trim('guardian2Rel')||null,guardian2_phone:trim('guardian2Phone')||null,guardian2_email:trim('guardian2Email')||null,health_system:$('health').value,allergies_conditions:trim('conditions')||null,emergency_contact_name:trim('emergencyName'),emergency_contact_phone:trim('emergencyPhone'),medical_authorization:yes('medicalAuth'),image_authorization:yes('imageAuth'),travel_authorization:yes('travelAuth'),player_photo_storage_path:paths.photo,federation_registration_status:'registered',federation_account_email:trim('fedEmail').toLowerCase(),federation_payment_storage_path:paths.bdPay,federation_incorporated_storage_path:paths.bdInc,insurance_status:'active',insurance_reference:trim('insuranceRef')||null,insurance_proof_storage_path:paths.ins,previous_club:isTransfer,previous_club_name:isTransfer?trim('previousClubName'):null,previous_club_contact:isTransfer?(trim('previousClubContact')||null):null,transfer_pass_declaration:isTransfer?$('transferDeclaration').checked:false,transfer_pass_status:isTransfer?'pending':'not_required',transfer_pass_storage_path:paths.pass,privacy_accepted:true,declaration_accepted:true,status:'pending'};
  $('send').disabled=true;show('Guardando ficha y documentos…',true);
  const {error}=await sb.from('registration_requests').insert(payload);
  if(error){$('send').disabled=false;show('No pudimos registrar la ficha: '+error.message);return}
- const uploads=[[paths.photo,photo],[paths.bdPay,bdPay],[paths.bdInc,bdInc],[paths.ins,ins]];if(pass)uploads.push([paths.pass,pass]);
+ const uploads=[[paths.bdPay,bdPay],[paths.bdInc,bdInc],[paths.ins,ins]];if(photo&&paths.photo)uploads.unshift([paths.photo,photo]);if(pass)uploads.push([paths.pass,pass]);
  const failed=[];
  for(const [path,file] of uploads){const {error:e}=await sb.storage.from('member-private').upload(path,file,{upsert:false,contentType:file.type});if(e)failed.push(path.split('/').pop())}
  if(failed.length){show('✅ La ficha quedó registrada, pero falló la carga de: '+failed.join(', ')+'. La Directiva verá el expediente como incompleto y solicitará nuevamente esos archivos.',true);return}
