@@ -8,7 +8,7 @@
 .hero.fufy-hero #status{grid-area:status;display:inline-flex;width:max-content;max-width:100%;align-items:center;background:#f36b211a;border:1px solid #f36b2160;color:#ffb27d;border-radius:999px;padding:7px 11px;margin:5px 0 10px;font-weight:900;letter-spacing:.07em}
 .hero.fufy-hero #title{grid-area:title;font-size:clamp(2.6rem,7vw,4.6rem);line-height:.98;margin:4px 0 16px}
 .hero.fufy-hero #objective{grid-area:objective;font-size:clamp(1rem,2.2vw,1.22rem);line-height:1.5;margin:0 0 18px;max-width:680px}
-.hero.fufy-hero #meta{grid-area:meta;color:#ffb27d;font-weight:800}
+.hero.fufy-hero #meta{grid-area:meta;color:#ffb27d;font-weight:800}.venueHero{font-weight:900;color:#fff;background:#ffffff10;border:1px solid #ffffff2e;border-radius:12px;padding:11px 13px;margin:0 0 16px;line-height:1.4}.hero.fufy-hero .venueHero{grid-column:2;max-width:680px}@media(max-width:700px){.hero.fufy-hero .venueHero{grid-column:1}}
 .hero.fufy-hero .back{grid-area:back;margin-top:18px}
 
 @media(max-width:700px){
@@ -21,7 +21,7 @@
  .hero.fufy-hero #objective{font-size:1.04rem;line-height:1.5}
 }
 </style></head><body>
-<section class="hero"><div class="in"><img id="heroLogo" class="hero-logo" alt=""><div id="status" class="meta"></div><h1 id="title">Proyecto</h1><p id="objective"></p><div id="meta" class="meta"></div><a class="back" href="proyectos.html">← Proyectos y giras</a></div></section>
+<section class="hero"><div class="in"><img id="heroLogo" class="hero-logo" alt=""><div id="status" class="meta"></div><h1 id="title">Proyecto</h1><p id="objective"></p><div id="venueHero" class="venueHero" style="display:none"></div><div id="meta" class="meta"></div><a class="back" href="proyectos.html">← Proyectos y giras</a></div></section>
 <main><div class="kpis"><div class="k"><span>Fecha</span><b id="dates">—</b></div><div class="k"><span>Ubicación</span><b id="location">—</b></div><div class="k"><span>Estado</span><b id="state">—</b></div></div>
 <div class="grid" style="margin-top:14px"><section class="card"><h2>🎯 Objetivos</h2><div id="goals" class="empty">Sin objetivos publicados aún.</div></section><section class="card"><h2>📌 Hitos y avance</h2><div id="milestones" class="empty">Sin hitos publicados aún.</div></section></div>
 <section id="tributeSection" class="tribute" style="display:none"><div class="eyebrow">El origen de la Copa FUFY</div><h2 id="tributeTitle"></h2><h3 id="tributeName"></h3><p id="tributeText"></p><blockquote id="tributeClosing"></blockquote></section><section id="detailsSection" style="margin-top:14px;display:none"><div id="details" class="detailGrid"></div></section>
@@ -30,6 +30,12 @@
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);const slug=new URLSearchParams(location.search).get('slug');
 (async()=>{const {data:p,error}=await sb.from('projects').select('id,code,name,status,event_date,project_type,start_date,end_date,location,objective,public_slug,cover_image_path,public_details,public_links').eq('public_visible',true).or('public_slug.eq.'+slug+',code.eq.'+slug).maybeSingle();if(error||!p){title.textContent='Proyecto no encontrado';objective.textContent='Este proyecto no está publicado o no existe.';return}title.textContent=p.name;objective.textContent=p.objective||'';status.textContent=(p.project_type||'Proyecto').toUpperCase();dates.textContent=p.public_details?.target_period||(p.start_date?(p.start_date+(p.end_date?' → '+p.end_date:'')):(p.event_date||'Por confirmar'));location.textContent=p.location||'—';state.textContent=({planned:'EN PREPARACIÓN',active:'EN EJECUCIÓN',closed:'HISTÓRICO'})[String(p.status||'').toLowerCase()]||(p.status||'—').toUpperCase();meta.textContent=[p.code,p.project_type].filter(Boolean).join(' · ');
+if(String(p.code||'').toUpperCase()==='FUFY2026'){
+  const venue='Estadio Carlos Dittborn · sector cancha de rugby · Arica';
+  location.textContent=venue;
+  venueHero.textContent='📍 '+venue;
+  venueHero.style.display='block';
+}
 if(p.cover_image_path){heroLogo.src=p.cover_image_path;heroLogo.alt='Identidad '+p.name;heroLogo.style.display='block'}
 if(String(p.code||'').toUpperCase()==='FUFY2026'){
   document.querySelector('.hero').classList.add('fufy-hero');
