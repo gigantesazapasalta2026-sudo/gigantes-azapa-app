@@ -94,7 +94,7 @@ sendLink.onclick=async()=>{
   const {error}=await sb.auth.signInWithOtp({
     email:e,
     options:{
-      emailRedirectTo:'https://gigantesazapasalta2026-sudo.github.io/gigantes-azapa-app/activar.html',
+      emailRedirectTo:new URL('activar.html',location.href).href,
       shouldCreateUser:true
     }
   });
