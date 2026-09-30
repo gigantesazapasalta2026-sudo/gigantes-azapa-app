@@ -6,10 +6,112 @@
 <section id="passwordBox" class="hide"><div class="notice ok">✅ Tu identidad fue confirmada mediante el enlace seguro. Ahora puedes crear tu contraseña personal.</div><label>Nueva contraseña</label><input id="pass1" type="password" autocomplete="new-password" minlength="10" placeholder="Mínimo 10 caracteres"><label>Repetir contraseña</label><input id="pass2" type="password" autocomplete="new-password" minlength="10"><button id="savePass" class="btn">Guardar contraseña y entrar</button><button id="withoutPass" class="btn dark">Continuar usando enlace seguro</button><div id="passMsg" class="msg"></div></section>
 </main>
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
-const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);const recoveryMode=new URLSearchParams(location.search).get('recovery')==='1';if(recoveryMode){pageTitle.textContent='Cambiar clave';pageSub.textContent='Recuperación segura de acceso';}
+const queryParams=new URLSearchParams(location.search);
+const hashParams=new URLSearchParams(location.hash.startsWith('#')?location.hash.slice(1):'');
+const recoveryMode=queryParams.get('recovery')==='1'||hashParams.get('type')==='recovery';
+const authError=hashParams.get('error_description')||queryParams.get('error_description')||'';
+const incomingAccessToken=hashParams.get('access_token');
+const incomingRefreshToken=hashParams.get('refresh_token');
+const incomingCode=queryParams.get('code');
+
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
+});
+
+if(recoveryMode){pageTitle.textContent='Crear nueva contraseña';pageSub.textContent='Recuperación segura de acceso';}
+
 const loading=document.getElementById('loading'),request=document.getElementById('request'),passwordBox=document.getElementById('passwordBox');
-(async()=>{const {data}=await sb.auth.getSession();loading.classList.add('hide');if(data.session){passwordBox.classList.remove('hide')}else request.classList.remove('hide')})();
-sendLink.onclick=async()=>{const e=email.value.trim().toLowerCase();if(!e){requestMsg.textContent='Ingresa el correo usado en la ficha de incorporación.';return}sendLink.disabled=true;requestMsg.textContent='Verificando y enviando…';const {error}=await sb.auth.signInWithOtp({email:e,options:{emailRedirectTo:'https://gigantesazapasalta2026-sudo.github.io/gigantes-azapa-app/activar.html',shouldCreateUser:true}});sendLink.disabled=false;requestMsg.textContent=error?'Tu acceso aún no está habilitado o no coincide con una invitación válida. Si ya entregaste todos los antecedentes, solicita a la Directiva que revise la validación.':'Revisa tu correo. Te enviamos un enlace de activación de un solo uso.'};
-savePass.onclick=async()=>{if(pass1.value.length<10){passMsg.textContent='Usa una contraseña de al menos 10 caracteres.';return}if(pass1.value!==pass2.value){passMsg.textContent='Las contraseñas no coinciden.';return}savePass.disabled=true;passMsg.textContent='Guardando contraseña…';const {error}=await sb.auth.updateUser({password:pass1.value});if(error){passMsg.textContent='No fue posible guardar la contraseña: '+error.message;savePass.disabled=false;return}location.href='mi_jugador.html'};
-withoutPass.onclick=()=>location.href='mi_jugador.html';
+const withoutPass=document.getElementById('withoutPass');
+
+function cleanAuthUrl(){
+  const q=recoveryMode?'?recovery=1':'';
+  history.replaceState(null,'',location.pathname+q);
+}
+function showPassword(){
+  loading.classList.add('hide');
+  request.classList.add('hide');
+  passwordBox.classList.remove('hide');
+  if(recoveryMode) withoutPass.classList.add('hide');
+}
+function showNoSession(message=''){
+  loading.classList.add('hide');
+  passwordBox.classList.add('hide');
+  request.classList.remove('hide');
+  if(recoveryMode){
+    request.innerHTML='<div class="notice">'+(message||'El enlace de recuperación no pudo abrir una sesión válida o ya fue utilizado.')+'</div><p class="msg"><a href="recuperar.html">Solicitar un nuevo enlace de recuperación →</a></p><p class="msg"><a href="gestion/login.html">Volver al acceso →</a></p>';
+  }else if(message){
+    requestMsg.textContent=message;
+  }
+}
+async function routeAfterAuth(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){location.href='gestion/login.html';return}
+  const {data:profile}=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();
+  const adminRoles=['superadmin','admin','directiva','tesoreria'];
+  location.href=profile?.active&&adminRoles.includes(profile?.role)?'gestion/index.html':'mi_jugador.html';
+}
+async function establishSession(){
+  if(authError) return {session:null,error:new Error(decodeURIComponent(authError.replace(/\+/g,' ')))};
+
+  if(incomingAccessToken&&incomingRefreshToken){
+    const {data,error}=await sb.auth.setSession({access_token:incomingAccessToken,refresh_token:incomingRefreshToken});
+    cleanAuthUrl();
+    return {session:data?.session||null,error};
+  }
+
+  if(incomingCode){
+    const {data,error}=await sb.auth.exchangeCodeForSession(incomingCode);
+    if(!error) cleanAuthUrl();
+    return {session:data?.session||null,error};
+  }
+
+  const {data,error}=await sb.auth.getSession();
+  return {session:data?.session||null,error};
+}
+
+sb.auth.onAuthStateChange((event,session)=>{
+  if(session&&['PASSWORD_RECOVERY','SIGNED_IN','INITIAL_SESSION','TOKEN_REFRESHED'].includes(event)) showPassword();
+});
+
+(async()=>{
+  const result=await establishSession();
+  if(result.session){showPassword();return}
+
+  // Una segunda lectura breve evita carreras de inicialización en navegadores móviles.
+  await new Promise(r=>setTimeout(r,350));
+  const {data}=await sb.auth.getSession();
+  if(data.session){showPassword();return}
+
+  const message=result.error?'No pudimos validar el enlace: '+result.error.message:'';
+  showNoSession(message);
+})();
+
+sendLink.onclick=async()=>{
+  const e=email.value.trim().toLowerCase();
+  if(!e){requestMsg.textContent='Ingresa el correo usado en la ficha de incorporación.';return}
+  sendLink.disabled=true;
+  requestMsg.textContent='Verificando y enviando…';
+  const {error}=await sb.auth.signInWithOtp({
+    email:e,
+    options:{
+      emailRedirectTo:'https://gigantesazapasalta2026-sudo.github.io/gigantes-azapa-app/activar.html',
+      shouldCreateUser:true
+    }
+  });
+  sendLink.disabled=false;
+  requestMsg.textContent=error?'No fue posible enviar el enlace: '+error.message:'Revisa tu correo. Te enviamos un enlace de acceso de un solo uso.';
+};
+
+savePass.onclick=async()=>{
+  if(pass1.value.length<10){passMsg.textContent='Usa una contraseña de al menos 10 caracteres.';return}
+  if(pass1.value!==pass2.value){passMsg.textContent='Las contraseñas no coinciden.';return}
+  savePass.disabled=true;
+  passMsg.textContent='Guardando contraseña…';
+  const {error}=await sb.auth.updateUser({password:pass1.value});
+  if(error){passMsg.textContent='No fue posible guardar la contraseña: '+error.message;savePass.disabled=false;return}
+  passMsg.textContent='Contraseña guardada. Entrando…';
+  await routeAfterAuth();
+};
+
+withoutPass.onclick=routeAfterAuth;
 </script></body></html>
