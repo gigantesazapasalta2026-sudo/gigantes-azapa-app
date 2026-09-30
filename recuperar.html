@@ -10,5 +10,5 @@ function norm(v){return String(v||'').toUpperCase().replace(/[^0-9K]/g,'')}
 function validRut(v){const r=norm(v);if(r.length<2)return false;const body=r.slice(0,-1),dv=r.slice(-1);if(!/^\d+$/.test(body))return false;let sum=0,m=2;for(let i=body.length-1;i>=0;i--){sum+=Number(body[i])*m;m=m===7?2:m+1}const x=11-(sum%11),calc=x===11?'0':x===10?'K':String(x);return dv===calc}
 function showStep(id){rutStep.classList.toggle('hide',id!=='rutStep');codeStep.classList.toggle('hide',id!=='codeStep')}
 requestCode.onclick=async()=>{currentRut=norm(rut.value);if(!validRut(currentRut)){rutMsg.textContent='Revisa el RUT ingresado.';return}requestCode.disabled=true;rutMsg.textContent='Procesando…';const {error}=await sb.functions.invoke('recover-by-rut',{body:{action:'request',rut:currentRut}});requestCode.disabled=false;if(error){rutMsg.textContent='No fue posible procesar la solicitud ahora. Intenta nuevamente en unos minutos.';return}showStep('codeStep')};
-backRut.onclick=()=>{code.value='';codeMsg.textContent='';showStep('rutStep')};
+backRut.onclick=()=>{codeMsg.textContent='';showStep('rutStep')};
 </script></body></html>
