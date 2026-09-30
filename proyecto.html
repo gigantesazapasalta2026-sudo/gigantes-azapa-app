@@ -29,12 +29,13 @@
 <section class="support"><h2>🤝 Súmate al proyecto</h2><p>Gigantes de Azapa desarrolla estos proyectos con trabajo de familias, comunidad y auspiciadores. El apoyo puede transformarse en transporte, alimentación, hidratación, premios, implementación o experiencias deportivas para nuestros jugadores.</p><a href="sponsors.html">Quiero apoyar a Gigantes</a></section><section class="card" style="margin-top:14px"><h2>📸 Memoria del proyecto</h2><div id="gallery" class="gallery"><div class="empty">Las imágenes autorizadas aparecerán aquí.</div></div></section></main>
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);const slug=new URLSearchParams(location.search).get('slug');
-(async()=>{const {data:p,error}=await sb.from('projects').select('id,code,name,status,event_date,project_type,start_date,end_date,location,objective,public_slug,cover_image_path,public_details,public_links').eq('public_visible',true).or('public_slug.eq.'+slug+',code.eq.'+slug).maybeSingle();if(error||!p){title.textContent='Proyecto no encontrado';objective.textContent='Este proyecto no está publicado o no existe.';return}title.textContent=p.name;objective.textContent=p.objective||'';status.textContent=(p.project_type||'Proyecto').toUpperCase();dates.textContent=p.public_details?.target_period||(p.start_date?(p.start_date+(p.end_date?' → '+p.end_date:'')):(p.event_date||'Por confirmar'));location.textContent=p.location||'—';state.textContent=({planned:'EN PREPARACIÓN',active:'EN EJECUCIÓN',closed:'HISTÓRICO'})[String(p.status||'').toLowerCase()]||(p.status||'—').toUpperCase();meta.textContent=[p.code,p.project_type].filter(Boolean).join(' · ');
+(async()=>{const {data:p,error}=await sb.from('projects').select('id,code,name,status,event_date,project_type,start_date,end_date,location,objective,public_slug,cover_image_path,public_details,public_links').eq('public_visible',true).or('public_slug.eq.'+slug+',code.eq.'+slug).maybeSingle();if(error||!p){title.textContent='Proyecto no encontrado';objective.textContent='Este proyecto no está publicado o no existe.';return}title.textContent=p.name;objective.textContent=p.objective||'';status.textContent=(p.project_type||'Proyecto').toUpperCase();dates.textContent=p.public_details?.target_period||(p.start_date?(p.start_date+(p.end_date?' → '+p.end_date:'')):(p.event_date||'Por confirmar'));document.getElementById('location').textContent=p.location||'—';state.textContent=({planned:'EN PREPARACIÓN',active:'EN EJECUCIÓN',closed:'HISTÓRICO'})[String(p.status||'').toLowerCase()]||(p.status||'—').toUpperCase();meta.textContent=[p.code,p.project_type].filter(Boolean).join(' · ');
 if(String(p.code||'').toUpperCase()==='FUFY2026'){
   const venue='Estadio Carlos Dittborn · sector cancha de rugby · Arica';
-  location.textContent=venue;
-  venueHero.textContent='📍 '+venue;
-  venueHero.style.display='block';
+  document.getElementById('location').textContent=venue;
+  const venueHeroEl=document.getElementById('venueHero');
+  venueHeroEl.textContent='📍 '+venue;
+  venueHeroEl.style.display='block';
 }
 if(p.cover_image_path){heroLogo.src=p.cover_image_path;heroLogo.alt='Identidad '+p.name;heroLogo.style.display='block'}
 if(String(p.code||'').toUpperCase()==='FUFY2026'){
