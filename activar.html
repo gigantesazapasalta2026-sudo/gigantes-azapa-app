@@ -47,7 +47,7 @@ async function routeAfterAuth(){
   const {data:{session}}=await sb.auth.getSession();
   if(!session){location.href='gestion/login.html';return}
   const {data:profile}=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();
-  const adminRoles=['superadmin','admin','directiva','tesoreria'];
+  const adminRoles=['superadmin','board','treasury','coach','commission'];
   location.href=profile?.active&&adminRoles.includes(profile?.role)?'gestion/index.html':'mi_jugador.html';
 }
 async function establishSession(){
