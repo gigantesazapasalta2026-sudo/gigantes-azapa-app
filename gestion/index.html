@@ -7,11 +7,11 @@
 <style>
 :root{--o:#f36b21;--d:#0b0f14;--d2:#141b24;--m:#667085;--l:#e5e7eb;--s:#f4f6f8;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--blue:#1d4ed8}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--s);color:#111827}
-aside{position:fixed;inset:0 auto 0 0;width:260px;background:linear-gradient(180deg,#0b0f14,#151c26);color:#fff;padding:18px 14px;overflow-y:auto}
-.brand{display:flex;gap:11px;align-items:center;padding:4px 8px 18px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:12px}.logo{width:45px;height:45px;border-radius:50%;object-fit:cover;background:#fff}.brand b{display:block;font-size:16px}.brand small{display:block;color:#f59b66;font-size:10px;margin-top:3px;text-transform:uppercase;letter-spacing:.6px}
-.nav button{width:100%;border:0;background:transparent;color:#cbd5e1;text-align:left;padding:11px 12px;border-radius:9px;margin:2px 0;cursor:pointer;font-weight:700}.nav button.active,.nav button:hover{background:#263140;color:white}.nav .sep{height:1px;background:rgba(255,255,255,.08);margin:9px 5px}
-.main{margin-left:260px}.top{min-height:80px;background:#fff;border-bottom:1px solid var(--l);display:flex;align-items:center;padding:14px 24px;position:sticky;top:0;z-index:20}.top h1{margin:0;font-size:22px}.top p{margin:4px 0 0;color:var(--m);font-size:12px}.actions{margin-left:auto;display:flex;gap:8px}.btn{border:0;border-radius:9px;padding:10px 13px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.primary{background:var(--o);color:white}.secondary{background:white;border:1px solid var(--l);color:#111827}.dark{background:#111827;color:white}
-main{padding:22px 24px;max-width:1500px;margin:auto}.hero{background:linear-gradient(135deg,#0b0f14 0%,#17202c 72%,#352014 100%);color:#fff;border-radius:18px;padding:24px;margin-bottom:16px;display:grid;grid-template-columns:1fr auto;gap:18px}.hero h2{margin:0 0 7px;font-size:25px}.hero p{margin:0;color:#cbd5e1;max-width:800px;line-height:1.5}.hero .date{font-weight:900;color:#f59b66;font-size:12px}
+aside{position:fixed;inset:0 auto 0 0;width:220px;background:linear-gradient(180deg,#0b0f14,#151c26);color:#fff;padding:16px 11px;overflow-y:auto}
+.brand{display:flex;gap:9px;align-items:center;padding:4px 7px 14px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:10px}.logo{width:39px;height:39px;border-radius:50%;object-fit:cover;background:#fff}.brand b{display:block;font-size:14px}.brand small{display:block;color:#f59b66;font-size:9px;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.nav button{width:100%;border:0;background:transparent;color:#cbd5e1;text-align:left;padding:9px 10px;border-radius:8px;margin:2px 0;cursor:pointer;font-weight:700;font-size:12px}.nav button.active,.nav button:hover{background:#263140;color:white}.nav .sep{height:1px;background:rgba(255,255,255,.08);margin:8px 5px}
+.main{margin-left:220px}.top{min-height:70px;background:#fff;border-bottom:1px solid var(--l);display:grid;grid-template-columns:minmax(190px,auto) minmax(0,1fr);align-items:center;gap:14px;padding:10px 16px;position:sticky;top:0;z-index:20}.top h1{margin:0;font-size:19px;line-height:1.1}.top p{margin:3px 0 0;color:var(--m);font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}.actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0}.btn{border:0;border-radius:8px;padding:7px 9px;font-size:11px;line-height:1.1;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}.primary{background:var(--o);color:white}.secondary{background:white;border:1px solid var(--l);color:#111827}.dark{background:#111827;color:white}.more-menu{position:relative}.more-menu>summary{list-style:none;cursor:pointer;border:1px solid var(--l);border-radius:8px;padding:7px 9px;font-size:11px;font-weight:900;background:#fff;white-space:nowrap}.more-menu>summary::-webkit-details-marker{display:none}.more-menu[open]>summary{background:#f8fafc}.more-panel{position:absolute;right:0;top:calc(100% + 8px);width:260px;max-height:70vh;overflow:auto;background:#fff;border:1px solid var(--l);border-radius:12px;padding:7px;box-shadow:0 18px 50px #0002;display:grid;gap:4px;z-index:40}.more-panel a{display:block;padding:9px 10px;border-radius:8px;text-decoration:none;color:#111827;font-size:11px;font-weight:800}.more-panel a:hover{background:#f3f4f6}
+main{padding:18px 18px;max-width:1450px;margin:auto}.hero{background:linear-gradient(135deg,#0b0f14 0%,#17202c 72%,#352014 100%);color:#fff;border-radius:18px;padding:24px;margin-bottom:16px;display:grid;grid-template-columns:1fr auto;gap:18px}.hero h2{margin:0 0 7px;font-size:25px}.hero p{margin:0;color:#cbd5e1;max-width:800px;line-height:1.5}.hero .date{font-weight:900;color:#f59b66;font-size:12px}
 .kpis{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:12px;margin:16px 0}.card,.panel{background:white;border:1px solid var(--l);border-radius:14px}.card{padding:17px}.card span{font-size:10px;color:var(--m);text-transform:uppercase;font-weight:900;letter-spacing:.3px}.card b{display:block;font-size:28px;margin:7px 0}.card small{color:var(--m);font-size:11px}.panel{padding:17px;margin-bottom:14px}.panel h2{font-size:17px;margin:0 0 4px}.panel>p{font-size:12px;color:var(--m);margin:0 0 12px;line-height:1.45}
 .grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.mini{border:1px solid var(--l);border-radius:11px;padding:14px;background:#fff}.mini strong{display:block}.mini small{display:block;color:var(--m);margin-top:4px;line-height:1.35}
 .row{display:grid;grid-template-columns:minmax(220px,1fr) 125px 105px 95px;gap:10px;align-items:center;padding:11px 0;border-top:1px solid #eef0f2}.name{font-weight:900}.meta{font-size:11px;color:var(--m);margin-top:3px;line-height:1.35}.badge{display:inline-block;padding:5px 8px;border-radius:99px;font-size:10px;font-weight:900;white-space:nowrap}.ok{background:#dcfce7;color:#166534}.warn{background:#fef3c7;color:#92400e}.info{background:#dbeafe;color:#1e40af}.danger{background:#fee2e2;color:#991b1b}.neutral{background:#f3f4f6;color:#374151}
@@ -21,8 +21,8 @@ main{padding:22px 24px;max-width:1500px;margin:auto}.hero{background:linear-grad
 .quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.quick a{border:1px solid var(--l);border-radius:11px;padding:14px;text-decoration:none;color:#111827;background:#fff;font-weight:900}.quick a small{display:block;color:var(--m);font-weight:500;margin-top:5px;line-height:1.35}
 .table{width:100%;border-collapse:collapse;font-size:12px}.table th,.table td{text-align:left;padding:10px;border-top:1px solid #eef0f2}.table th{color:var(--m);font-size:10px;text-transform:uppercase}
 .hide{display:none}
-@media(max-width:1080px){.kpis{grid-template-columns:repeat(3,1fr)}.grid2,.grid3{grid-template-columns:1fr}}
-@media(max-width:760px){aside{position:static;width:auto}.brand{border-bottom:0}.nav{display:flex;overflow:auto;gap:5px}.nav button{min-width:max-content}.nav .sep{display:none}.main{margin-left:0}.top{position:static;padding:12px}.top .secondary{display:none}main{padding:12px}.hero{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr 110px}.row>*:nth-child(n+3){display:none}}
+@media(max-width:1180px){.top{grid-template-columns:1fr}.actions{justify-content:flex-start;flex-wrap:wrap}.top p{max-width:none}.kpis{grid-template-columns:repeat(3,1fr)}.grid2,.grid3{grid-template-columns:1fr}}
+@media(max-width:760px){aside{position:static;width:auto}.brand{border-bottom:0}.nav{display:flex;overflow:auto;gap:5px}.nav button{min-width:max-content}.nav .sep{display:none}.main{margin-left:0}.top{position:static;padding:10px 12px;grid-template-columns:1fr}.actions{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.actions>.secondary{display:none}.more-panel{position:fixed;left:12px;right:12px;top:auto;width:auto}.top h1{font-size:18px}.top p{font-size:10px}main{padding:12px}.hero{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr 110px}.row>*:nth-child(n+3){display:none}}
 </style>
 </head>
 <body>
@@ -31,7 +31,29 @@ main{padding:22px 24px;max-width:1500px;margin:auto}.hero{background:linear-grad
   <div class="nav" id="nav"></div>
 </aside>
 <div class="main">
-  <div class="top"><div><h1 id="title">Centro de Control</h1><p id="sub">Dirección, operación y seguimiento</p></div><div class="actions"><a class="btn" href="piloto.html">🚀 Piloto Mi Gigantes</a><a class="btn secondary" href="../index.html">Ver sitio público</a><a class="btn secondary" href="proyectos.html">Proyectos y giras</a><a class="btn secondary" href="calidad.html">Calidad de datos</a><a class="btn secondary" href="album.html">Álbum del equipo</a><a class="btn secondary" href="tesoreria.html">Tesorería</a><a class="btn secondary" href="recaudacion.html">Recaudación</a><a class="btn secondary" href="vuelos.html">Vuelos Santiago</a><a class="btn secondary" href="delegacion_santiago.html">Delegación Santiago</a><a class="btn secondary" href="eventos.html">Eventos y asistencia</a><a class="btn secondary" href="notificaciones.html">Notificaciones</a><a class="btn secondary" href="comunicaciones.html">Comunicaciones</a><a class="btn secondary" href="accesos.html">Accesos y roles</a><a class="btn secondary" href="inscripciones.html">Solicitudes de incorporación</a><a class="btn secondary" href="sponsors.html">Interesados auspicio</a><button class="btn primary" onclick="newTask()">+ Nueva tarea</button></div></div>
+  <div class="top">
+    <div><h1 id="title">Centro de Control</h1><p id="sub">Dirección, operación y seguimiento</p></div>
+    <div class="actions">
+      <a class="btn" href="piloto.html">🚀 Mi Gigantes</a>
+      <a class="btn secondary" href="../index.html">Sitio público</a>
+      <a class="btn secondary" href="proyectos.html">Proyectos y giras</a>
+      <a class="btn secondary" href="calidad.html">Calidad</a>
+      <details class="more-menu"><summary>Más herramientas ▾</summary><div class="more-panel">
+        <a href="album.html">📸 Álbum del equipo</a>
+        <a href="tesoreria.html">💰 Tesorería</a>
+        <a href="recaudacion.html">🌭 Recaudación</a>
+        <a href="vuelos.html">✈️ Vuelos Santiago</a>
+        <a href="delegacion_santiago.html">👥 Delegación Santiago</a>
+        <a href="eventos.html">📅 Eventos y asistencia</a>
+        <a href="notificaciones.html">🔔 Notificaciones</a>
+        <a href="comunicaciones.html">💬 Comunicaciones</a>
+        <a href="accesos.html">🔐 Accesos y roles</a>
+        <a href="inscripciones.html">🏉 Solicitudes de incorporación</a>
+        <a href="sponsors.html">🏢 Interesados auspicio</a>
+      </div></details>
+      <button class="btn primary" onclick="newTask()">+ Tarea</button>
+    </div>
+  </div>
   <main id="app"></main>
 </div>
 <script>
