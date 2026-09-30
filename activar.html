@@ -3,7 +3,7 @@
 <main class="box"><div class="brand"><img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg" alt=""><div><h1 id="pageTitle">Activar Mi Gigantes</h1><p id="pageSub">Primera activación de acceso</p></div></div>
 <div id="loading" class="notice">Verificando si tu acceso ya está habilitado…</div>
 <section id="request" class="hide"><div class="notice">Tu acceso sólo puede activarse cuando la Directiva haya validado <b>BD Chile Rugby + Rugby Seguro + pase de club si corresponde</b>. Usa el mismo correo ingresado en tu ficha.</div><label>Correo autorizado</label><input id="email" type="email" autocomplete="email"><button id="sendLink" class="btn">Enviarme enlace de activación</button><div id="requestMsg" class="msg"></div><p class="msg"><a href="gestion/login.html">Ya tengo acceso → Ingresar</a></p></section>
-<section id="passwordBox" class="hide"><div class="notice ok">✅ Tu identidad fue confirmada mediante el enlace seguro. Ahora puedes crear tu contraseña personal.</div><label>Nueva contraseña</label><input id="pass1" type="password" autocomplete="new-password" minlength="10" placeholder="Mínimo 10 caracteres"><label>Repetir contraseña</label><input id="pass2" type="password" autocomplete="new-password" minlength="10"><button id="savePass" class="btn">Guardar contraseña y entrar</button><button id="withoutPass" class="btn dark">Continuar usando enlace seguro</button><div id="passMsg" class="msg"></div></section>
+<section id="passwordBox" class="hide"><div class="notice ok">✅ Tu identidad fue confirmada mediante el enlace seguro. Ahora puedes crear tu contraseña personal.</div><label>Nueva contraseña</label><input id="pass1" type="password" autocomplete="new-password" minlength="12" placeholder="Mínimo 12 caracteres, mayúscula, minúscula, número y símbolo"><label>Repetir contraseña</label><input id="pass2" type="password" autocomplete="new-password" minlength="12"><button id="savePass" class="btn">Guardar contraseña y entrar</button><button id="withoutPass" class="btn dark">Continuar usando enlace seguro</button><div id="passMsg" class="msg"></div></section>
 </main>
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
 const queryParams=new URLSearchParams(location.search);
@@ -103,7 +103,7 @@ sendLink.onclick=async()=>{
 };
 
 savePass.onclick=async()=>{
-  if(pass1.value.length<10){passMsg.textContent='Usa una contraseña de al menos 10 caracteres.';return}
+  if(pass1.value.length<12||!/[a-z]/.test(pass1.value)||!/[A-Z]/.test(pass1.value)||!/[0-9]/.test(pass1.value)||!/[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>\/?`~]/.test(pass1.value)){passMsg.textContent='Usa al menos 12 caracteres e incluye mayúscula, minúscula, número y símbolo.';return}
   if(pass1.value!==pass2.value){passMsg.textContent='Las contraseñas no coinciden.';return}
   savePass.disabled=true;
   passMsg.textContent='Guardando contraseña…';
