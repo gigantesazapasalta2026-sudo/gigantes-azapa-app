@@ -151,7 +151,56 @@ function renderDues(){fillDuesYears();const ppl=unitPeople(),year=Number(duesYea
 function chargeFor(personId,month){const y=Number(duesYear.value||new Date().getFullYear()),prefix=y+'-'+String(month).padStart(2,'0');return chargesData.find(x=>x.person_id===personId&&x.treasury_unit_id===currentUnitId&&String(x.period).startsWith(prefix))}
 function renderDuesMatrix(){const q=duesSearch.value.trim().toLowerCase(),ppl=unitPeople().filter(p=>!q||p.full_name.toLowerCase().includes(q));duesBody.innerHTML=ppl.length?ppl.map(p=>{let total=0;const cells=Array.from({length:12},(_,i)=>{const ch=chargeFor(p.id,i+1);if(!ch)return '<td><button class="dueCell due-none" onclick="editDue(\''+p.id+'\','+(i+1)+')">—</button></td>';total+=Number(ch.paid_amount||0);const cls='due-'+(ch.status==='submitted'?'pending':ch.status),label=ch.status==='paid'?'✓':ch.status==='partial'?money(ch.paid_amount):ch.status==='waived'?'EX':ch.status==='overdue'?'DEBE':'—';return '<td><button class="dueCell '+cls+'" title="'+money(ch.paid_amount)+' / '+money(ch.amount)+'" onclick="editDue(\''+p.id+'\','+(i+1)+')">'+label+'</button></td>'}).join('');return '<tr><td><b>'+esc(p.full_name)+'</b><br><span class="meta">'+esc(p.category||'')+'</span></td>'+cells+'<td><b>'+money(total)+'</b></td></tr>'}).join(''):'<tr><td colspan="14">Sin jugadores para esta tesorería.</td></tr>'}
 async function ensureCharge(personId,month){let ch=chargeFor(personId,month);if(ch)return ch;if(!cfg?.active||!cfg?.default_amount){alert('Primero define y activa la cuota para esta tesorería.');return null}const y=Number(duesYear.value),period=y+'-'+String(month).padStart(2,'0')+'-01',due=y+'-'+String(month).padStart(2,'0')+'-'+String(Number(cfg.due_day||10)).padStart(2,'0');const {data,error}=await sb.from('membership_charges').insert({person_id:personId,period,amount:Number(cfg.default_amount),due_date:due,status:'pending',treasury_unit_id:currentUnitId}).select().single();if(error){alert(error.message);return null}chargesData.push(data);return data}
-async function editDue(personId,month){const p=people.find(x=>x.id===personId);let ch=await ensureCharge(personId,month);if(!ch)return;const saldo=Math.max(0,Number(ch.amount)-Number(ch.paid_amount||0));const input=prompt((p?.full_name||'Jugador')+' · '+String(month).padStart(2,'0')+'/'+duesYear.value+'\nCuota: '+money(ch.amount)+'\nPagado: '+money(ch.paid_amount)+'\nSaldo: '+money(saldo)+'\n\nMonto a registrar (0 = cancelar):',String(saldo));if(input===null||Number(input)<=0)return;const amount=Number(input);const method=prompt('Medio: transferencia / efectivo / tarjeta / otro','transfer')||'transfer';const {error}=await sb.from('membership_charge_payments').insert({charge_id:ch.id,amount,payment_date:new Date().toISOString().slice(0,10),payment_method:['transfer','cash','card','other'].includes(method)?method:'other',notes:'Registrado desde matriz anual de cuotas'});if(error){alert(error.message);return}await refreshAll()}
+async function editDue(personId,month){
+ const p=people.find(x=>x.id===personId);let ch=await ensureCharge(personId,month);if(!ch)return;
+ const {data:payments,error:pe}=await sb.from('membership_charge_payments').select('id,amount,payment_date,payment_method,notes,created_at').eq('charge_id',ch.id).order('created_at',{ascending:false});
+ if(pe){alert(pe.message);return}
+ const saldo=Math.max(0,Number(ch.amount)-Number(ch.paid_amount||0));
+ if((payments||[]).length){
+  const hist=payments.map((x,i)=>(i+1)+'. '+money(x.amount)+' · '+x.payment_date+' · '+x.payment_method).join('\n');
+  const action=prompt((p?.full_name||'Jugador')+' · '+String(month).padStart(2,'0')+'/'+duesYear.value+
+   '\nCuota: '+money(ch.amount)+'\nPagado: '+money(ch.paid_amount)+'\nSaldo: '+money(saldo)+
+   '\n\nMOVIMIENTOS:\n'+hist+
+   '\n\nEscribe una opción:\n1 = Agregar pago/abono\n2 = Eliminar el último pago\n3 = Eliminar TODOS los pagos de este mes\n4 = Marcar exento\n0 = Cancelar','1');
+  if(action===null||action==='0')return;
+  if(action==='2'){
+   if(!confirm('¿Eliminar el último pago registrado de '+money(payments[0].amount)+'?'))return;
+   const {error}=await sb.from('membership_charge_payments').delete().eq('id',payments[0].id);
+   if(error){alert(error.message);return}
+   await refreshAll();return;
+  }
+  if(action==='3'){
+   if(!confirm('¿Eliminar TODOS los pagos registrados para este mes? La cuota volverá a pendiente o vencida.'))return;
+   const {error}=await sb.from('membership_charge_payments').delete().eq('charge_id',ch.id);
+   if(error){alert(error.message);return}
+   await refreshAll();return;
+  }
+  if(action==='4'){
+   const {error}=await sb.from('membership_charges').update({status:'waived',notes:'Exento desde matriz anual de cuotas'}).eq('id',ch.id);
+   if(error){alert(error.message);return}
+   await refreshAll();return;
+  }
+  if(action!=='1')return alert('Opción no válida.');
+ } else {
+  const action=prompt((p?.full_name||'Jugador')+' · '+String(month).padStart(2,'0')+'/'+duesYear.value+
+   '\nCuota: '+money(ch.amount)+'\nPagado: '+money(ch.paid_amount||0)+'\nSaldo: '+money(saldo)+
+   '\n\nEscribe una opción:\n1 = Registrar pago/abono\n4 = Marcar exento\n0 = Cancelar','1');
+  if(action===null||action==='0')return;
+  if(action==='4'){
+   const {error}=await sb.from('membership_charges').update({status:'waived',notes:'Exento desde matriz anual de cuotas'}).eq('id',ch.id);
+   if(error){alert(error.message);return}
+   await refreshAll();return;
+  }
+  if(action!=='1')return alert('Opción no válida.');
+ }
+ const input=prompt('Monto a registrar:',String(saldo||ch.amount));
+ if(input===null||Number(input)<=0)return;
+ const amount=Number(input);
+ const method=prompt('Medio: transferencia / efectivo / tarjeta / otro','transfer')||'transfer';
+ const {error}=await sb.from('membership_charge_payments').insert({charge_id:ch.id,amount,payment_date:new Date().toISOString().slice(0,10),payment_method:['transfer','cash','card','other'].includes(method)?method:'other',notes:'Registrado desde matriz anual de cuotas'});
+ if(error){alert(error.message);return}
+ await refreshAll()
+}
 saveCfg.onclick=async()=>{const amount=Number(cfgAmount.value||0),active=cfgActive.value==='true';if(active&&amount<=0)return alert('Indica monto mensual');const payload={unit_id:currentUnitId,default_amount:amount>0?amount:null,due_day:Number(cfgDueDay.value||10),active,reminder_repeat_days:Number(cfgRepeat.value||7),updated_at:new Date().toISOString()};const {error}=await sb.from('treasury_dues_config').upsert(payload,{onConflict:'unit_id'});if(error)return alert(error.message);await refreshAll()}
 generateNow.onclick=async()=>{if(!cfg?.active||!cfg?.default_amount)return alert('Primero define y activa la cuota mensual');const y=Number(duesYear.value),ppl=unitPeople(),rows=[];for(const p of ppl)for(let m=1;m<=12;m++){if(chargeFor(p.id,m))continue;const mm=String(m).padStart(2,'0');rows.push({person_id:p.id,period:y+'-'+mm+'-01',amount:Number(cfg.default_amount),due_date:y+'-'+mm+'-'+String(Number(cfg.due_day||10)).padStart(2,'0'),status:'pending',treasury_unit_id:currentUnitId})}if(!rows.length)return alert('Las cuotas del año ya están generadas.');const {error}=await sb.from('membership_charges').insert(rows);if(error)return alert(error.message);await refreshAll()}
 duesSearch.oninput=renderDuesMatrix;duesYear.onchange=refreshAll;
