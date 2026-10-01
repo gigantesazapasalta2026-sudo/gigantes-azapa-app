@@ -16,7 +16,23 @@ const requestedNext=new URLSearchParams(location.search).get('next')||'index.htm
 const nextPath=/^(?!\/\/)(?![a-z][a-z0-9+.-]*:)[a-zA-Z0-9_./?-]+$/.test(requestedNext)?requestedNext:'index.html';
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY);
 const loading=document.getElementById('loading'),login=document.getElementById('login'),msg=document.getElementById('msg');
-(async()=>{const {data}=await sb.auth.getSession();if(data.session){location.replace(nextPath)}else{loading.classList.add('hide');login.classList.remove('hide')}})();
-signin.onclick=async()=>{msg.textContent='Ingresando…';const {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:password.value});if(error){msg.textContent='No fue posible ingresar: '+error.message;return}location.replace(nextPath)};
+const switchUser=new URLSearchParams(location.search).get('switch')==='1';
+async function showLogin(){loading.classList.add('hide');login.classList.remove('hide')}
+(async()=>{
+  if(switchUser){await sb.auth.signOut({scope:'local'});await showLogin();return}
+  const {data:{user},error}=await sb.auth.getUser();
+  if(user&&!error){location.replace(nextPath);return}
+  if(error)await sb.auth.signOut({scope:'local'}).catch(()=>{});
+  await showLogin();
+})();
+signin.onclick=async()=>{
+  msg.textContent='Ingresando…';
+  await sb.auth.signOut({scope:'local'}).catch(()=>{});
+  const {error}=await sb.auth.signInWithPassword({email:email.value.trim().toLowerCase(),password:password.value});
+  if(error){msg.textContent='No fue posible ingresar: '+error.message;return}
+  const {data:{user},error:verifyError}=await sb.auth.getUser();
+  if(!user||verifyError){await sb.auth.signOut({scope:'local'}).catch(()=>{});msg.textContent='La sesión no pudo validarse. Intenta nuevamente.';return}
+  location.replace(nextPath)
+};
 magic.onclick=async()=>{msg.textContent='Enviando enlace…';const {error}=await sb.auth.signInWithOtp({email:email.value.trim(),options:{emailRedirectTo:new URL(nextPath,location.href).href,shouldCreateUser:false}});msg.textContent=error?'No fue posible enviar el enlace: '+error.message:'Revisa tu correo. Te enviamos un enlace seguro. Si todavía no activaste tu cuenta, utiliza la opción “Activar mi acceso”.'};
 </script></body></html>
