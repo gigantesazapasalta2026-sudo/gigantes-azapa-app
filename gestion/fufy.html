@@ -49,7 +49,7 @@ select{width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;backgro
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
 const PROJECT_ID='8aa8f430-d58e-4cdd-977b-4ea134b36d55';
-const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY);
+const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
 let taskRows=[];
 function badge(s){const v=String(s||'pending');return '<span class="badge '+v+'">'+v.replaceAll('_',' ')+'</span>'}
 async function init(){
