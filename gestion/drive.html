@@ -8,7 +8,7 @@
 <div class="card meta">Los archivos con <strong>Biblioteca</strong> tienen copia privada/versionada dentro del Control Center. Los demás están indexados aquí y conservan un enlace al original de Drive hasta que se incorporen a la Biblioteca.</div>
 </section></main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
-const ROOT='1XwekH7R24heoHYT082Z6tNIQpjJyk0l0',FUFY_ROOT='1M_B7G3mwiuVRgxrGiYa5iJm43Bg_T_x9',FUFY_PROJECT='8aa8f430-d58e-4cdd-977b-4ea134b36d55',sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);let all=[],current=ROOT,restrictedRoot=null;
+const ROOT='1XwekH7R24heoHYT082Z6tNIQpjJyk0l0',FUFY_ROOT='1M_B7G3mwiuVRgxrGiYa5iJm43Bg_T_x9',FUFY_PROJECT='8aa8f430-d58e-4cdd-977b-4ea134b36d55',sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let all=[],current=ROOT,restrictedRoot=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 (async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=drive.html';return}const p=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();if(!p.data?.active){loading.textContent='Tu cuenta no está activa.';return}
  const elevated=['superadmin','board'].includes(p.data.role);let fufyAccess=false;
