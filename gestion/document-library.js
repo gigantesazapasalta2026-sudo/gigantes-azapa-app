@@ -53,7 +53,7 @@ async function load(){
  })().finally(()=>{loadPromise=null;});return loadPromise;
 }
 function statusText(r){return ({available:'Documento disponible',needs_refresh:'Requiere renovaci\u00f3n',reference:'Documento de referencia',draft:'Borrador',pending:'Pendiente de validaci\u00f3n',missing:'Falta documento',archived:'Hist\u00f3rico'})[r.source_status]||r.source_status||'Por revisar';}
-function actions(r){const w=node('span',null,'cc-doc-actions');const v=button('Ver documento (PDF)','view',r.key),d=button(r.original_ext==='docx'?'Descargar original (Word)':'Descargar original (PDF)','download',r.key);v.classList.add('cc-doc-primary');v.disabled=d.disabled=!r.ready;w.append(v,d);if(r.kind==='doc'&&r.ready&&(r.editor_roles||[]).includes(profile?.role)){const u=button('Subir nueva versión','updateversion',r.key);u.classList.add('cc-doc-update');w.append(u);}if(!r.ready)w.append(node('span','Pendiente de carga inicial','cc-doc-pending'));return w;}
+function actions(r){const w=node('span',null,'cc-doc-actions');const v=button('Ver documento (PDF)','view',r.key),d=button(r.original_ext==='docx'?'Descargar original (Word)':'Descargar original (PDF)','download',r.key);v.classList.add('cc-doc-primary');v.disabled=d.disabled=!r.ready;w.append(v,d);if(r.kind==='doc'&&r.ready){w.append(button('Historial de versiones','history',r.key));if((r.editor_roles||[]).includes(profile?.role)){const u=button('Subir nueva versión','updateversion',r.key);u.classList.add('cc-doc-update');w.append(u);}}if(!r.ready)w.append(node('span','Pendiente de carga inicial','cc-doc-pending'));return w;}
 function enhanceLinks(){
  if(!loaded)return;
  for(const a of document.querySelectorAll('a[href]')){if(a.closest('.cc-doc-viewer')||a.dataset.ccSeen)continue;const id=sourceId(a.href);if(!id)continue;a.dataset.ccSeen='1';const r=bySource.get(id);if(!r)continue;
@@ -90,6 +90,63 @@ async function openDocument(key,action,trigger){
   else{const url=URL.createObjectURL(blob);objectURLs.add(url);const a=node('a');a.href=url;a.download=r.original_name;a.hidden=true;document.body.append(a);a.click();a.remove();setTimeout(()=>{URL.revokeObjectURL(url);objectURLs.delete(url);},60000);setNotice('Descarga iniciada: '+r.original_name);}
  }catch(e){setNotice(e.message);if(viewer===d&&d)d.querySelector('.cc-viewer-message').textContent=e.message;}finally{trigger.disabled=token!==generation;trigger.textContent=label;}
 }
+
+async function showHistory(key,trigger){
+ const label=trigger.textContent;trigger.disabled=true;trigger.textContent='Cargando historial...';
+ try{
+  const r=await fresh(key);if(r.kind!=='doc')throw new Error('Este registro no usa historial de versiones.');
+  const q=await getClient().from('control_document_versions').select('version_no,pdf_path,original_path,original_name,original_ext,created_at,note,created_by').eq('document_id',r.id).order('version_no',{ascending:false});
+  if(q.error)throw new Error('No fue posible consultar el historial.');
+  const d=viewerShell('Historial · '+r.title),msg=d.querySelector('.cc-viewer-message');msg.textContent='';
+  const summary=node('p',(q.data?.length||0)+' versiones registradas · vigente v'+(Number(r.current_version)||1),'cc-history-summary');msg.append(summary);
+  const list=node('div',null,'cc-history-list');
+  for(const ver of q.data||[]){
+   const item=node('article',null,'cc-history-item');
+   const top=node('div',null,'cc-history-top');
+   const title=node('strong','Versión v'+ver.version_no+(Number(ver.version_no)===Number(r.current_version)?' · ACTUAL':''));top.append(title);
+   if(Number(ver.version_no)===Number(r.current_version))top.append(node('span','Vigente','cc-history-current'));
+   item.append(top,node('span',new Date(ver.created_at).toLocaleString('es-CL'),'cc-history-date'),node('span',ver.original_name,'cc-history-file'));
+   if(ver.note)item.append(node('p',ver.note,'cc-history-note'));
+   const acts=node('div',null,'cc-history-actions');
+   const view=button('Ver PDF','versionview');view.dataset.docId=r.id;view.dataset.version=String(ver.version_no);view.dataset.path=ver.pdf_path;view.dataset.filename=ver.original_name;view.dataset.ext=ver.original_ext;
+   const down=button(ver.original_ext==='docx'?'Descargar Word':'Descargar PDF','versiondownload');down.dataset.docId=r.id;down.dataset.version=String(ver.version_no);down.dataset.path=ver.original_path;down.dataset.filename=ver.original_name;down.dataset.ext=ver.original_ext;
+   acts.append(view,down);item.append(acts);list.append(item);
+  }
+  if(!q.data?.length)list.append(node('p','No hay versiones registradas.','cc-doc-empty'));
+  msg.append(list);
+ }catch(e){setNotice(e.message||'No fue posible consultar el historial.');}
+ finally{trigger.disabled=false;trigger.textContent=label;}
+}
+async function openVersionFile(trigger,action){
+ const docId=trigger.dataset.docId,version=Number(trigger.dataset.version),path=trigger.dataset.path,filename=trigger.dataset.filename,extension=trigger.dataset.ext;
+ if(!validId(docId)||!Number.isInteger(version)||version<1||!['pdf','docx'].includes(extension))return setNotice('Referencia de versión no válida.');
+ const expected=docId+'/v'+version+'/'+(action==='versionview'?'document.pdf':(extension==='docx'?'original.docx':'document.pdf'));
+ if(path!==expected)return setNotice('Ruta de versión no válida.');
+ const label=trigger.textContent;trigger.disabled=true;trigger.textContent=action==='versionview'?'Abriendo...':'Preparando...';
+ const d=action==='versionview'?viewerShell('Versión v'+version+' · '+filename):null;
+ try{
+  const q=await getClient().from('control_document_versions').select('version_no,pdf_path,original_path,original_name,original_ext').eq('document_id',docId).eq('version_no',version).maybeSingle();
+  if(q.error||!q.data)throw new Error('Esta versión no está disponible para tu cuenta.');
+  const serverPath=action==='versionview'?q.data.pdf_path:q.data.original_path;
+  if(serverPath!==expected)throw new Error('La referencia guardada de esta versión no coincide.');
+  const res=await getClient().storage.from(BUCKET).download(serverPath);
+  if(res.error||!res.data)throw new Error('No fue posible obtener esta versión.');
+  const isPdf=action==='versionview'||q.data.original_ext==='pdf',blob=new Blob([res.data],{type:isPdf?'application/pdf':WORD});
+  if(isPdf&&new TextDecoder().decode(await blob.slice(0,5).arrayBuffer())!=='%PDF-')throw new Error('El archivo recibido no es un PDF válido.');
+  if(action==='versionview'){
+   if(viewer!==d)return;
+   d.querySelector('.cc-viewer-message').remove();
+   const url=URL.createObjectURL(blob);objectURLs.add(url);d._urls.push(url);
+   const meta=node('div','Versión histórica v'+version+' · solo lectura','cc-viewer-version-meta');d.append(meta);
+   const alt=node('a','Abrir PDF en otra pestaña','cc-viewer-alternate');alt.href=url;alt.target='_blank';alt.rel='noopener';d.append(alt);
+   const frame=document.createElement('iframe');frame.title='Versión v'+version+': '+q.data.original_name;frame.src=url+'#view=FitH';frame.referrerPolicy='no-referrer';d.append(frame);
+  }else{
+   const url=URL.createObjectURL(blob);objectURLs.add(url);const a=node('a');a.href=url;a.download=q.data.original_name;a.hidden=true;document.body.append(a);a.click();a.remove();setTimeout(()=>{URL.revokeObjectURL(url);objectURLs.delete(url);},60000);setNotice('Descarga iniciada: v'+version+' · '+q.data.original_name);
+  }
+ }catch(e){setNotice(e.message||'No fue posible abrir esta versión.');if(d&&viewer===d)d.querySelector('.cc-viewer-message').textContent=e.message;}
+ finally{trigger.disabled=false;trigger.textContent=label;}
+}
+
 function unzipStored(bytes){const v=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),map=new Map();let p=0;while(p+30<=bytes.length&&v.getUint32(p,true)===0x04034b50){const flags=v.getUint16(p+6,true),method=v.getUint16(p+8,true),size=v.getUint32(p+18,true),raw=v.getUint32(p+22,true),nl=v.getUint16(p+26,true),extra=v.getUint16(p+28,true),start=p+30+nl+extra;if(flags&9||method!==0||raw!==size||size>33554432||start+size>bytes.length)throw new Error('ZIP no compatible. Usa el paquete original sin volver a comprimirlo.');const name=new TextDecoder('utf-8',{fatal:true}).decode(bytes.subarray(p+30,p+30+nl));if((name!=='manifest.json'&&!/^[A-Za-z0-9_-]{8,150}\/v1\/(document\.pdf|original\.docx)$/.test(name))||map.has(name))throw new Error('Ruta no v\u00e1lida en el paquete.');map.set(name,bytes.subarray(start,start+size));p=start+size;}if(!map.has('manifest.json')||map.size>200)throw new Error('Paquete documental incompleto.');return map;}
 async function importPackage(file){
  if(!file||importing)return;importing=true;document.getElementById('ccDocUpload').disabled=true;let count=0,skipped=0;
@@ -107,7 +164,7 @@ async function importPackage(file){
 }
 async function boot(){
  const css=document.createElement('link');css.rel='stylesheet';css.href=new URL('document-library.css?v=20261003-1',BASE).href;document.head.append(css);addNavigation();
- document.addEventListener('click',e=>{const b=e.target.closest('button[data-cc-action]');if(b){const a=b.dataset.ccAction;if(a==='close')closeViewer();else if(a==='refresh'){setNotice('Actualizando...');load().then(()=>setNotice('Biblioteca actualizada.')).catch(x=>setNotice(x.message));}else if(a==='import'){const i=document.getElementById('ccDocZip');i.value='';i.click();}else openDocument(b.dataset.ccKey,a,b);return;}const a=e.target.closest('a[href]'),id=a&&sourceId(a.href);if(id&&!bySource.has(id)){e.preventDefault();const d=viewerShell('Documento no incorporado');d.querySelector('.cc-viewer-message').textContent='Este archivo a\u00fan no est\u00e1 incorporado al visor interno o tu cuenta no tiene permiso. Solicita la revisi\u00f3n al administrador.';}});
+ document.addEventListener('click',e=>{const b=e.target.closest('button[data-cc-action]');if(b){const a=b.dataset.ccAction;if(a==='close')closeViewer();else if(a==='refresh'){setNotice('Actualizando...');load().then(()=>setNotice('Biblioteca actualizada.')).catch(x=>setNotice(x.message));}else if(a==='import'){const i=document.getElementById('ccDocZip');i.value='';i.click();}else if(a==='history')showHistory(b.dataset.ccKey,b);else if(a==='versionview'||a==='versiondownload')openVersionFile(b,a);else openDocument(b.dataset.ccKey,a,b);return;}const a=e.target.closest('a[href]'),id=a&&sourceId(a.href);if(id&&!bySource.has(id)){e.preventDefault();const d=viewerShell('Documento no incorporado');d.querySelector('.cc-viewer-message').textContent='Este archivo a\u00fan no est\u00e1 incorporado al visor interno o tu cuenta no tiene permiso. Solicita la revisi\u00f3n al administrador.';}});
  if(isLibrary){document.getElementById('ccDocZip').addEventListener('change',e=>importPackage(e.target.files?.[0]));for(const id of ['ccDocSearch','ccDocCategory','ccDocState'])document.getElementById(id).addEventListener(id==='ccDocSearch'?'input':'change',()=>renderLibrary());}
  let scheduled=false;new MutationObserver(ms=>{if(!loaded||scheduled||!ms.some(m=>[...m.addedNodes].some(n=>n.nodeType===1)))return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;enhanceLinks();});}).observe(document.body,{childList:true,subtree:true});
  window.addEventListener('pagehide',()=>{closeViewer();for(const u of objectURLs)URL.revokeObjectURL(u);objectURLs.clear();});window.addEventListener('pageshow',e=>{if(e.persisted)load().catch(x=>setNotice(x.message));});window.addEventListener('beforeunload',e=>{if(importing){e.preventDefault();e.returnValue='';}});
