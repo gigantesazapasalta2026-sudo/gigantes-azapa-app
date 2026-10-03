@@ -75,7 +75,7 @@ function renderLibrary(reset=false){
 }
 function viewerShell(title){closeViewer();const d=node('dialog',null,'cc-doc-viewer');viewer=d;d._urls=[];d.setAttribute('aria-labelledby','ccViewerTitle');const head=node('div',null,'cc-viewer-head'),h=node('strong',title);h.id='ccViewerTitle';head.append(h,button('Cerrar','close'));d.append(head,node('p','Cargando documento privado...','cc-viewer-message'));document.body.append(d);d.addEventListener('close',()=>{if(viewer===d)closeViewer();});d.addEventListener('click',e=>{if(e.target===d&&e.offsetX<0)closeViewer();});d.showModal();return d;}
 function filePath(r,action){
- if(r.kind==='doc'){if(!validId(r.id)||!['pdf','docx'].includes(r.original_ext))throw new Error('Referencia no v\u00e1lida.');return {bucket:BUCKET,path:r.id+'/v1/'+(action==='download'&&r.original_ext==='docx'?'original.docx':'document.pdf')};}
+ if(r.kind==='doc'){if(!validId(r.id)||!['pdf','docx'].includes(r.original_ext))throw new Error('Referencia no v\u00e1lida.');const v=Math.max(1,Number(r.current_version)||1);return {bucket:BUCKET,path:r.id+'/v'+v+'/'+(action==='download'&&r.original_ext==='docx'?'original.docx':'document.pdf')};}
  const s=r.snapshot,path=action==='view'?s?.pdf_path:s?.word_path;
  if(s?.bucket!==BOX_BUCKET||!/^BOX0[1-6]$/.test(r.id)||!path?.startsWith(r.id+'/')||!new RegExp('^BOX0[1-6]/[A-Za-z0-9_-]+\\.'+(action==='view'?'pdf':'docx')+'$').test(path))throw new Error('Referencia de inventario no v\u00e1lida.');return {bucket:BOX_BUCKET,path};
 }
