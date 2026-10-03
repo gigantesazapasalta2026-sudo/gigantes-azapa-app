@@ -10,7 +10,7 @@
 </section></main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
-const PROJECT='cb739817-50ee-4060-896a-2e3286eb5a00';const DRIVE='1rX0hXvQmK7rRC_me_h1NjXyzMLhGv6LI';const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);let rows=[],people=new Map(),taskRows=[],respRows=[],goalRows=[],projectRow=null,overlaps=[],role=null;
+const PROJECT='cb739817-50ee-4060-896a-2e3286eb5a00';const DRIVE='1rX0hXvQmK7rRC_me_h1NjXyzMLhGv6LI';const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let rows=[],people=new Map(),taskRows=[],respRows=[],goalRows=[],projectRow=null,overlaps=[],role=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const label=s=>({waiting:'Pendiente',in_progress:'En proceso',blocked:'Bloqueado',done:'Completado'})[s]||s||'';
 (async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=gira-santiago.html';return}const p=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();role=p.data?.role;if(!p.data?.active||!['superadmin','board','coach'].includes(role)){loading.textContent='No tienes permisos para administrar esta gira.';return}await refreshAll();loading.classList.add('hide');app.classList.remove('hide')})();
