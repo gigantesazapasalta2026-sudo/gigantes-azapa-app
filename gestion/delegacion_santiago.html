@@ -10,7 +10,7 @@
 <div class="row head"><div>Persona</div><div>Categoría</div><div>Rugby Chile</div><div>Seguro</div><div>Documentos</div><div>Viaje</div><div>Acción / observación</div></div><div id="list"></div>
 <div class="legend"><span>🟢 Confirmado</span><span>🟠 Pendiente</span><span>⚪ Por verificar / sin dato suficiente</span></div></div></section></main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
-const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);let rows=[],filter='all';
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let rows=[],filter='all';
 const projectCode='SCL2026';
 (async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=delegacion_santiago.html';return}
 const {data:p}=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();if(!p||!p.active||!['superadmin','board','coach'].includes(p.role)){loading.textContent='Sin permisos para ver la gestión de la delegación.';return}
