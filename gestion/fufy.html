@@ -31,7 +31,7 @@ select{width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;backgro
 <div class="card"><span>Pendientes</span><b id="kWaiting">0</b></div>
 </div>
 <div class="panel"><h2>Proyecto</h2><p id="projectMeta">Cargando…</p><div class="muted">Tu permiso está limitado a Copa FUFY 2026. No habilita Tesorería general, administración de usuarios ni otros proyectos del club.</div></div>
-<div class="panel"><h2>Tareas operativas FUFY</h2><p>Puedes revisar y actualizar el estado de las tareas de este proyecto.</p><div id="tasks"></div></div>
+<div class="panel"><h2>Tareas operativas FUFY</h2><p>Puedes revisar y actualizar el estado de las tareas de este proyecto.</p><div id="tasks"></div></div><div class="panel"><h2>Responsables y comisiones</h2><p>Responsabilidades estructuradas del proyecto.</p><div id="responsibilities"></div></div><div class="panel"><h2>Documentos y operación</h2><p>Accesos relacionados con la Copa FUFY.</p><div class="actions" style="margin-left:0"><a class="btn" href="biblioteca.html">📚 Biblioteca FUFY</a><a class="btn" href="sponsors.html">🤝 Sponsors</a><a class="btn" href="recaudacion.html">💰 Recaudación</a><a class="btn" href="eventos.html">📅 Eventos</a></div><div id="fufyDocs" class="muted" style="margin-top:12px"></div></div>
 </section>
 </main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
@@ -43,11 +43,13 @@ function badge(s){const v=String(s||'pending');return '<span class="badge '+v+'"
 async function init(){
   const {data:{user},error:userErr}=await sb.auth.getUser();
   if(!user||userErr){location.replace('login.html?next=fufy.html');return}
-  const [{data:profile},{data:access},{data:project},{data:tasks,error:taskErr}]=await Promise.all([
+  const [{data:profile},{data:access},{data:project},{data:tasks,error:taskErr},{data:responsibilityRows},{data:docRows}]=await Promise.all([
     sb.from('profiles').select('display_name,role,active').eq('user_id',user.id).maybeSingle(),
     sb.from('project_user_access').select('access_role').eq('user_id',user.id).eq('project_id',PROJECT_ID).maybeSingle(),
     sb.from('projects').select('name,status,event_date,owner_name').eq('id',PROJECT_ID).maybeSingle(),
-    sb.from('tasks').select('id,title,status,due_date,owner_name,priority,progress').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false})
+    sb.from('tasks').select('id,title,status,due_date,owner_name,priority,progress').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}),
+    sb.from('project_responsibilities').select('id,code,area,title,responsible_name,responsible_email,description,active').eq('project_id',PROJECT_ID).eq('active',true).order('sort_order'),
+    sb.from('control_document_catalog').select('id,title,category,current_version,source_status').is('deleted_at',null).or('category.eq.Copa FUFY,title.ilike.%FUFY%,title.ilike.%Fuffy%').order('title')
   ]);
   const elevated=profile?.active&&['superadmin','board'].includes(profile?.role);
   const projectManager=profile?.active&&access&&['viewer','editor','manager','treasury'].includes(access.access_role);
@@ -55,7 +57,7 @@ async function init(){
   taskRows=tasks||[];
   who.textContent='Sesión: '+(profile?.display_name||user.email)+' · permiso FUFY: '+(elevated?'administración club':access.access_role);
   projectMeta.textContent=(project?.name||'Copa FUFY 2026')+' · '+(project?.status||'activo')+(project?.event_date?' · '+project.event_date:'');
-  renderTasks();
+  renderTasks();renderResponsibilities(responsibilityRows||[]);renderDocs(docRows||[]);
   loading.classList.add('hide');app.classList.remove('hide');
 }
 function renderTasks(){
@@ -66,6 +68,13 @@ function renderTasks(){
   tasks.innerHTML=taskRows.length?taskRows.map(t=>'<div class="task"><div><strong>'+t.title+'</strong><small>'+(t.owner_name||'Sin responsable')+(t.due_date?' · vence '+t.due_date:'')+(t.priority?' · '+t.priority:'')+'</small></div><div>'+badge(t.status)+'</div><div><select data-id="'+t.id+'"><option value="waiting" '+(t.status==='waiting'?'selected':'')+'>Pendiente</option><option value="in_progress" '+(t.status==='in_progress'?'selected':'')+'>En curso</option><option value="done" '+(t.status==='done'?'selected':'')+'>Completada</option></select></div></div>').join(''):'<div class="muted">No hay tareas registradas.</div>';
   tasks.querySelectorAll('select').forEach(s=>s.onchange=()=>updateTask(s.dataset.id,s.value,s));
 }
+function renderResponsibilities(rows){
+ responsibilities.innerHTML=rows.length?rows.map(r=>'<div class="task"><div><strong>'+esc(r.title||r.area)+'</strong><small>'+esc(r.area||'')+(r.description?' · '+esc(r.description):'')+'</small></div><div><span class="badge in_progress">'+esc(r.responsible_name||'Sin responsable')+'</span></div><div class="muted">'+(r.responsible_email?esc(r.responsible_email):'')+'</div></div>').join(''):'<div class="muted">No hay responsabilidades estructuradas.</div>';
+}
+function renderDocs(rows){
+ fufyDocs.innerHTML=rows.length?'<strong>Documentos relacionados:</strong> '+rows.map(r=>esc(r.title)+' · v'+(r.current_version||1)).join(' / '):'No hay documentos FUFY visibles para esta cuenta.';
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 async function updateTask(id,status,el){
   el.disabled=true;
   const {error}=await sb.from('tasks').update({status}).eq('id',id).eq('project_id',PROJECT_ID);
