@@ -7,7 +7,7 @@
 <form id="searchForm" class="search"><input id="q" autocomplete="off" maxlength="80" placeholder="Ej.: Copa FUFY, Santiago, Patricia, seguro…" autofocus><button>Buscar</button></form>
 <div id="summary" class="summary">Escribe al menos 2 caracteres.</div><div id="results"></div></section></main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
-const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);let profile=null;
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let profile=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 (async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=buscar.html';return}const {data:p}=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();profile=p;if(!p?.active||!['superadmin','board','treasury','coach','commission'].includes(p.role)){loading.textContent='No tienes acceso al Control Center.';return}loading.classList.add('hide');app.classList.remove('hide');const initial=new URLSearchParams(location.search).get('q')||'';q.value=initial;if(initial.trim().length>=2)searchAll(initial.trim())})();
 searchForm.onsubmit=e=>{e.preventDefault();const term=q.value.trim();history.replaceState(null,'',term?('?q='+encodeURIComponent(term)):'buscar.html');searchAll(term)};
