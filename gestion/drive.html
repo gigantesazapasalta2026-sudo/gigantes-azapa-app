@@ -15,7 +15,19 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
  if(!elevated){const a=await sb.from('project_user_access').select('access_role').eq('user_id',session.user.id).eq('project_id',FUFY_PROJECT).maybeSingle();fufyAccess=!!a.data}
  if(!elevated&&!fufyAccess){loading.textContent='Tu cuenta no tiene permiso para explorar esta documentación.';return}
  restrictedRoot=elevated?null:FUFY_ROOT;current=restrictedRoot||ROOT;
- const r=await sb.from('control_drive_index').select('drive_file_id,parent_drive_id,name,path,item_type,mime_type,source_url,modified_time,linked_document_id,sync_state,active').eq('active',true).order('path');if(r.error){loading.textContent='No fue posible cargar el índice.';return}all=r.data||[];
+ const requestedFolder=new URLSearchParams(location.search).get('folder');
+ const fields='drive_file_id,parent_drive_id,name,path,item_type,mime_type,source_url,modified_time,linked_document_id,sync_state,active';
+ let r;
+ if(requestedFolder){
+   const q1=await sb.from('control_drive_index').select(fields).eq('active',true).eq('drive_file_id',requestedFolder).maybeSingle();
+   const q2=await sb.from('control_drive_index').select(fields).eq('active',true).eq('parent_drive_id',requestedFolder).order('name');
+   if(q1.error||q2.error){loading.textContent='No fue posible cargar esta carpeta.';return}
+   all=[...(q1.data?[q1.data]:[]),...(q2.data||[])];
+ }else{
+   r=await sb.from('control_drive_index').select(fields).eq('active',true).order('path');
+   if(r.error){loading.textContent='No fue posible cargar el índice.';return}
+   all=r.data||[];
+ }
  if(restrictedRoot){const rootRow=all.find(x=>x.drive_file_id===FUFY_ROOT);if(!rootRow){loading.textContent='No fue posible cargar la carpeta FUFY.';return}}
  totalK.textContent=all.length;filesK.textContent=all.filter(x=>x.item_type==='file').length;foldersK.textContent=all.filter(x=>x.item_type==='folder').length;linkedK.textContent=all.filter(x=>x.linked_document_id).length;loading.classList.add('hide');app.classList.remove('hide');const requested=new URLSearchParams(location.search).get('folder');if(requested&&all.some(x=>x.drive_file_id===requested&&x.item_type==='folder'))current=requested;if(restrictedRoot&&!isInsideRestricted(current))current=restrictedRoot;rootBtn.textContent=restrictedRoot?'Ir a FUFY':'Ir a raíz';search.placeholder=restrictedRoot?'Buscar dentro de Copa FUFY…':'Buscar en toda la Carpeta Maestra…';renderFolder()})();
 function renderFolder(){search.value='';const folder=all.find(x=>x.drive_file_id===current),children=all.filter(x=>x.parent_drive_id===current).sort((a,b)=>(a.item_type===b.item_type?a.name.localeCompare(b.name,'es'):a.item_type==='folder'?-1:1));renderCrumbs(folder);renderItems(children);history.replaceState(null,'','drive.html?folder='+encodeURIComponent(current))}
