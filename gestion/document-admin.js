@@ -57,7 +57,7 @@ async function submit(e){
   const check=await sb.auth.getUser();if(check.error||check.data?.user?.id!==user.id)throw new Error('Tu sesión cambió. Vuelve a iniciar sesión.');
   const title=esc($('#ccAddTitle').value),category=esc($('#ccAddCategory').value),original=$('#ccAddOriginal').files?.[0],pdf=$('#ccAddPdf').files?.[0];
   if(title.length<2||title.length>180)throw new Error('Revisa el nombre del documento.');
-  if(category.length<2||category.length>120)throw new Error('Indica un área válida.');
+  if(category.length<2||category.length>120)throw new Error('Indica un área válida.');if(expires_on&&!responsible_person_id)throw new Error('Si indicas vencimiento, selecciona un responsable.');if(issued_on&&expires_on&&expires_on<issued_on)throw new Error('El vencimiento no puede ser anterior a la emisión.');if(!Number.isInteger(renewal_notice_days)||renewal_notice_days<1||renewal_notice_days>365)throw new Error('Los días de aviso deben estar entre 1 y 365.');
   if(!original)throw new Error('Selecciona el documento original.');
   if(original.size>25*1024*1024)throw new Error('El archivo original supera 25 MB.');
   const originalExt=ext(original.name);
@@ -154,14 +154,14 @@ async function restoreFromTrash(key,button){
 }
 
 function closeMetaDialog(){document.getElementById('ccMetaDialog')?.remove();}
-function metaDialogShell(doc){
+function metaDialogShell(doc,responsiblePeople=[]){
  closeMetaDialog();
  const d=document.createElement('dialog');d.id='ccMetaDialog';d.className='cc-version-dialog';
- d.innerHTML='<form id="ccMetaForm" method="dialog"><div class="cc-version-head"><div><strong>Editar ficha</strong><p></p></div><button type="button" class="cc-doc-btn" id="ccMetaClose">Cerrar</button></div><div class="cc-version-body"><label>Nombre del documento<input id="ccMetaTitle" maxlength="180" required></label><label>Área<input id="ccMetaCategory" maxlength="120" required list="ccMetaCategoryList"><datalist id="ccMetaCategoryList"></datalist></label><label>Estado<select id="ccMetaStatus"><option value="available">Disponible</option><option value="needs_refresh">Requiere renovación</option><option value="reference">Referencia</option><option value="draft">Borrador</option><option value="pending">Pendiente de validación</option><option value="missing">Falta documento</option><option value="archived">Histórico</option></select></label><fieldset id="ccMetaRead"><legend>Puede ver</legend></fieldset><fieldset id="ccMetaEdit"><legend>Puede editar / subir versiones</legend></fieldset><p id="ccMetaStatusText" role="status" aria-live="polite"></p><div class="cc-version-actions"><button type="button" class="cc-doc-btn" id="ccMetaCancel">Cancelar</button><button type="submit" class="cc-doc-btn cc-doc-primary" id="ccMetaSave">Guardar cambios</button></div></div></form>';
+ d.innerHTML='<form id="ccMetaForm" method="dialog"><div class="cc-version-head"><div><strong>Editar ficha</strong><p></p></div><button type="button" class="cc-doc-btn" id="ccMetaClose">Cerrar</button></div><div class="cc-version-body"><label>Nombre del documento<input id="ccMetaTitle" maxlength="180" required></label><label>Área<input id="ccMetaCategory" maxlength="120" required list="ccMetaCategoryList"><datalist id="ccMetaCategoryList"></datalist></label><label>Estado<select id="ccMetaStatus"><option value="available">Disponible</option><option value="needs_refresh">Requiere renovación</option><option value="reference">Referencia</option><option value="draft">Borrador</option><option value="pending">Pendiente de validación</option><option value="missing">Falta documento</option><option value="archived">Histórico</option></select></label><label>Fecha de emisión<input id="ccMetaIssued" type="date"></label><label>Fecha de vencimiento<input id="ccMetaExpires" type="date"></label><label>Responsable<select id="ccMetaResponsible"><option value="">Sin responsable / sin vencimiento</option></select></label><label>Días de aviso<input id="ccMetaNoticeDays" type="number" min="1" max="365" value="30"></label><fieldset id="ccMetaRead"><legend>Puede ver</legend></fieldset><fieldset id="ccMetaEdit"><legend>Puede editar / subir versiones</legend></fieldset><p id="ccMetaStatusText" role="status" aria-live="polite"></p><div class="cc-version-actions"><button type="button" class="cc-doc-btn" id="ccMetaCancel">Cancelar</button><button type="submit" class="cc-doc-btn cc-doc-primary" id="ccMetaSave">Guardar cambios</button></div></div></form>';
  d.querySelector('.cc-version-head p').textContent='v'+doc.current_version+' · el archivo no se modifica';
  d.dataset.documentId=doc.id;
  const title=d.querySelector('#ccMetaTitle'),category=d.querySelector('#ccMetaCategory'),status=d.querySelector('#ccMetaStatus');
- title.value=doc.title||'';category.value=doc.category||'';status.value=doc.source_status||'available';
+ title.value=doc.title||'';category.value=doc.category||'';status.value=doc.source_status||'available';d.querySelector('#ccMetaIssued').value=doc.issued_on||'';d.querySelector('#ccMetaExpires').value=doc.expires_on||'';d.querySelector('#ccMetaNoticeDays').value=doc.renewal_notice_days||30;const responsible=d.querySelector('#ccMetaResponsible');for(const p of responsiblePeople){const o=new Option((p.full_name||'Persona')+(p.email?' · '+p.email:''),p.id);responsible.add(o)}responsible.value=doc.responsible_person_id||'';
  const cats=[...new Set([...document.querySelectorAll('#ccDocCategory option')].map(o=>o.value).filter(Boolean).concat([doc.category]).filter(Boolean))];
  const dl=d.querySelector('#ccMetaCategoryList');for(const c of cats)dl.append(new Option(c,c));
  const labels={superadmin:'Administración general',board:'Directiva',treasury:'Tesorería',coach:'Entrenadores',commission:'Comisiones'};
@@ -181,10 +181,11 @@ async function openMetaDialog(key){
   if(!key?.startsWith('doc:'))throw new Error('Documento no válido.');
   const id=key.slice(4),check=await sb.auth.getUser();
   if(check.error||check.data?.user?.id!==user.id)throw new Error('Tu sesión cambió. Vuelve a iniciar sesión.');
-  const q=await sb.from('control_document_catalog').select('*').eq('id',id).maybeSingle();
+  const [q,pr]=await Promise.all([sb.from('control_document_catalog').select('*').eq('id',id).maybeSingle(),sb.from('people').select('id,full_name,email').eq('member_status','active').order('full_name')]);
   if(q.error||!q.data||q.data.deleted_at)throw new Error('Documento no disponible.');
+  if(pr.error)throw new Error('No se pudo cargar la lista de responsables.');
   if(!(q.data.editor_roles||[]).includes(profile.role))throw new Error('Tu cuenta no tiene permiso para editar esta ficha.');
-  metaDialogShell(q.data);
+  metaDialogShell(q.data,pr.data||[]);
  }catch(err){alert(err.message||'No fue posible abrir la ficha.');}
 }
 async function saveMeta(e){
@@ -193,7 +194,7 @@ async function saveMeta(e){
  const say=t=>statusText.textContent=t;
  try{
   const check=await sb.auth.getUser();if(check.error||check.data?.user?.id!==user.id)throw new Error('Tu sesión cambió. Vuelve a iniciar sesión.');
-  const id=d.dataset.documentId,title=esc(d.querySelector('#ccMetaTitle').value),category=esc(d.querySelector('#ccMetaCategory').value),source_status=d.querySelector('#ccMetaStatus').value;
+  const id=d.dataset.documentId,title=esc(d.querySelector('#ccMetaTitle').value),category=esc(d.querySelector('#ccMetaCategory').value),source_status=d.querySelector('#ccMetaStatus').value,issued_on=d.querySelector('#ccMetaIssued').value||null,expires_on=d.querySelector('#ccMetaExpires').value||null,responsible_person_id=d.querySelector('#ccMetaResponsible').value||null,renewal_notice_days=Number(d.querySelector('#ccMetaNoticeDays').value||30);
   if(title.length<2||title.length>180)throw new Error('Revisa el nombre del documento.');
   if(category.length<2||category.length>120)throw new Error('Indica un área válida.');
   const allowed=['superadmin',...Array.from(d.querySelectorAll('[name="ccMetaReadRole"]:checked')).map(x=>x.value).filter(x=>x!=='superadmin')];
@@ -212,7 +213,7 @@ async function saveMeta(e){
   if(!(latest.data.editor_roles||[]).includes(profile.role))throw new Error('Ya no tienes permiso para editar esta ficha.');
   say('Guardando cambios...');
   const up=await sb.from('control_document_catalog').update({
-   title,category,source_status,allowed_roles:[...new Set(allowed)],editor_roles:[...new Set(editors)],treasury_unit_id:treasuryUnit,updated_at:new Date().toISOString()
+   title,category,source_status,allowed_roles:[...new Set(allowed)],editor_roles:[...new Set(editors)],treasury_unit_id:treasuryUnit,issued_on,expires_on,responsible_person_id,renewal_notice_days,updated_at:new Date().toISOString()
   }).eq('id',id).select('id,title');
   if(up.error||up.data?.length!==1)throw new Error(up.error?.message||'No se pudieron guardar los cambios.');
   say('Ficha actualizada correctamente.');
