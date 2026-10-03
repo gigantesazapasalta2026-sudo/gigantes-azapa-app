@@ -95,7 +95,7 @@ sendLink.onclick=async()=>{
     email:e,
     options:{
       emailRedirectTo:new URL('activar.html',location.href).href,
-      shouldCreateUser:false
+      shouldCreateUser:true
     }
   });
   sendLink.disabled=false;
