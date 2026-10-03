@@ -48,7 +48,7 @@ async function init(){
  $('#ccAddDocument')?.addEventListener('click',()=>{$('#ccAddPanel').hidden=false;$('#ccAddTitle').focus();});
  $('#ccAddCancel')?.addEventListener('click',()=>{$('#ccAddPanel').hidden=true;$('#ccAddForm').reset();setWordFields();applyDefaults();msg('');});
  $('#ccAddForm')?.addEventListener('submit',submit);
- document.addEventListener('click',e=>{const b=e.target.closest('[data-cc-action]');if(!b)return;if(b.dataset.ccAction==='updateversion'){e.preventDefault();openVersionDialog(b.dataset.ccKey);}else if(b.dataset.ccAction==='editmeta'){e.preventDefault();openMetaDialog(b.dataset.ccKey);}else if(b.dataset.ccAction==='trash'){e.preventDefault();moveToTrash(b.dataset.ccKey,b);}else if(b.dataset.ccAction==='restore'){e.preventDefault();restoreFromTrash(b.dataset.ccKey,b);}});
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-cc-action]');if(!b)return;if(b.dataset.ccAction==='updateversion'){e.preventDefault();openVersionDialog(b.dataset.ccKey);}else if(b.dataset.ccAction==='initialupload'){e.preventDefault();openInitialUpload(b.dataset.ccKey);}else if(b.dataset.ccAction==='editmeta'){e.preventDefault();openMetaDialog(b.dataset.ccKey);}else if(b.dataset.ccAction==='trash'){e.preventDefault();moveToTrash(b.dataset.ccKey,b);}else if(b.dataset.ccAction==='restore'){e.preventDefault();restoreFromTrash(b.dataset.ccKey,b);}});
 }
 async function submit(e){
  e.preventDefault();if(busy)return;busy=true;
@@ -218,6 +218,67 @@ async function saveMeta(e){
   say('Ficha actualizada correctamente.');
   setTimeout(()=>location.reload(),600);
  }catch(err){say(err.message||'No fue posible actualizar la ficha.');}
+ finally{busy=false;save.disabled=false;}
+}
+
+async function openInitialUpload(key){
+ try{
+  if(!key?.startsWith('doc:'))throw new Error('Documento no válido.');
+  const id=key.slice(4),check=await sb.auth.getUser();
+  if(check.error||check.data?.user?.id!==user.id)throw new Error('Tu sesión cambió. Vuelve a iniciar sesión.');
+  const q=await sb.from('control_document_catalog').select('id,title,current_version,editor_roles,deleted_at,imported_at,original_name,original_ext').eq('id',id).maybeSingle();
+  if(q.error||!q.data||q.data.deleted_at)throw new Error('Documento no disponible.');
+  if(q.data.imported_at)throw new Error('Este documento ya tiene carga inicial completa.');
+  if(Number(q.data.current_version)!==1)throw new Error('La ficha pendiente no está en versión inicial.');
+  if(!(q.data.editor_roles||[]).includes(profile.role))throw new Error('Tu cuenta no tiene permiso para completar esta carga.');
+  initialDialogShell(q.data);
+ }catch(err){alert(err.message||'No fue posible abrir la carga inicial.');}
+}
+function initialDialogShell(doc){
+ closeVersionDialog();
+ const d=document.createElement('dialog');d.id='ccVersionDialog';d.className='cc-version-dialog';
+ d.innerHTML='<form id="ccInitialForm" method="dialog"><div class="cc-version-head"><div><strong></strong><p>Completar versión inicial v1</p></div><button type="button" class="cc-doc-btn" id="ccVersionClose">Cerrar</button></div><div class="cc-version-body"><label>Documento original<input id="ccInitialOriginal" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required></label><label id="ccInitialPdfWrap" hidden>PDF de lectura<input id="ccInitialPdf" type="file" accept=".pdf,application/pdf"><span>Necesario cuando el original es Word.</span></label><p id="ccInitialStatus" role="status" aria-live="polite"></p><div class="cc-version-actions"><button type="button" class="cc-doc-btn" id="ccInitialCancel">Cancelar</button><button type="submit" class="cc-doc-btn cc-doc-primary" id="ccInitialSave">Completar carga</button></div></div></form>';
+ d.querySelector('strong').textContent=doc.title;
+ d.dataset.documentId=doc.id;
+ document.body.append(d);
+ const original=d.querySelector('#ccInitialOriginal'),wrap=d.querySelector('#ccInitialPdfWrap'),pdf=d.querySelector('#ccInitialPdf');
+ original.addEventListener('change',()=>{const word=ext(original.files?.[0]?.name)==='docx';wrap.hidden=!word;pdf.required=word;if(!word)pdf.value='';});
+ d.querySelector('#ccVersionClose').onclick=closeVersionDialog;d.querySelector('#ccInitialCancel').onclick=closeVersionDialog;
+ d.querySelector('#ccInitialForm').addEventListener('submit',completeInitialUpload);
+ d.addEventListener('cancel',e=>{e.preventDefault();closeVersionDialog();});d.showModal();
+}
+async function completeInitialUpload(e){
+ e.preventDefault();if(busy)return;busy=true;
+ const d=document.getElementById('ccVersionDialog'),save=d.querySelector('#ccInitialSave'),status=d.querySelector('#ccInitialStatus');save.disabled=true;
+ const say=t=>status.textContent=t;
+ try{
+  const check=await sb.auth.getUser();if(check.error||check.data?.user?.id!==user.id)throw new Error('Tu sesión cambió. Vuelve a iniciar sesión.');
+  const id=d.dataset.documentId,original=d.querySelector('#ccInitialOriginal').files?.[0],pdf=d.querySelector('#ccInitialPdf').files?.[0];
+  if(!original)throw new Error('Selecciona el documento original.');
+  if(original.size>25*1024*1024)throw new Error('El archivo original supera 25 MB.');
+  const originalExt=ext(original.name);
+  if(!['pdf','docx'].includes(originalExt))throw new Error('Solo se admiten PDF y Word (.docx).');
+  if(originalExt==='pdf'&&!(await pdfOK(original)))throw new Error('El archivo seleccionado no es un PDF válido.');
+  if(originalExt==='docx'&&!(await docxOK(original)))throw new Error('El archivo seleccionado no es un Word .docx válido.');
+  let viewPdf=original;if(originalExt==='docx'){if(!pdf)throw new Error('Selecciona también el PDF de lectura.');if(pdf.size>25*1024*1024||!(await pdfOK(pdf)))throw new Error('El PDF de lectura no es válido o supera 25 MB.');viewPdf=pdf;}
+  const latest=await sb.from('control_document_catalog').select('current_version,editor_roles,deleted_at,imported_at').eq('id',id).maybeSingle();
+  if(latest.error||!latest.data||latest.data.deleted_at)throw new Error('Documento no disponible.');
+  if(latest.data.imported_at)throw new Error('La carga inicial ya fue completada por otro usuario.');
+  if(Number(latest.data.current_version)!==1)throw new Error('La ficha cambió. Recarga la Biblioteca.');
+  if(!(latest.data.editor_roles||[]).includes(profile.role))throw new Error('Ya no tienes permiso para completar esta carga.');
+  const folder=id+'/v1';
+  const exists=await sb.storage.from(BUCKET).list(folder,{limit:10});if(exists.error)throw new Error('No se pudo revisar el almacenamiento privado.');
+  say('Subiendo PDF de lectura...');
+  if(!(exists.data||[]).some(x=>x.name==='document.pdf')){const up=await sb.storage.from(BUCKET).upload(folder+'/document.pdf',viewPdf,{contentType:'application/pdf',cacheControl:'0',upsert:false});if(up.error)throw new Error('No se pudo cargar el PDF de lectura.');}
+  let originalPath=folder+'/document.pdf';
+  if(originalExt==='docx'){originalPath=folder+'/original.docx';say('Subiendo Word original...');if(!(exists.data||[]).some(x=>x.name==='original.docx')){const up=await sb.storage.from(BUCKET).upload(originalPath,original,{contentType:WORD,cacheControl:'0',upsert:false});if(up.error)throw new Error('No se pudo cargar el Word original.');}}
+  const existingVersion=await sb.from('control_document_versions').select('id').eq('document_id',id).eq('version_no',1).maybeSingle();
+  if(existingVersion.error)throw new Error('No se pudo verificar la versión inicial.');
+  if(!existingVersion.data){const ver=await sb.from('control_document_versions').insert({document_id:id,version_no:1,pdf_path:folder+'/document.pdf',original_path:originalPath,original_name:original.name,original_ext:originalExt,created_by:user.id,note:'Carga inicial completada desde la Biblioteca'});if(ver.error)throw new Error('Los archivos subieron, pero no se pudo registrar la versión inicial.');}
+  const now=new Date().toISOString();const fin=await sb.from('control_document_catalog').update({original_name:original.name,original_ext:originalExt,imported_at:now,updated_at:now}).eq('id',id).is('imported_at',null).select('id');
+  if(fin.error||fin.data?.length!==1)throw new Error(fin.error?.message||'No se pudo activar el documento.');
+  say('Carga inicial completada correctamente.');setTimeout(()=>location.reload(),700);
+ }catch(err){say(err.message||'No fue posible completar la carga inicial.');}
  finally{busy=false;save.disabled=false;}
 }
 
