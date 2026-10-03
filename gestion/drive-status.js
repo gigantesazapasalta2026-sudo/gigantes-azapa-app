@@ -6,7 +6,7 @@ let sb;
 const $=s=>document.querySelector(s);
 async function init(){
  if(!window.supabase||!window.GIGANTES_SUPABASE_URL)return;
- sb=window.GIGANTES_DB||supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY);
+ sb=window.GIGANTES_DB||supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
  const user=await sb.auth.getUser();if(!user.data?.user)return;
  const p=await sb.from('profiles').select('role,active').eq('user_id',user.data.user.id).maybeSingle();
  if(p.error||!p.data?.active||!['superadmin','board'].includes(p.data.role))return;
