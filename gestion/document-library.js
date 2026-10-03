@@ -168,7 +168,27 @@ async function boot(){
  if(isLibrary){document.getElementById('ccDocZip').addEventListener('change',e=>importPackage(e.target.files?.[0]));for(const id of ['ccDocSearch','ccDocCategory','ccDocState'])document.getElementById(id).addEventListener(id==='ccDocSearch'?'input':'change',()=>renderLibrary());}
  let scheduled=false;new MutationObserver(ms=>{if(!loaded||scheduled||!ms.some(m=>[...m.addedNodes].some(n=>n.nodeType===1)))return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;enhanceLinks();});}).observe(document.body,{childList:true,subtree:true});
  window.addEventListener('pagehide',()=>{closeViewer();for(const u of objectURLs)URL.revokeObjectURL(u);objectURLs.clear();});window.addEventListener('pageshow',e=>{if(e.persisted)load().catch(x=>setNotice(x.message));});window.addEventListener('beforeunload',e=>{if(importing){e.preventDefault();e.returnValue='';}});
- try{await load();}catch(e){if(isLibrary&&e.login){location.replace('login.html?next=biblioteca.html');return;}setNotice(e.message);if(isLibrary)document.getElementById('ccDocSummary').textContent='Biblioteca no disponible';}
+ try{
+  await load();
+  if(isLibrary){
+    const requested=new URLSearchParams(location.search).get('source');
+    if(requested&&validId(requested)){
+      const r=bySource.get(requested);
+      if(r){
+        document.getElementById('ccDocSearch').value=r.title||r.original_name||'';
+        renderLibrary();
+        if(r.ready){
+          const trigger=button('Abrir','view',r.key);
+          setTimeout(()=>openDocument(r.key,'view',trigger),0);
+        }else{
+          setNotice('Este documento está registrado, pero su PDF interno aún está pendiente. Puedes usar “Abrir original en Drive”.');
+        }
+      }else{
+        setNotice('El documento solicitado no está disponible para tu cuenta.');
+      }
+    }
+  }
+ }catch(e){if(isLibrary&&e.login){location.replace('login.html?next=biblioteca.html');return;}setNotice(e.message);if(isLibrary)document.getElementById('ccDocSummary').textContent='Biblioteca no disponible';}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
