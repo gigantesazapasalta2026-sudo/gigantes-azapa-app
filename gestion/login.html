@@ -8,14 +8,14 @@
 <section id="login" class="hide"><div class="notice">Acceso para jugadores, apoderados, entrenadores y Directiva. Cada usuario verá únicamente la información permitida por su rol.</div>
 <label>Correo electrónico</label><input id="email" type="email" autocomplete="email" placeholder="correo@ejemplo.cl">
 <label>Contraseña</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••">
-<button class="btn" id="signin">Ingresar</button><button class="btn dark" id="magic">Enviarme enlace de acceso</button><div class="msg" id="msg"></div><p class="msg" style="text-align:center"><a href="../recuperar.html">¿Olvidaste tu clave? Recuperar con RUT</a></p><p class="msg" style="text-align:center"><a href="../activar.html">Activar mi acceso por primera vez</a></p></section>
+<button class="btn" id="signin">Ingresar</button><button class="btn dark" id="magic">Enviarme enlace de acceso</button><button class="btn" id="repair" style="background:#fff;color:#111827;border:1px solid #d0d5dd">Reparar sesión de este navegador</button><div class="msg" id="msg"></div><p class="msg" style="text-align:center"><a href="../recuperar.html">¿Olvidaste tu clave? Recuperar con RUT</a></p><p class="msg" style="text-align:center"><a href="../activar.html">Activar mi acceso por primera vez</a></p></section>
 </main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
 const requestedNext=new URLSearchParams(location.search).get('next')||'index.html';
 const nextPath=/^(?!\/\/)(?![a-z][a-z0-9+.-]*:)[a-zA-Z0-9_./?-]+$/.test(requestedNext)?requestedNext:'index.html';
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY);
-const loading=document.getElementById('loading'),login=document.getElementById('login'),msg=document.getElementById('msg');
+const loading=document.getElementById('loading'),login=document.getElementById('login'),msg=document.getElementById('msg'),repair=document.getElementById('repair');
 const switchUser=new URLSearchParams(location.search).get('switch')==='1';
 async function showLogin(){loading.classList.add('hide');login.classList.remove('hide')}
 (async()=>{
@@ -35,4 +35,18 @@ signin.onclick=async()=>{
   location.replace(nextPath)
 };
 magic.onclick=async()=>{msg.textContent='Enviando enlace…';const {error}=await sb.auth.signInWithOtp({email:email.value.trim(),options:{emailRedirectTo:new URL(nextPath,location.href).href,shouldCreateUser:false}});msg.textContent=error?'No fue posible enviar el enlace: '+error.message:'Revisa tu correo. Te enviamos un enlace seguro. Si todavía no activaste tu cuenta, utiliza la opción “Activar mi acceso”.'};
+repair.onclick=async()=>{
+  repair.disabled=true;msg.textContent='Reparando sesión local…';
+  try{await sb.auth.signOut({scope:'local'});}catch{}
+  try{
+    const remove=[];
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i)||'';if(/^sb-.*-auth-token$/.test(k)||k.includes('supabase.auth.token'))remove.push(k)}
+    remove.forEach(k=>localStorage.removeItem(k));
+    sessionStorage.clear();
+    if('caches' in window){for(const k of await caches.keys())if(k.startsWith('gigantes-shell-'))await caches.delete(k)}
+    if('serviceWorker' in navigator){for(const reg of await navigator.serviceWorker.getRegistrations())if(reg.scope.startsWith(location.origin))await reg.unregister()}
+    msg.textContent='Sesión reparada. Recargando…';
+    const u=new URL(location.href);u.searchParams.set('switch','1');u.searchParams.set('repaired','1');location.replace(u.href);
+  }catch(e){msg.textContent='No se pudo limpiar todo automáticamente. Prueba cerrar esta pestaña y volver a abrir el sitio.';repair.disabled=false}
+};
 </script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{}));}</script></body></html>
