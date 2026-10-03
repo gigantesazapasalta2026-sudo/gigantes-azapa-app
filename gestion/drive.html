@@ -8,37 +8,60 @@
 <div class="card meta">Los archivos con <strong>Biblioteca</strong> tienen copia privada/versionada dentro del Control Center. Los demás están indexados aquí y conservan un enlace al original de Drive hasta que se incorporen a la Biblioteca.</div>
 </section></main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
-const ROOT='1XwekH7R24heoHYT082Z6tNIQpjJyk0l0',FUFY_ROOT='1M_B7G3mwiuVRgxrGiYa5iJm43Bg_T_x9',FUFY_PROJECT='8aa8f430-d58e-4cdd-977b-4ea134b36d55',sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let all=[],current=ROOT,restrictedRoot=null;
+const ROOT='1XwekH7R24heoHYT082Z6tNIQpjJyk0l0',FUFY_ROOT='1M_B7G3mwiuVRgxrGiYa5iJm43Bg_T_x9',FUFY_PROJECT='8aa8f430-d58e-4cdd-977b-4ea134b36d55',sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let all=[],current=ROOT,restrictedRoot=null,readyDocs=new Set();
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-(async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=drive.html';return}const p=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();if(!p.data?.active){loading.textContent='Tu cuenta no está activa.';return}
+async function loadFolderData(folderId){
+ const fields='drive_file_id,parent_drive_id,name,path,item_type,mime_type,source_url,modified_time,linked_document_id,sync_state,active';
+ const [folderRes,childrenRes]=await Promise.all([
+   sb.from('control_drive_index').select(fields).eq('active',true).eq('drive_file_id',folderId).maybeSingle(),
+   sb.from('control_drive_index').select(fields).eq('active',true).eq('parent_drive_id',folderId).order('name')
+ ]);
+ if(folderRes.error||childrenRes.error)throw new Error('No fue posible cargar esta carpeta.');
+ const incoming=[...(folderRes.data?[folderRes.data]:[]),...(childrenRes.data||[])];
+ const map=new Map(all.map(x=>[x.drive_file_id,x]));incoming.forEach(x=>map.set(x.drive_file_id,x));all=[...map.values()];
+ return incoming;
+}
+(async()=>{
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session){location.href='login.html?next=drive.html';return}
+ const p=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();
+ if(!p.data?.active){loading.textContent='Tu cuenta no está activa.';return}
  const elevated=['superadmin','board'].includes(p.data.role);let fufyAccess=false;
  if(!elevated){const a=await sb.from('project_user_access').select('access_role').eq('user_id',session.user.id).eq('project_id',FUFY_PROJECT).maybeSingle();fufyAccess=!!a.data}
  if(!elevated&&!fufyAccess){loading.textContent='Tu cuenta no tiene permiso para explorar esta documentación.';return}
  restrictedRoot=elevated?null:FUFY_ROOT;current=restrictedRoot||ROOT;
- const requestedFolder=new URLSearchParams(location.search).get('folder');
- const fields='drive_file_id,parent_drive_id,name,path,item_type,mime_type,source_url,modified_time,linked_document_id,sync_state,active';
- let r;
- if(requestedFolder){
-   const q1=await sb.from('control_drive_index').select(fields).eq('active',true).eq('drive_file_id',requestedFolder).maybeSingle();
-   const q2=await sb.from('control_drive_index').select(fields).eq('active',true).eq('parent_drive_id',requestedFolder).order('name');
-   if(q1.error||q2.error){loading.textContent='No fue posible cargar esta carpeta.';return}
-   all=[...(q1.data?[q1.data]:[]),...(q2.data||[])];
- }else{
-   r=await sb.from('control_drive_index').select(fields).eq('active',true).order('path');
-   if(r.error){loading.textContent='No fue posible cargar el índice.';return}
-   all=r.data||[];
- }
- if(restrictedRoot){const rootRow=all.find(x=>x.drive_file_id===FUFY_ROOT);if(!rootRow){loading.textContent='No fue posible cargar la carpeta FUFY.';return}}
- totalK.textContent=all.length;filesK.textContent=all.filter(x=>x.item_type==='file').length;foldersK.textContent=all.filter(x=>x.item_type==='folder').length;linkedK.textContent=all.filter(x=>x.linked_document_id).length;loading.classList.add('hide');app.classList.remove('hide');const requested=new URLSearchParams(location.search).get('folder');if(requested&&all.some(x=>x.drive_file_id===requested&&x.item_type==='folder'))current=requested;if(restrictedRoot&&!isInsideRestricted(current))current=restrictedRoot;rootBtn.textContent=restrictedRoot?'Ir a FUFY':'Ir a raíz';search.placeholder=restrictedRoot?'Buscar dentro de Copa FUFY…':'Buscar en toda la Carpeta Maestra…';renderFolder()})();
+ const ready=await sb.from('control_document_catalog').select('id').not('imported_at','is',null).is('deleted_at',null).is('purged_at',null);
+ if(!ready.error)readyDocs=new Set((ready.data||[]).map(x=>x.id));
+ const requested=new URLSearchParams(location.search).get('folder');
+ const target=requested||current;
+ try{await loadFolderData(target);}catch(e){loading.textContent=e.message;return}
+ current=all.some(x=>x.drive_file_id===target&&x.item_type==='folder')?target:current;
+ if(restrictedRoot&&!isInsideRestricted(current)){current=restrictedRoot;try{await loadFolderData(current)}catch(e){loading.textContent=e.message;return}}
+ totalK.textContent='—';filesK.textContent='—';foldersK.textContent='—';linkedK.textContent=readyDocs.size;
+ loading.classList.add('hide');app.classList.remove('hide');
+ rootBtn.textContent=restrictedRoot?'Ir a FUFY':'Ir a raíz';
+ search.placeholder='Buscar dentro de la carpeta cargada…';
+ renderFolder();
+})();
 function renderFolder(){search.value='';const folder=all.find(x=>x.drive_file_id===current),children=all.filter(x=>x.parent_drive_id===current).sort((a,b)=>(a.item_type===b.item_type?a.name.localeCompare(b.name,'es'):a.item_type==='folder'?-1:1));renderCrumbs(folder);renderItems(children);history.replaceState(null,'','drive.html?folder='+encodeURIComponent(current))}
 function isInsideRestricted(id){if(!restrictedRoot)return true;let x=all.find(r=>r.drive_file_id===id);while(x){if(x.drive_file_id===restrictedRoot)return true;x=all.find(r=>r.drive_file_id===x.parent_drive_id)}return false}
 function renderCrumbs(folder){const base=restrictedRoot?all.find(x=>x.drive_file_id===restrictedRoot):all.find(x=>x.drive_file_id===ROOT);let html='<button data-root="1">'+esc(restrictedRoot?'COPA FUFY':'CARPETA MAESTRA')+'</button>';if(folder&&folder.drive_file_id!==(restrictedRoot||ROOT)){let parent=folder;const chain=[];while(parent&&parent.drive_file_id!==(restrictedRoot||ROOT)){chain.unshift(parent);parent=all.find(x=>x.drive_file_id===parent.parent_drive_id)}html+=chain.map(x=>' › <button data-folder="'+esc(x.drive_file_id)+'">'+esc(x.name)+'</button>').join('')}crumbs.innerHTML=html}
-function renderItems(rows){list.innerHTML=rows.length?rows.map(x=>{const file=x.item_type==='file',open=x.source_url?esc(x.source_url):'';return '<div class="item '+(file&&open?'file-open':'')+'"'+(file&&open?' data-open-url="'+open+'"':'')+'><div class="icon">'+(x.item_type==='folder'?'📁':fileIcon(x.mime_type,x.name))+'</div><div><b>'+esc(x.name)+(x.linked_document_id?'<span class="tag">BIBLIOTECA</span>':'')+'</b><div class="meta">'+esc(x.path)+(x.modified_time?' · '+new Date(x.modified_time).toLocaleString('es-CL'):'')+'</div></div><div class="actions">'+(x.item_type==='folder'?'<button class="btn small alt" data-folder="'+esc(x.drive_file_id)+'">Abrir carpeta</button>':(x.linked_document_id?'<a class="btn small" href="biblioteca.html?source='+encodeURIComponent(x.linked_document_id)+'">Ver en Biblioteca</a>':'')+(x.source_url?'<a class="btn small alt" target="_blank" rel="noopener" href="'+open+'">Abrir archivo</a>':'<span class="tag">PENDIENTE DE VINCULAR</span>'))+'</div></div>'}).join(''):'<div class="empty">Esta carpeta no tiene elementos indexados todavía.</div>'}
+function renderItems(rows){list.innerHTML=rows.length?rows.map(x=>{const file=x.item_type==='file',open=x.source_url?esc(x.source_url):'',ready=x.linked_document_id&&readyDocs.has(x.linked_document_id);return '<div class="item '+(file&&open?'file-open':'')+'"'+(file&&open?' data-open-url="'+open+'"':'')+'><div class="icon">'+(x.item_type==='folder'?'📁':fileIcon(x.mime_type,x.name))+'</div><div><b>'+esc(x.name)+(ready?'<span class="tag">BIBLIOTECA</span>':'')+'</b><div class="meta">'+esc(x.path)+(x.modified_time?' · '+new Date(x.modified_time).toLocaleString('es-CL'):'')+'</div></div><div class="actions">'+(x.item_type==='folder'?'<button class="btn small alt" data-folder="'+esc(x.drive_file_id)+'">Abrir carpeta</button>':(ready?'<a class="btn small" href="biblioteca.html?source='+encodeURIComponent(x.linked_document_id)+'">Ver en Biblioteca</a>':'')+(x.source_url?'<a class="btn small alt" target="_blank" rel="noopener" href="'+open+'">Abrir archivo en Drive</a>':'<span class="tag">SIN ENLACE DE ORIGEN</span>'))+'</div></div>'}).join(''):'<div class="empty">Esta carpeta no contiene archivos indexados. Si existen en Drive, requiere resincronización.</div>'}
 function fileIcon(m,n){if((m||'').includes('pdf')||/\.pdf$/i.test(n||''))return '📕';if((m||'').includes('word')||/\.docx?$/i.test(n||''))return '📘';if((m||'').includes('spreadsheet')||/\.xlsx?$/i.test(n||''))return '📊';if((m||'').startsWith('image/'))return '🖼️';return '📄'}
-document.addEventListener('click',e=>{
+document.addEventListener('click',async e=>{
  const b=e.target.closest('[data-folder],[data-root]');
- if(b){const next=b.dataset.root?(restrictedRoot||ROOT):b.dataset.folder;if(restrictedRoot&&!isInsideRestricted(next))return;current=next;renderFolder();return}
+ if(b){
+   e.preventDefault();
+   const next=b.dataset.root?(restrictedRoot||ROOT):b.dataset.folder;
+   if(restrictedRoot&&!isInsideRestricted(next))return;
+   const old=b.textContent;b.disabled=true;b.textContent='Cargando…';
+   try{await loadFolderData(next);current=next;renderFolder()}catch(err){list.innerHTML='<div class="empty">'+esc(err.message)+'</div>'}
+   finally{b.disabled=false;b.textContent=old}
+   return;
+ }
  if(e.target.closest('a,button'))return;
  const row=e.target.closest('[data-open-url]');if(row?.dataset.openUrl)window.open(row.dataset.openUrl,'_blank','noopener');
-});rootBtn.onclick=()=>{current=restrictedRoot||ROOT;renderFolder()};search.oninput=()=>{const q=search.value.trim().toLowerCase();if(!q)return renderFolder();const rows=all.filter(x=>(!restrictedRoot||isInsideRestricted(x.drive_file_id))&&[x.name,x.path].join(' ').toLowerCase().includes(q)).slice(0,200);crumbs.innerHTML='<span>Resultados '+(restrictedRoot?'FUFY':'globales')+' · '+rows.length+'</span>';renderItems(rows)}
+});
+rootBtn.onclick=async()=>{const next=restrictedRoot||ROOT;try{await loadFolderData(next);current=next;renderFolder()}catch(e){list.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}};
+search.oninput=()=>{const q=search.value.trim().toLowerCase();if(!q)return renderFolder();const rows=all.filter(x=>[x.name,x.path].join(' ').toLowerCase().includes(q)).slice(0,200);crumbs.innerHTML='<span>Resultados cargados · '+rows.length+'</span>';renderItems(rows)}
 </script></body></html>
