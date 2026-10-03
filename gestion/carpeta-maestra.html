@@ -1,0 +1,40 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0b0f14"><title>Carpeta Maestra · Gigantes Control Center</title>
+<style>
+:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085;--ok:#166534}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f6f8;color:#111827}.top{background:var(--d);color:#fff;padding:17px}.in,main{max-width:1180px;margin:auto}.topin{display:flex;align-items:center;gap:12px}.top h1{margin:0;font-size:22px}.top p{margin:4px 0 0;color:#f7a472;font-size:11px}.top a{margin-left:auto;color:#fff;text-decoration:none;font-weight:900}.notice,.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:15px;margin:14px 0}.toolbar{display:grid;grid-template-columns:1fr auto;gap:8px}.toolbar input{padding:12px;border:1px solid #d0d5dd;border-radius:9px;font:inherit}.btn{border:0;border-radius:9px;background:var(--o);color:#fff;padding:10px 12px;font-weight:900;text-decoration:none;cursor:pointer}.btn.alt{background:#fff;color:#111827;border:1px solid var(--l)}.crumbs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:11px;margin-top:12px}.crumbs button{border:0;background:none;color:#1d4ed8;font-weight:800;cursor:pointer;padding:2px}.summary{font-size:11px;color:var(--m);margin:10px 0}.row{display:grid;grid-template-columns:38px 1fr 190px 165px;gap:12px;align-items:center;padding:12px 0;border-top:1px solid #eef0f2}.row:first-child{border-top:0}.ico{font-size:22px;text-align:center}.name{font-size:13px;font-weight:900}.path,.meta{font-size:10px;color:var(--m);word-break:break-word}.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.actions a,.actions button{border:1px solid var(--l);border-radius:8px;background:#fff;color:#111827;padding:7px 9px;text-decoration:none;font-size:10px;font-weight:900;cursor:pointer}.tag{display:inline-block;padding:4px 7px;border-radius:999px;background:#eef2ff;font-size:9px;font-weight:900}.tag.linked{background:#dcfce7;color:var(--ok)}.empty{font-size:12px;color:var(--m)}.hide{display:none}@media(max-width:760px){.topin{align-items:flex-start;flex-wrap:wrap}.top a{margin-left:0}.toolbar{grid-template-columns:1fr}.row{grid-template-columns:32px 1fr}.row>.meta{grid-column:2}.actions{grid-column:2;justify-content:flex-start}}
+</style></head><body>
+<header class="top"><div class="in topin"><div><h1>🗂️ Carpeta Maestra</h1><p>Explorador indexado de Google Drive</p></div><a href="index.html">← Control Center</a></div></header>
+<main><div id="loading" class="notice">Verificando acceso e índice…</div><section id="app" class="hide">
+<div class="card"><div class="toolbar"><input id="search" type="search" placeholder="Buscar archivo, carpeta o ruta…" autocomplete="off"><button id="clear" class="btn alt">Limpiar</button></div><div id="crumbs" class="crumbs"></div><div id="summary" class="summary"></div></div>
+<div class="card"><div id="list"></div></div>
+<div class="notice"><b>Cómo funciona:</b> esta vista usa el índice del Control Center. “Abrir Drive” abre el original en Google Drive. Los documentos vinculados a la Biblioteca muestran una etiqueta verde. La sincronización automática completa seguirá dependiendo de las credenciales OAuth privadas de Google.</div>
+</section></main>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+const ROOT='1XwekH7R24heoHYT082Z6tNIQpjJyk0l0';
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);
+let rows=[],currentParent=ROOT,parentMap=new Map(),byId=new Map();
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+(async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=carpeta-maestra.html';return}
+ const p=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();if(!p.data?.active||!['superadmin','board'].includes(p.data.role)){loading.textContent='El Explorador de Carpeta Maestra está reservado a Directiva y administración general.';return}
+ const r=await sb.from('control_drive_index').select('*').eq('active',true).order('item_type',{ascending:false}).order('name').limit(2000);
+ if(r.error){loading.textContent='No fue posible cargar el índice de Drive: '+r.error.message;return}
+ rows=r.data||[];byId=new Map(rows.map(x=>[x.drive_file_id,x]));for(const x of rows){if(!parentMap.has(x.parent_drive_id))parentMap.set(x.parent_drive_id,[]);parentMap.get(x.parent_drive_id).push(x)}
+ loading.classList.add('hide');app.classList.remove('hide');render();
+})();
+search.oninput=render;clear.onclick=()=>{search.value='';currentParent=ROOT;render()};
+function openFolder(id){currentParent=id;search.value='';render();window.scrollTo({top:0,behavior:'smooth'})}
+function render(){const q=search.value.trim().toLowerCase();let data=q?rows.filter(x=>(x.name+' '+x.path).toLowerCase().includes(q)):(parentMap.get(currentParent)||[]);
+ data.sort((a,b)=>a.item_type===b.item_type?a.name.localeCompare(b.name,'es'):(a.item_type==='folder'?-1:1));
+ summary.textContent=(q?'Búsqueda global':'Contenido de carpeta')+' · '+data.length+' elemento(s) · índice total '+rows.length;
+ renderCrumbs(q);
+ list.innerHTML=data.length?data.map(itemRow).join(''):'<div class="empty">No hay elementos indexados en esta carpeta.</div>';
+}
+function renderCrumbs(q){if(q){crumbs.innerHTML='<span>🔎 Resultados globales</span>';return}
+ const parts=[];let id=currentParent,safety=0;while(id&&id!==ROOT&&safety++<20){const n=byId.get(id);if(!n)break;parts.unshift({id:n.drive_file_id,name:n.name});id=n.parent_drive_id}
+ crumbs.innerHTML='<button onclick="openFolder(\''+ROOT+'\')">CARPETA MAESTRA</button>'+parts.map(x=>' <span>›</span> <button onclick="openFolder(\''+x.id+'\')">'+esc(x.name)+'</button>').join('');
+}
+function itemRow(x){const folder=x.item_type==='folder',mod=x.modified_time?new Date(x.modified_time).toLocaleString('es-CL'):'Sin fecha',linked=x.linked_document_id;
+ return '<div class="row"><div class="ico">'+(folder?'📁':iconFor(x.mime_type,x.name))+'</div><div><div class="name">'+esc(x.name)+'</div><div class="path">'+esc(x.path)+'</div>'+(linked?'<span class="tag linked">En Biblioteca</span>':'')+'</div><div class="meta">'+(folder?'Carpeta':'Archivo')+'<br>'+esc(mod)+'</div><div class="actions">'+(folder?'<button onclick="openFolder(\''+x.drive_file_id+'\')">Abrir carpeta</button>':'')+(x.source_url?'<a href="'+esc(x.source_url)+'" target="_blank" rel="noopener">Abrir Drive</a>':'')+(linked?'<a href="biblioteca.html">Biblioteca</a>':'')+'</div></div>';
+}
+function iconFor(mime,name){const n=(name||'').toLowerCase();if((mime||'').includes('pdf')||n.endsWith('.pdf'))return '📕';if((mime||'').includes('word')||n.endsWith('.docx'))return '📘';if((mime||'').includes('spreadsheet')||n.endsWith('.xlsx')||n.endsWith('.csv'))return '📊';if((mime||'').includes('image'))return '🖼️';if((mime||'').includes('presentation'))return '📽️';return '📄'}
+</script></body></html>
