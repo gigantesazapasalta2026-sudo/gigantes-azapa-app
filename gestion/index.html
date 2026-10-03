@@ -308,8 +308,20 @@ render();
   const client=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
   const {data:{session}}=await client.auth.getSession();
   if(!session){location.replace('login.html');return}
-  const {data:profile,error}=await client.from('profiles').select('display_name,role,active').eq('user_id',session.user.id).maybeSingle();
-  if(error||!profile||!profile.active){await client.auth.signOut();location.replace('login.html');return}
+  let profile=null;
+  for(let attempt=0;attempt<3&&!profile;attempt++){
+    const res=await client.from('profiles').select('display_name,role,active').eq('user_id',session.user.id).maybeSingle();
+    if(res.data)profile=res.data;
+    if(!profile&&attempt<2)await new Promise(r=>setTimeout(r,500*(attempt+1)));
+  }
+  if(!profile){
+    console.warn('Perfil temporalmente no disponible; se mantiene la sesión.');
+    window.GIGANTES_DB=client;
+    render();
+    const p=document.querySelector('.top p');if(p)p.textContent='Sesión autenticada · cargando permisos…';
+    return;
+  }
+  if(!profile.active){location.replace('login.html?reason=inactive');return}
   const staffRoles=['superadmin','board','treasury','coach','commission'];
   if(!staffRoles.includes(profile.role)){location.replace('../mi_jugador.html');return}
   window.GIGANTES_DB=client; window.GIGANTES_PROFILE=profile;
