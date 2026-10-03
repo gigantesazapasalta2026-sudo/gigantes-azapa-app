@@ -95,11 +95,11 @@ sendLink.onclick=async()=>{
     email:e,
     options:{
       emailRedirectTo:new URL('activar.html',location.href).href,
-      shouldCreateUser:true
+      shouldCreateUser:false
     }
   });
   sendLink.disabled=false;
-  requestMsg.textContent=error?'No fue posible enviar el enlace: '+error.message:'Revisa tu correo. Te enviamos un enlace de acceso de un solo uso.';
+  requestMsg.textContent=error?'No fue posible procesar la solicitud. Verifica que tu acceso haya sido habilitado por el club.':'Si el correo tiene un acceso habilitado, recibirás un enlace seguro en unos minutos.';
 };
 
 savePass.onclick=async()=>{
