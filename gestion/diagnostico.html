@@ -1,0 +1,45 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0b0f14"><title>Diagnóstico · Gigantes Control Center</title>
+<style>
+:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085;--ok:#166534;--warn:#92400e;--bad:#991b1b}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f6f8;color:#111827}.top{background:#0b0f14;color:#fff;padding:18px}.in,main{max-width:1100px;margin:auto}.topin{display:flex;gap:12px;align-items:center}.top h1{margin:0;font-size:22px}.top p{margin:4px 0 0;color:#f7a472;font-size:11px}.top a{margin-left:auto;color:#fff;text-decoration:none;font-weight:900}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:15px}.card h2{font-size:14px;margin:0 0 8px}.metric{font-size:28px;font-weight:900}.meta{font-size:11px;color:var(--m);line-height:1.5}.status{display:inline-block;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900;margin-bottom:8px}.ok{background:#dcfce7;color:var(--ok)}.warn{background:#fef3c7;color:var(--warn)}.bad{background:#fee2e2;color:var(--bad)}.wide{grid-column:span 3}.row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #eef0f2;font-size:12px}.row:first-child{border-top:0}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:13px;font-size:12px}.hide{display:none}@media(max-width:760px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.topin{flex-wrap:wrap}.top a{margin-left:0}}</style></head><body>
+<header class="top"><div class="in topin"><div><h1>🩺 Diagnóstico del sistema</h1><p>Estado operativo en tiempo real</p></div><a href="index.html">← Control Center</a></div></header>
+<main><div id="loading" class="notice">Ejecutando diagnóstico…</div><section id="app" class="hide"><div id="updated" class="meta"></div><div id="grid" class="grid"></div><div class="notice"><strong>Bloqueos externos conocidos:</strong> la sincronización completa con Google Drive requiere credenciales OAuth privadas del servidor. La protección de contraseñas filtradas se activa desde Auth Settings de Supabase. El envío automático de correos requiere un proveedor transaccional; mientras tanto la cola se gestiona manualmente.</div></section></main>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+(async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=diagnostico.html';return}const p=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();if(!p.data?.active||!['superadmin','board'].includes(p.data.role)){loading.textContent='Diagnóstico reservado a Directiva y administración general.';return}
+ try{
+  const month=new Date().toISOString().slice(0,7)+'-01';
+  const [people,members,tasks,quality,notifications,docs,drive,submissions,charges,sponsors,activity]=await Promise.all([
+   sb.from('people').select('id',{count:'exact',head:true}),
+   sb.from('memberships').select('person_id',{count:'exact',head:true}).eq('status','active'),
+   sb.from('tasks').select('id,status,progress'),
+   sb.from('data_quality_issues').select('id,issue_type,severity').eq('resolved',false),
+   sb.from('notification_queue').select('id,notification_type').eq('status','pending'),
+   sb.from('control_document_catalog').select('id,imported_at,deleted_at,purged_at,expires_on,source_status'),
+   sb.from('control_drive_index').select('drive_file_id,linked_document_id,active,last_seen_at'),
+   sb.from('payment_submissions').select('id,status').eq('status','pending_review'),
+   sb.from('membership_charges').select('id,status,amount,paid_amount').eq('period',month),
+   sb.from('sponsor_prospects').select('id,status').eq('project_id','8aa8f430-d58e-4cdd-977b-4ea134b36d55'),
+   sb.from('control_activity_log').select('id',{count:'exact',head:true})
+  ]);
+  const err=[people,members,tasks,quality,notifications,docs,drive,submissions,charges,sponsors,activity].find(x=>x.error);if(err)throw err.error;
+  const activeDocs=(docs.data||[]).filter(x=>!x.deleted_at&&!x.purged_at),driveActive=(drive.data||[]).filter(x=>x.active),legacy=(tasks.data||[]).filter(x=>['NO INICIADO','EN PROCESO','BLOQUEADO','COMPLETADO'].includes(x.status)),pendingCharges=(charges.data||[]).filter(x=>!['paid','waived'].includes(x.status)),expiredDocs=activeDocs.filter(x=>x.expires_on&&x.expires_on<new Date().toISOString().slice(0,10));
+  const cards=[
+   ['Registro Maestro',people.count||0,'Personas registradas',true],
+   ['Membresías activas',members.count||0,'Jugadores / miembros con membresía activa',true],
+   ['Tareas',(tasks.data||[]).length,legacy.length?'Hay '+legacy.length+' estados legacy':'Estados normalizados',legacy.length===0],
+   ['Calidad de datos',(quality.data||[]).length,'Observaciones abiertas',!(quality.data||[]).length],
+   ['Notificaciones',(notifications.data||[]).length,'Pendientes de gestión',!(notifications.data||[]).length],
+   ['Biblioteca',activeDocs.length,(activeDocs.filter(x=>!x.imported_at).length)+' carga(s) inicial(es) pendiente(s)',activeDocs.every(x=>x.imported_at)],
+   ['Vencimientos',expiredDocs.length,'Documentos vencidos configurados',expiredDocs.length===0],
+   ['Drive',driveActive.length,(driveActive.filter(x=>x.linked_document_id).length)+' enlazados a Biblioteca',driveActive.length>0&&driveActive.some(x=>x.linked_document_id)],
+   ['Comprobantes',(submissions.data||[]).length,'Esperando revisión de Tesorería',!(submissions.data||[]).length],
+   ['Cuotas '+month.slice(0,7),(charges.data||[]).length,pendingCharges.length+' con saldo pendiente',pendingCharges.length===0&&(charges.data||[]).length>0],
+   ['Sponsors FUFY',(sponsors.data||[]).length,(sponsors.data||[]).filter(x=>x.status==='confirmed').length+' confirmados',(sponsors.data||[]).some(x=>x.status==='confirmed')],
+   ['Actividad reciente',activity.count||0,'Cambios auditados desde activación',true]
+  ];
+  grid.innerHTML=cards.map(x=>'<article class="card"><span class="status '+(x[3]?'ok':'warn')+'">'+(x[3]?'OK':'REVISAR')+'</span><h2>'+esc(x[0])+'</h2><div class="metric">'+esc(x[1])+'</div><div class="meta">'+esc(x[2])+'</div></article>').join('');
+  updated.textContent='Actualizado: '+new Date().toLocaleString('es-CL');loading.classList.add('hide');app.classList.remove('hide');
+ }catch(e){loading.textContent='Diagnóstico incompleto: '+(e.message||'error de consulta');}
+})();
+</script></body></html>
