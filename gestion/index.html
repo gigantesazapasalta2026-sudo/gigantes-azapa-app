@@ -312,7 +312,9 @@ render();
   if(error||!profile||!profile.active){await client.auth.signOut();location.replace('login.html');return}
   const staffRoles=['superadmin','board','treasury','coach','commission'];
   if(!staffRoles.includes(profile.role)){location.replace('../mi_jugador.html');return}
-  window.GIGANTES_DB=client; window.GIGANTES_PROFILE=profile; await loadLiveData(); render();
+  window.GIGANTES_DB=client; window.GIGANTES_PROFILE=profile;
+  render();
+  loadLiveData().then(()=>render()).catch(err=>{console.error('Carga parcial Control Center',err);});
   const actions=document.querySelector('.actions');
   if(actions){const b=document.createElement('button');b.className='btn dark';b.textContent='Salir';b.onclick=async()=>{await client.auth.signOut();location.replace('login.html')};actions.appendChild(b)}
   const p=document.querySelector('.top p'); if(p)p.textContent='Sesión: '+(profile.display_name||session.user.email)+' · '+profile.role;
