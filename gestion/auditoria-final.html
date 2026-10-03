@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0f14"><meta name="robots" content="noindex,nofollow"><title>Auditoría final 8/8 · Gigantes</title><link rel="manifest" href="../manifest.webmanifest">
+<style>
+:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085;--ok:#166534;--bad:#991b1b;--warn:#92400e}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f6f8;color:#111827}.top{background:var(--d);color:#fff;padding:18px}.in,main{max-width:1180px;margin:auto}.topin{display:flex;gap:12px;align-items:center}.top h1{margin:0;font-size:22px}.top p{margin:4px 0 0;color:#cbd5e1;font-size:11px}.top a{margin-left:auto;color:#fff;text-decoration:none;font-weight:900}.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px;margin:14px 0}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.k{background:#fff;border:1px solid var(--l);border-radius:12px;padding:14px}.k b{display:block;font-size:28px}.k span{font-size:10px;color:var(--m);font-weight:900;text-transform:uppercase}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px;color:#9a3412;font-size:12px;line-height:1.45}.tablewrap{overflow:auto}.matrix{width:100%;border-collapse:collapse;font-size:11px}.matrix th,.matrix td{padding:9px;border-top:1px solid #eef0f2;text-align:center;white-space:nowrap}.matrix th:first-child,.matrix td:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:1}.yes{color:var(--ok);font-weight:900}.no{color:var(--bad);font-weight:900}.pending{color:var(--warn);font-weight:900}.tests{display:grid;gap:10px}.test{border:1px solid var(--l);border-radius:12px;padding:12px;display:grid;grid-template-columns:26px minmax(0,1fr) 150px;gap:10px;align-items:start}.test input{width:20px;height:20px}.test strong{display:block;font-size:12px}.test small{display:block;color:var(--m);margin-top:3px;line-height:1.35}.test select{width:100%;padding:7px;border:1px solid #d1d5db;border-radius:8px;background:#fff}.btn{border:0;border-radius:9px;padding:9px 11px;font-weight:900;cursor:pointer;background:var(--o);color:#fff}.btn.alt{background:#111827}.actions{display:flex;gap:8px;flex-wrap:wrap}.hide{display:none}@media(max-width:760px){.kpis{grid-template-columns:1fr 1fr}.test{grid-template-columns:26px 1fr}.test select{grid-column:2}.topin{flex-wrap:wrap}.top a{margin-left:0}}</style></head>
+<body><header class="top"><div class="in topin"><div><h1>Auditoría final 8/8</h1><p>Prueba de acceso por cuenta y cierre funcional del Control Center</p></div><a href="index.html">← Control Center</a></div></header>
+<main><div id="loading" class="card">Validando acceso…</div><section id="app" class="hide">
+<div class="kpis"><div class="k"><b id="doneK">0</b><span>Pruebas aprobadas</span></div><div class="k"><b id="failK">0</b><span>Con observación</span></div><div class="k"><b id="pendingK">0</b><span>Pendientes</span></div><div class="k"><b>8/8</b><span>Objetivo módulos</span></div></div>
+<div class="card"><h2>Matriz esperada</h2><p class="notice">✅ debe tener acceso · ❌ debe quedar bloqueado · ⏳ depende de una cuenta/configuración externa. Esta matriz no cambia permisos: sirve para probarlos.</p><div class="tablewrap"><table class="matrix"><thead><tr><th>Cuenta / rol</th><th>Control Center</th><th>FUFY</th><th>Tes. Gigantes</th><th>Tes. Classic</th><th>Usuarios</th><th>Mi Gigantes</th></tr></thead><tbody>
+<tr><td><b>Rogers · Superadmin</b></td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td></tr>
+<tr><td><b>Patricia · Presidencia</b></td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td></tr>
+<tr><td><b>Cristian · Classic / administración</b></td><td class="yes">✅</td><td class="yes">✅</td><td class="no">❌</td><td class="yes">✅</td><td class="no">❌</td><td class="yes">✅</td></tr>
+<tr><td><b>Ingrid · Secretaría</b></td><td class="yes">✅</td><td class="yes">✅</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td><td class="yes">✅</td></tr>
+<tr><td><b>Bastián · Comisión</b></td><td class="yes">✅</td><td class="yes">✅</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td><td class="yes">✅</td></tr>
+<tr><td><b>Nelson · Rayado / FUFY</b></td><td class="yes">✅</td><td class="yes">✅</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td><td class="yes">✅</td></tr>
+<tr><td><b>Angélica · Tesorería Gigantes</b></td><td class="pending">⏳</td><td class="no">❌</td><td class="pending">⏳</td><td class="no">❌</td><td class="no">❌</td><td class="pending">⏳</td></tr>
+<tr><td><b>Apoderado / jugador</b></td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td><td class="yes">✅</td></tr>
+</tbody></table></div></div>
+<div class="card"><h2>Checklist de prueba</h2><p style="color:var(--m);font-size:12px">Abre una ventana incógnito o usa “cambiar usuario”, inicia sesión con la cuenta indicada y ejecuta cada prueba. El estado se guarda en este navegador.</p><div id="tests" class="tests"></div></div>
+<div class="card"><div class="actions"><button class="btn" id="reset">Reiniciar checklist</button><a class="btn alt" href="login.html?switch=1&next=auditoria-final.html">Cambiar usuario</a></div></div>
+</section></main>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY),KEY='gigantes_auditoria_8x8_v1';
+const specs=[
+['Rogers','Entrar al Control Center','Debe abrir el panel general.'],
+['Rogers','Abrir ambas Tesorerías','Gigantes y Classic/Adulta deben abrir y permitir operar.'],
+['Rogers','Abrir Biblioteca y FUFY','Debe ver documentos, FUFY y explorador completo.'],
+['Patricia','Abrir ambas Tesorerías','Debe abrir Gigantes y Classic/Adulta.'],
+['Patricia','Administración general','Debe acceder a funciones de Directiva.'],
+['Cristian','Abrir Tesorería Classic','Debe abrir Classic/Adulta.'],
+['Cristian','Intentar Tesorería Gigantes','Debe quedar bloqueado.'],
+['Ingrid','Abrir Control Center y FUFY','Debe poder operar contenidos de Secretaría/FUFY.'],
+['Ingrid','Intentar ambas Tesorerías','Ambas deben quedar bloqueadas.'],
+['Bastián','Abrir FUFY','Debe acceder al proyecto y sus tareas/documentos.'],
+['Bastián','Intentar Tesorerías','Deben quedar bloqueadas.'],
+['Nelson','Abrir FUFY','Debe acceder a sus tareas y documentación FUFY.'],
+['Nelson','Intentar Tesorerías','Deben quedar bloqueadas.'],
+['Apoderado','Intentar Control Center','Debe redirigir a Mi Gigantes o bloquear acceso.'],
+['Apoderado','Abrir Mi Gigantes','Debe mostrar únicamente información vinculada a su familia.'],
+['Sistema','Probar pago y anulación','Cuota: abono → parcial → anulación → saldo recalculado.'],
+['Sistema','Probar Inventario','Verificar un ítem y confirmar que deja evento de auditoría.'],
+['Sistema','Probar documento','Ver PDF y descargar original desde Biblioteca.'],
+['Sistema','Probar recuperación','Solicitar recuperación por RUT sin revelar si el RUT existe.'],
+['Sistema','Probar PWA','Instalar/abrir app y confirmar que páginas privadas no funcionan offline con datos cacheados.']
+];
+let state=JSON.parse(localStorage.getItem(KEY)||'{}');
+function render(){tests.innerHTML=specs.map((x,i)=>{const s=state[i]||'pending';return '<div class="test"><input type="checkbox" data-ok="'+i+'" '+(s==='ok'?'checked':'')+'><div><strong>'+esc(x[0])+' · '+esc(x[1])+'</strong><small>'+esc(x[2])+'</small></div><select data-state="'+i+'"><option value="pending" '+(s==='pending'?'selected':'')+'>Pendiente</option><option value="ok" '+(s==='ok'?'selected':'')+'>Aprobada</option><option value="fail" '+(s==='fail'?'selected':'')+'>Observación</option></select></div>'}).join('');stats()}
+function stats(){const vals=specs.map((_,i)=>state[i]||'pending');doneK.textContent=vals.filter(x=>x==='ok').length;failK.textContent=vals.filter(x=>x==='fail').length;pendingK.textContent=vals.filter(x=>x==='pending').length}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+document.addEventListener('change',e=>{if(e.target.matches('[data-state]')){state[e.target.dataset.state]=e.target.value;save()}if(e.target.matches('[data-ok]')){state[e.target.dataset.ok]=e.target.checked?'ok':'pending';save()}});
+reset.onclick=()=>{if(confirm('¿Reiniciar todos los resultados de la auditoría?')){state={};save()}};
+(async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('login.html?next=auditoria-final.html');return}const {data:p}=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();if(!p?.active||!['superadmin','board'].includes(p.role)){loading.textContent='Esta auditoría está reservada a Superadmin y Directiva.';return}loading.classList.add('hide');app.classList.remove('hide');render()})();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{}));}
+</script></body></html>
