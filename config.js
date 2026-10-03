@@ -11,3 +11,10 @@ window.GIGANTES_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Mv2-Dmoh24cSI_CYFFgA5
 (()=>{const own=document.currentScript;if(!own?.src)return;const center=new URL('gestion/index.html',own.src);if(location.origin!==center.origin||location.pathname!==center.pathname)return;const add=()=>{const menu=document.querySelector('.more-panel');if(!menu||menu.querySelector('a[href="auditoria-final.html"]'))return;const a=document.createElement('a');a.href='auditoria-final.html';a.textContent='✅ Auditoría final 8/8';const before=menu.querySelector('a[href="comunicaciones.html"]');before?menu.insertBefore(a,before):menu.appendChild(a)};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add,{once:true});else add();})();
 // Private document library across authenticated management pages.
 (()=>{const own=document.currentScript;if(!own?.src)return;const base=new URL('gestion/',own.src);if(location.origin!==base.origin||!location.pathname.startsWith(base.pathname))return;const page=location.pathname.slice(base.pathname.length);if(['login.html','biblioteca.html','presentacion.html'].includes(page))return;const start=()=>{const s=document.createElement('script');s.src=new URL('document-library.js?v=20261003-1',base).href;document.head.appendChild(s);};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();})();
+
+// Resilient browser storage for Supabase Auth: sessionStorage first, mirrored to localStorage.
+window.GIGANTES_AUTH_STORAGE={
+  getItem(key){try{const s=sessionStorage.getItem(key);if(s!==null)return s}catch{}try{return localStorage.getItem(key)}catch{return null}},
+  setItem(key,value){try{sessionStorage.setItem(key,value)}catch{}try{localStorage.setItem(key,value)}catch{}},
+  removeItem(key){try{sessionStorage.removeItem(key)}catch{}try{localStorage.removeItem(key)}catch{}}
+};
