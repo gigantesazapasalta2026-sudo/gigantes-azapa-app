@@ -9,7 +9,7 @@
 .logo{width:58px;height:58px;border-radius:12px;background:#fff;object-fit:contain;padding:4px}.top h1{margin:0;font-size:22px}.top p{margin:4px 0 0;color:#d1d5db;font-size:12px}
 .actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:9px;padding:9px 11px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:var(--o);color:#fff}.btn.alt{background:#fff;color:#111827}.btn.dark{background:#111827}
 main{max-width:1100px;margin:auto;padding:18px}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:13px;margin-bottom:14px;color:#9a3412;font-size:12px;line-height:1.45}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.card,.panel{background:#fff;border:1px solid var(--l);border-radius:14px}.card{padding:15px}.card span{font-size:10px;color:var(--m);font-weight:900;text-transform:uppercase}.card b{display:block;font-size:25px;margin-top:6px}.panel{padding:16px;margin-bottom:14px}.panel h2{margin:0 0 6px;font-size:17px}.panel p{margin:0 0 12px;color:var(--m);font-size:12px}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}.card,.panel{background:#fff;border:1px solid var(--l);border-radius:14px}.card{padding:15px}.card span{font-size:10px;color:var(--m);font-weight:900;text-transform:uppercase}.card b{display:block;font-size:25px;margin-top:6px}.panel{padding:16px;margin-bottom:14px}.panel h2{margin:0 0 6px;font-size:17px}.panel p{margin:0 0 12px;color:var(--m);font-size:12px}
 .task{display:grid;grid-template-columns:minmax(0,1fr) 130px 120px;gap:10px;align-items:center;border-top:1px solid #eef0f2;padding:12px 0}.task:first-child{border-top:0}.task strong{display:block;font-size:13px}.task small{display:block;color:var(--m);margin-top:4px}.badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900;background:#f3f4f6}.badge.done{background:#dcfce7;color:#166534}.badge.waiting{background:#fef3c7;color:#92400e}.badge.in_progress{background:#dbeafe;color:#1d4ed8}
 select{width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;background:#fff}.muted{color:var(--m);font-size:11px}.hide{display:none}
 @media(max-width:760px){.topin{align-items:flex-start;flex-wrap:wrap}.actions{margin-left:0}.kpis{grid-template-columns:1fr 1fr}.task{grid-template-columns:1fr}.task select{max-width:none}}
@@ -28,7 +28,7 @@ select{width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;backgro
 <div class="card"><span>Tareas</span><b id="kTasks">0</b></div>
 <div class="card"><span>Completadas</span><b id="kDone">0</b></div>
 <div class="card"><span>En curso</span><b id="kProgress">0</b></div>
-<div class="card"><span>Pendientes</span><b id="kWaiting">0</b></div>
+<div class="card"><span>Pendientes</span><b id="kWaiting">0</b></div><div class="card"><span>Prospectos sponsor</span><b id="kSponsors">0</b></div><div class="card"><span>Sponsors confirmados</span><b id="kSponsorsOk">0</b></div>
 </div>
 <div class="panel"><h2>Proyecto</h2><p id="projectMeta">Cargando…</p><div class="muted">Tu permiso está limitado a Copa FUFY 2026. No habilita Tesorería general, administración de usuarios ni otros proyectos del club.</div></div>
 <div class="panel"><h2>Tareas operativas FUFY</h2><p>Puedes revisar y actualizar el estado de las tareas de este proyecto.</p><div id="tasks"></div></div><div class="panel"><h2>Responsables y comisiones</h2><p>Responsabilidades estructuradas del proyecto.</p><div id="responsibilities"></div></div><div class="panel"><h2>Documentos y operación</h2><p>Accesos relacionados con la Copa FUFY.</p><div class="actions" style="margin-left:0"><a class="btn" href="biblioteca.html">📚 Biblioteca FUFY</a><a class="btn" href="sponsors.html">🤝 Sponsors</a><a class="btn" href="recaudacion.html">💰 Recaudación</a><a class="btn" href="eventos.html">📅 Eventos</a></div><div id="fufyDocs" class="muted" style="margin-top:12px"></div></div>
@@ -43,13 +43,14 @@ function badge(s){const v=String(s||'pending');return '<span class="badge '+v+'"
 async function init(){
   const {data:{user},error:userErr}=await sb.auth.getUser();
   if(!user||userErr){location.replace('login.html?next=fufy.html');return}
-  const [{data:profile},{data:access},{data:project},{data:tasks,error:taskErr},{data:responsibilityRows},{data:docRows}]=await Promise.all([
+  const [{data:profile},{data:access},{data:project},{data:tasks,error:taskErr},{data:responsibilityRows},{data:docRows},{data:sponsorRows}]=await Promise.all([
     sb.from('profiles').select('display_name,role,active').eq('user_id',user.id).maybeSingle(),
     sb.from('project_user_access').select('access_role').eq('user_id',user.id).eq('project_id',PROJECT_ID).maybeSingle(),
     sb.from('projects').select('name,status,event_date,owner_name').eq('id',PROJECT_ID).maybeSingle(),
     sb.from('tasks').select('id,title,status,due_date,owner_name,priority,progress').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}),
     sb.from('project_responsibilities').select('id,code,area,title,responsible_name,responsible_email,description,active').eq('project_id',PROJECT_ID).eq('active',true).order('sort_order'),
-    sb.from('control_document_catalog').select('id,title,category,current_version,source_status').is('deleted_at',null).or('category.eq.Copa FUFY,title.ilike.%FUFY%,title.ilike.%Fuffy%').order('title')
+    sb.from('control_document_catalog').select('id,title,category,current_version,source_status').is('deleted_at',null).or('category.eq.Copa FUFY,title.ilike.%FUFY%,title.ilike.%Fuffy%').order('title'),
+    sb.from('sponsor_prospects').select('id,status').eq('project_id',PROJECT_ID)
   ]);
   const elevated=profile?.active&&['superadmin','board'].includes(profile?.role);
   const projectManager=profile?.active&&access&&['viewer','editor','manager','treasury'].includes(access.access_role);
@@ -57,7 +58,7 @@ async function init(){
   taskRows=tasks||[];
   who.textContent='Sesión: '+(profile?.display_name||user.email)+' · permiso FUFY: '+(elevated?'administración club':access.access_role);
   projectMeta.textContent=(project?.name||'Copa FUFY 2026')+' · '+(project?.status||'activo')+(project?.event_date?' · '+project.event_date:'');
-  renderTasks();renderResponsibilities(responsibilityRows||[]);renderDocs(docRows||[]);
+  renderTasks();renderResponsibilities(responsibilityRows||[]);renderDocs(docRows||[]);kSponsors.textContent=(sponsorRows||[]).length;kSponsorsOk.textContent=(sponsorRows||[]).filter(x=>x.status==='confirmed').length;
   loading.classList.add('hide');app.classList.remove('hide');
 }
 function renderTasks(){
