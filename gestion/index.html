@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0f14">
-<title>Gigantes Control Center · Club 2030</title>
+<title>Gigantes Control Center · Club 2030</title><link rel="manifest" href="../manifest.webmanifest">
 <style>
 :root{--o:#f36b21;--d:#0b0f14;--d2:#141b24;--m:#667085;--l:#e5e7eb;--s:#f4f6f8;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--blue:#1d4ed8}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--s);color:#111827}
@@ -318,4 +318,4 @@ render();
   const p=document.querySelector('.top p'); if(p)p.textContent='Sesión: '+(profile.display_name||session.user.email)+' · '+profile.role;
 })();
 </script>
-</body></html>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{}));}</script></body></html>
