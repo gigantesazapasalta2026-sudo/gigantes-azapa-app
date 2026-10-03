@@ -48,7 +48,7 @@ async function init(){
  $('#ccAddDocument')?.addEventListener('click',()=>{$('#ccAddPanel').hidden=false;$('#ccAddTitle').focus();});
  $('#ccAddCancel')?.addEventListener('click',()=>{$('#ccAddPanel').hidden=true;$('#ccAddForm').reset();setWordFields();applyDefaults();msg('');});
  $('#ccAddForm')?.addEventListener('submit',submit);
- document.addEventListener('click',e=>{const b=e.target.closest('[data-cc-action]');if(!b)return;if(b.dataset.ccAction==='updateversion'){e.preventDefault();openVersionDialog(b.dataset.ccKey);}else if(b.dataset.ccAction==='editmeta'){e.preventDefault();openMetaDialog(b.dataset.ccKey);}});
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-cc-action]');if(!b)return;if(b.dataset.ccAction==='updateversion'){e.preventDefault();openVersionDialog(b.dataset.ccKey);}else if(b.dataset.ccAction==='editmeta'){e.preventDefault();openMetaDialog(b.dataset.ccKey);}else if(b.dataset.ccAction==='trash'){e.preventDefault();moveToTrash(b.dataset.ccKey,b);}else if(b.dataset.ccAction==='restore'){e.preventDefault();restoreFromTrash(b.dataset.ccKey,b);}});
 }
 async function submit(e){
  e.preventDefault();if(busy)return;busy=true;
@@ -109,6 +109,40 @@ async function submit(e){
  finally{busy=false;save.disabled=false;}
 }
 
+
+
+async function moveToTrash(key,button){
+ try{
+  if(profile?.role!=='superadmin')throw new Error('Solo administración general puede usar la Papelera.');
+  if(!key?.startsWith('doc:'))throw new Error('Documento no válido.');
+  const id=key.slice(4),check=await sb.auth.getUser();if(check.error||check.data?.user?.id!==user.id)throw new Error('Tu sesión cambió. Vuelve a iniciar sesión.');
+  const q=await sb.from('control_document_catalog').select('id,title,delete_roles,deleted_at').eq('id',id).maybeSingle();
+  if(q.error||!q.data)throw new Error('Documento no disponible.');
+  if(q.data.deleted_at)throw new Error('El documento ya está en Papelera.');
+  if(!(q.data.delete_roles||[]).includes(profile.role))throw new Error('Tu cuenta no tiene permiso para mover este documento.');
+  if(!confirm('¿Mover “'+q.data.title+'” a la Papelera?\n\nNo se borrarán archivos ni versiones.'))return;
+  const label=button.textContent;button.disabled=true;button.textContent='Moviendo...';
+  const now=new Date().toISOString();
+  const up=await sb.from('control_document_catalog').update({deleted_at:now,deleted_by:user.id,updated_at:now}).eq('id',id).is('deleted_at',null).select('id');
+  if(up.error||up.data?.length!==1)throw new Error(up.error?.message||'No se pudo mover el documento a Papelera.');
+  location.reload();
+ }catch(err){alert(err.message||'No fue posible mover el documento.');button.disabled=false;button.textContent='Mover a papelera';}
+}
+async function restoreFromTrash(key,button){
+ try{
+  if(profile?.role!=='superadmin')throw new Error('Solo administración general puede restaurar documentos.');
+  if(!key?.startsWith('doc:'))throw new Error('Documento no válido.');
+  const id=key.slice(4),check=await sb.auth.getUser();if(check.error||check.data?.user?.id!==user.id)throw new Error('Tu sesión cambió. Vuelve a iniciar sesión.');
+  const q=await sb.from('control_document_catalog').select('id,title,delete_roles,deleted_at').eq('id',id).maybeSingle();
+  if(q.error||!q.data||!q.data.deleted_at)throw new Error('Este documento no está en Papelera.');
+  if(!(q.data.delete_roles||[]).includes(profile.role))throw new Error('Tu cuenta no tiene permiso para restaurar este documento.');
+  if(!confirm('¿Restaurar “'+q.data.title+'” a la Biblioteca activa?'))return;
+  const label=button.textContent;button.disabled=true;button.textContent='Restaurando...';
+  const up=await sb.from('control_document_catalog').update({deleted_at:null,deleted_by:null,updated_at:new Date().toISOString()}).eq('id',id).eq('deleted_at',q.data.deleted_at).select('id');
+  if(up.error||up.data?.length!==1)throw new Error(up.error?.message||'No se pudo restaurar el documento.');
+  location.reload();
+ }catch(err){alert(err.message||'No fue posible restaurar el documento.');button.disabled=false;button.textContent='Restaurar documento';}
+}
 
 function closeMetaDialog(){document.getElementById('ccMetaDialog')?.remove();}
 function metaDialogShell(doc){
