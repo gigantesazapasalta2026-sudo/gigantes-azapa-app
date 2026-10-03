@@ -93,9 +93,25 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 function badge(s){s=String(s||'');return '<span class="badge '+s+'">'+s.replaceAll('_',' ').toUpperCase()+'</span>'}
 function go(id){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.v===id));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id));if(id==='balance')renderAnnual()}
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>go(b.dataset.v));
-(async()=>{const s=await sb.auth.getSession();session=s.data.session;if(!session){location.href='login.html?next=tesoreria.html';return}
-const {data:p}=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();if(!p||!p.active||!['superadmin','board','treasury'].includes(p.role)){loading.textContent='Este espacio requiere rol de Tesorería o Directiva.';return}
-loading.classList.add('hide');app.classList.remove('hide');const today=new Date().toISOString().slice(0,10);txDate.value=handoffDate.value=docDate.value=today;await refreshAll()})();
+async function withTimeout(p,ms){return Promise.race([p,new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:'timeout'}}),ms))])}
+(async()=>{
+  const u=await withTimeout(sb.auth.getUser(),5000);
+  const user=u?.data?.user;
+  if(!user){loading.innerHTML='No pudimos validar la sesión. <a href="index.html">Volver al Control Center</a>';return}
+  session={user};
+  let p=null;
+  for(let attempt=0;attempt<3&&!p;attempt++){
+    loading.textContent='Verificando acceso… intento '+(attempt+1)+'/3';
+    const res=await withTimeout(sb.from('profiles').select('role,active').eq('user_id',user.id).maybeSingle(),5000);
+    if(res?.data)p=res.data;
+    if(!p&&attempt<2)await new Promise(r=>setTimeout(r,600*(attempt+1)));
+  }
+  if(!p){loading.innerHTML='La sesión está activa, pero la base está demorando en validar permisos. <button class="btn" onclick="location.reload()">Reintentar</button> <a href="index.html">Volver al Control Center</a>';return}
+  if(!p.active||!['superadmin','board','treasury'].includes(p.role)){loading.textContent='Este espacio requiere rol de Tesorería o Directiva.';return}
+  loading.classList.add('hide');app.classList.remove('hide');
+  const today=new Date().toISOString().slice(0,10);txDate.value=handoffDate.value=docDate.value=today;
+  refreshAll().catch(e=>{console.error(e);});
+})();
 async function refreshAll(){
  const year=Number(duesYear?.value||new Date().getFullYear()),start=year+'-01-01',end=year+'-12-31';
  const [u,a,ma,t,h,d,l,p,cg,al,dc,cp,ps]=await Promise.all([
