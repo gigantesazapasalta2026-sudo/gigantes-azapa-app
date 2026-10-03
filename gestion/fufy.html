@@ -49,7 +49,7 @@ async function init(){
     sb.from('projects').select('name,status,event_date,owner_name').eq('id',PROJECT_ID).maybeSingle(),
     sb.from('tasks').select('id,title,status,due_date,owner_name,priority,progress').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}),
     sb.from('project_responsibilities').select('id,code,area,title,responsible_name,responsible_email,description,active').eq('project_id',PROJECT_ID).eq('active',true).order('sort_order'),
-    sb.from('control_document_catalog').select('id,title,category,current_version,source_status').is('deleted_at',null).or('category.eq.Copa FUFY,title.ilike.%FUFY%,title.ilike.%Fuffy%').order('title'),
+    sb.from('control_document_links').select('document_id,relationship').eq('entity_type','project').eq('entity_id',PROJECT_ID),
     sb.from('sponsor_prospects').select('id,status').eq('project_id',PROJECT_ID)
   ]);
   const elevated=profile?.active&&['superadmin','board'].includes(profile?.role);
@@ -58,7 +58,7 @@ async function init(){
   taskRows=tasks||[];
   who.textContent='Sesión: '+(profile?.display_name||user.email)+' · permiso FUFY: '+(elevated?'administración club':access.access_role);
   projectMeta.textContent=(project?.name||'Copa FUFY 2026')+' · '+(project?.status||'activo')+(project?.event_date?' · '+project.event_date:'');
-  renderTasks();renderResponsibilities(responsibilityRows||[]);renderDocs(docRows||[]);kSponsors.textContent=(sponsorRows||[]).length;kSponsorsOk.textContent=(sponsorRows||[]).filter(x=>x.status==='confirmed').length;
+  let linkedDocs=[];if((docRows||[]).length){const ids=docRows.map(x=>x.document_id);const dr=await sb.from('control_document_catalog').select('id,title,category,current_version,source_status').in('id',ids).is('deleted_at',null).order('title');linkedDocs=dr.data||[]}renderTasks();renderResponsibilities(responsibilityRows||[]);renderDocs(linkedDocs);kSponsors.textContent=(sponsorRows||[]).length;kSponsorsOk.textContent=(sponsorRows||[]).filter(x=>x.status==='confirmed').length;
   loading.classList.add('hide');app.classList.remove('hide');
 }
 function renderTasks(){
