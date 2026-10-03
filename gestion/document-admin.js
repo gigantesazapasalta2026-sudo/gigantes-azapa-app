@@ -35,8 +35,8 @@ async function init(){
  sb=window.GIGANTES_DB||supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY);
  const u=await sb.auth.getUser();user=u.data?.user;if(!user)return;
  const p=await sb.from('profiles').select('role,active').eq('user_id',user.id).maybeSingle();profile=p.data;
- if(!profile?.active||!ADMIN.includes(profile.role))return;
- const add=$('#ccAddDocument');if(add)add.hidden=false;
+ if(!profile?.active)return;
+ const add=$('#ccAddDocument');if(add)add.hidden=!ADMIN.includes(profile.role);
  const roles=$('#ccAddRoles');if(roles&&!roles.children.length){
    for(const [value,label] of READ_ROLES){const l=document.createElement('label');const c=document.createElement('input');c.type='checkbox';c.name='ccReadRole';c.value=value;if(value==='superadmin'){c.checked=true;c.disabled=true;}l.append(c,document.createTextNode(' '+label));roles.append(l);}
  }
@@ -48,6 +48,7 @@ async function init(){
  $('#ccAddOpen')?.addEventListener('click',()=>{$('#ccAddPanel').hidden=false;$('#ccAddTitle').focus();});
  $('#ccAddCancel')?.addEventListener('click',()=>{$('#ccAddPanel').hidden=true;$('#ccAddForm').reset();setWordFields();applyDefaults();msg('');});
  $('#ccAddForm')?.addEventListener('submit',submit);
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-cc-action="updateversion"]');if(b){e.preventDefault();openVersionDialog(b.dataset.ccKey);}});
 }
 async function submit(e){
  e.preventDefault();if(busy)return;busy=true;
@@ -107,5 +108,78 @@ async function submit(e){
  }catch(err){msg(err.message||'No fue posible agregar el documento.');}
  finally{busy=false;save.disabled=false;}
 }
+
+function closeVersionDialog(){document.getElementById('ccVersionDialog')?.remove();}
+function versionDialogShell(doc){
+ closeVersionDialog();
+ const d=document.createElement('dialog');d.id='ccVersionDialog';d.className='cc-version-dialog';
+ d.innerHTML='<form id="ccVersionForm" method="dialog"><div class="cc-version-head"><div><strong></strong><p></p></div><button type="button" class="cc-doc-btn" id="ccVersionClose">Cerrar</button></div><div class="cc-version-body"><label>Documento original<input id="ccVersionOriginal" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required></label><label id="ccVersionPdfWrap" hidden>PDF de lectura<input id="ccVersionPdf" type="file" accept=".pdf,application/pdf"><span>Necesario cuando el original es Word.</span></label><label>Nota de cambios<textarea id="ccVersionNote" maxlength="500" placeholder="Ej.: Se actualizó nómina, fechas y responsables"></textarea></label><p id="ccVersionStatus" role="status" aria-live="polite"></p><div class="cc-version-actions"><button type="button" class="cc-doc-btn" id="ccVersionCancel">Cancelar</button><button type="submit" class="cc-doc-btn cc-doc-primary" id="ccVersionSave">Publicar nueva versión</button></div></div></form>';
+ d.querySelector('strong').textContent=doc.title;
+ d.querySelector('.cc-version-head p').textContent='Versión actual v'+doc.current_version+' → nueva v'+(Number(doc.current_version)+1);
+ d.dataset.documentId=doc.id;d.dataset.expectedVersion=String(doc.current_version);
+ document.body.append(d);
+ const original=d.querySelector('#ccVersionOriginal'),wrap=d.querySelector('#ccVersionPdfWrap'),pdf=d.querySelector('#ccVersionPdf');
+ original.addEventListener('change',()=>{const word=ext(original.files?.[0]?.name)==='docx';wrap.hidden=!word;pdf.required=word;if(!word)pdf.value='';});
+ d.querySelector('#ccVersionClose').onclick=closeVersionDialog;
+ d.querySelector('#ccVersionCancel').onclick=closeVersionDialog;
+ d.querySelector('#ccVersionForm').addEventListener('submit',publishVersion);
+ d.addEventListener('cancel',e=>{e.preventDefault();closeVersionDialog();});
+ d.showModal();return d;
+}
+async function openVersionDialog(key){
+ try{
+  if(!key?.startsWith('doc:'))throw new Error('Documento no válido.');
+  const id=key.slice(4),check=await sb.auth.getUser();
+  if(check.error||check.data?.user?.id!==user.id)throw new Error('Tu sesión cambió. Vuelve a iniciar sesión.');
+  const q=await sb.from('control_document_catalog').select('id,title,current_version,editor_roles,deleted_at').eq('id',id).maybeSingle();
+  if(q.error||!q.data||q.data.deleted_at)throw new Error('Documento no disponible.');
+  if(!(q.data.editor_roles||[]).includes(profile.role))throw new Error('Tu cuenta no tiene permiso para actualizar este documento.');
+  versionDialogShell(q.data);
+ }catch(err){alert(err.message||'No fue posible abrir la actualización.');}
+}
+async function publishVersion(e){
+ e.preventDefault();if(busy)return;busy=true;
+ const d=document.getElementById('ccVersionDialog'),save=d.querySelector('#ccVersionSave'),status=d.querySelector('#ccVersionStatus');
+ save.disabled=true;
+ const setStatus=t=>status.textContent=t;
+ try{
+  const check=await sb.auth.getUser();if(check.error||check.data?.user?.id!==user.id)throw new Error('Tu sesión cambió. Vuelve a iniciar sesión.');
+  const id=d.dataset.documentId,expected=Number(d.dataset.expectedVersion),original=d.querySelector('#ccVersionOriginal').files?.[0],pdf=d.querySelector('#ccVersionPdf').files?.[0],note=esc(d.querySelector('#ccVersionNote').value);
+  if(!original)throw new Error('Selecciona el documento actualizado.');
+  if(original.size>25*1024*1024)throw new Error('El archivo original supera 25 MB.');
+  const originalExt=ext(original.name);
+  if(!['pdf','docx'].includes(originalExt))throw new Error('Solo se admiten PDF y Word (.docx).');
+  if(originalExt==='pdf'&&!(await pdfOK(original)))throw new Error('El archivo seleccionado no es un PDF válido.');
+  if(originalExt==='docx'&&!(await docxOK(original)))throw new Error('El archivo seleccionado no es un Word .docx válido.');
+  let viewPdf=original;
+  if(originalExt==='docx'){
+   if(!pdf)throw new Error('Selecciona también el PDF de lectura.');
+   if(pdf.size>25*1024*1024||!(await pdfOK(pdf)))throw new Error('El PDF de lectura no es válido o supera 25 MB.');
+   viewPdf=pdf;
+  }
+  const latest=await sb.from('control_document_catalog').select('current_version,editor_roles,deleted_at').eq('id',id).maybeSingle();
+  if(latest.error||!latest.data||latest.data.deleted_at)throw new Error('Documento no disponible.');
+  if(!(latest.data.editor_roles||[]).includes(profile.role))throw new Error('Ya no tienes permiso para actualizar este documento.');
+  if(Number(latest.data.current_version)!==expected)throw new Error('Ya existe una versión más nueva. Recarga la biblioteca antes de continuar.');
+  const next=expected+1,folder=id+'/v'+next;
+  setStatus('Subiendo PDF de lectura...');
+  const upPdf=await sb.storage.from(BUCKET).upload(folder+'/document.pdf',viewPdf,{contentType:'application/pdf',cacheControl:'0',upsert:false});
+  if(upPdf.error)throw new Error('No se pudo cargar el PDF de la nueva versión. Recarga y vuelve a intentarlo.');
+  if(originalExt==='docx'){
+   setStatus('Subiendo Word original...');
+   const upDoc=await sb.storage.from(BUCKET).upload(folder+'/original.docx',original,{contentType:WORD,cacheControl:'0',upsert:false});
+   if(upDoc.error)throw new Error('El PDF se cargó, pero no se pudo cargar el Word. No se publicó la nueva versión.');
+  }
+  setStatus('Publicando versión v'+next+'...');
+  const rpc=await sb.rpc('publish_control_document_version',{
+   p_document_id:id,p_expected_version:expected,p_original_name:original.name,p_original_ext:originalExt,p_note:note||null
+  });
+  if(rpc.error)throw new Error(rpc.error.message||'No se pudo publicar la nueva versión.');
+  setStatus('Versión v'+rpc.data+' publicada correctamente.');
+  setTimeout(()=>location.reload(),700);
+ }catch(err){setStatus(err.message||'No fue posible publicar la nueva versión.');}
+ finally{busy=false;save.disabled=false;}
+}
+
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,300),{once:true});else setTimeout(init,300);
 })();
