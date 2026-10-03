@@ -7,8 +7,8 @@ const BASE=new URL('./',document.currentScript.src);
 const BUCKET='control-documents-private', BOX_BUCKET='inventory-documents-private';
 const WORD='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const STAFF=['superadmin','board','treasury','coach','commission'], ADMIN=['superadmin','board'];
-const PACKAGE_SHA='39c1a37e65d5084d9c0ca202722b5b6ae736823fff86b1e9643e1fcf06a7f2a5';
-const PACKAGE_NAME='Biblioteca_FUFY_Direccion_Control_2026-10-03.zip';
+const PACKAGE_SHA='c8c1994d04d839f67f5ed6c3d4c781baf3c4731ee2f226978bae4095ba6601fd';
+const PACKAGE_NAME='Biblioteca_FUFY_Direccion_Control_2026-10-03_v2.zip';
 const isLibrary=location.pathname===new URL('biblioteca.html',BASE).pathname;
 let client,profile,uid,records=[],bySource=new Map(),loaded=false,importing=false,notice='',viewer=null,loadPromise=null,generation=0;
 const objectURLs=new Set();
@@ -154,7 +154,7 @@ async function importPackage(file){
   for(const src of m.documents){if(token!==generation)throw new Error('La sesi\u00f3n cambi\u00f3. Vuelve a entrar y reintenta.');const r=allowed.get(src.id);if(!r){skipped++;continue;}if(r.original_ext!==src.original_ext||r.original_name!==src.original_name)throw new Error('La versi\u00f3n de '+r.title+' no coincide con el cat\u00e1logo.');if(r.ready){count++;continue;}setNotice('Cargando '+(count+1)+' de '+m.documents.length+': '+r.title);const folder=r.id+'/v1',existing=await c.storage.from(BUCKET).list(folder,{limit:10});if(existing.error)throw new Error('No se pudo consultar el almacenamiento privado.');
    for(const name of (r.original_ext==='docx'?['document.pdf','original.docx']:['document.pdf'])){const path=folder+'/'+name,entry=m.files.find(f=>f.path===path),content=files.get(path);if(!entry||!content||content.length!==entry.size||await hash(content)!==entry.sha256)throw new Error('Fall\u00f3 la verificaci\u00f3n de '+r.title);if(token!==generation)throw new Error('La sesi\u00f3n cambi\u00f3. Vuelve a entrar.');
     if(!(existing.data||[]).some(o=>o.name===name)){const mime=name.endsWith('.pdf')?'application/pdf':WORD;const up=await c.storage.from(BUCKET).upload(path,new Blob([content],{type:mime}),{contentType:mime,cacheControl:'0',upsert:false});if(up.error&&String(up.error.statusCode)!=='409')throw new Error('No se pudo cargar '+r.title+'. Puedes reintentar con el mismo ZIP.');}
-    const check=await c.storage.from(BUCKET).download(path);if(check.error||!check.data||await hash(await check.data.arrayBuffer())!==entry.sha256)throw new Error('No coincide la copia guardada de '+r.title+'. No se reemplaz\u00f3 ning\u00fan archivo.');
+    const verify=await c.storage.from(BUCKET).list(folder,{limit:10});const obj=(verify.data||[]).find(o=>o.name===name),etag=String(obj?.metadata?.eTag||obj?.metadata?.etag||'').replace(/"/g,''),storedSize=Number(obj?.metadata?.size??obj?.metadata?.contentLength??-1);if(verify.error||!obj||!entry.md5||etag!==entry.md5||storedSize!==entry.size)throw new Error('No se pudo verificar la copia guardada de '+r.title+'.');
    }
    if(token!==generation)throw new Error('La sesi\u00f3n cambi\u00f3. Vuelve a entrar.');const save=await c.from('control_document_catalog').update({imported_at:new Date().toISOString()}).eq('id',r.id).is('imported_at',null).select('id');if(save.error)throw new Error('Falta vincular '+r.title+'. Puedes reintentar con el mismo ZIP.');if(save.data?.length!==1){const check=await c.from('control_document_catalog').select('imported_at').eq('id',r.id).maybeSingle();if(check.error||!check.data?.imported_at)throw new Error('No se pudo confirmar la carga de '+r.title);}
    count++;
