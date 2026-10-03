@@ -72,14 +72,23 @@ async function submit(e){
   }
   const allowed=['superadmin',...Array.from(document.querySelectorAll('[name="ccReadRole"]:checked')).map(x=>x.value).filter(x=>x!=='superadmin')];
   const d=categoryDefaults(category);
+  let treasuryUnit=null;
+  if(category==='Tesorería Club'||category==='Tesorería Classic'){
+    const code=category==='Tesorería Club'?'GIGANTES':'CLASSIC_ADULTA';
+    const t=await sb.from('treasury_units').select('id').eq('code',code).maybeSingle();
+    if(t.error||!t.data?.id)throw new Error('No se pudo identificar la unidad de '+category+'.');
+    treasuryUnit=t.data.id;
+    if(!allowed.includes('treasury'))allowed.push('treasury');
+    if(!d.editors.includes('treasury'))d.editors.push('treasury');
+  }
   const id=crypto.randomUUID();
   const now=new Date().toISOString();
   msg('Creando ficha del documento...');
   const row={
     id,title,category,source_code:null,original_name:original.name,original_ext:originalExt,
     source_url:'app://library/'+id,source_status:'available',
-    allowed_roles:[...new Set(allowed)],treasury_unit_id:null,imported_at:null,
-    editor_roles:d.editors,delete_roles:['superadmin'],current_version:1,updated_at:now,deleted_at:null,deleted_by:null
+    allowed_roles:[...new Set(allowed)],treasury_unit_id:treasuryUnit,imported_at:null,
+    editor_roles:[...new Set(d.editors)],delete_roles:['superadmin'],current_version:1,updated_at:now,deleted_at:null,deleted_by:null
   };
   const ins=await sb.from('control_document_catalog').insert(row).select('id').single();
   if(ins.error)throw new Error('No se pudo crear la ficha: '+ins.error.message);
