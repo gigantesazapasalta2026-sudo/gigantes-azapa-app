@@ -7,7 +7,7 @@ const BASE=new URL('./',document.currentScript.src);
 const BUCKET='control-documents-private', BOX_BUCKET='inventory-documents-private';
 const WORD='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const STAFF=['superadmin','board','treasury','coach','commission'], ADMIN=['superadmin','board'];
-const PACKAGE_SHA='fdf29d443b4c7119826bfe2030cfecd9f5e837f26e1b1df7d111a3e7af8f1324';
+const PACKAGE_SHA='47cbd153e81e1a9edc1d7431a6fbc1b2da9cb13471b9c95986a223c9ad40790d';
 const PACKAGE_NAME='Biblioteca_Control_Center_PDF_Originales_2026-10-03.zip';
 const isLibrary=location.pathname===new URL('biblioteca.html',BASE).pathname;
 let client,profile,uid,records=[],bySource=new Map(),loaded=false,importing=false,notice='',viewer=null,loadPromise=null,generation=0;
