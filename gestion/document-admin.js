@@ -45,7 +45,7 @@ async function init(){
  applyDefaults();
  $('#ccAddOriginal')?.addEventListener('change',setWordFields);
  $('#ccAddCategory')?.addEventListener('change',applyDefaults);
- $('#ccAddOpen')?.addEventListener('click',()=>{$('#ccAddPanel').hidden=false;$('#ccAddTitle').focus();});
+ $('#ccAddDocument')?.addEventListener('click',()=>{$('#ccAddPanel').hidden=false;$('#ccAddTitle').focus();});
  $('#ccAddCancel')?.addEventListener('click',()=>{$('#ccAddPanel').hidden=true;$('#ccAddForm').reset();setWordFields();applyDefaults();msg('');});
  $('#ccAddForm')?.addEventListener('submit',submit);
  document.addEventListener('click',e=>{const b=e.target.closest('[data-cc-action="updateversion"]');if(b){e.preventDefault();openVersionDialog(b.dataset.ccKey);}});
