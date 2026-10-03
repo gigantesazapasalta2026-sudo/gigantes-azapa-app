@@ -7,7 +7,7 @@
 <div class="card"><div class="section-title"><div><h2>Solicitudes entrantes</h2><p class="meta">Formularios recibidos desde la web.</p></div></div><div id="list"></div></div>
 </section></main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
-const FUFY_PROJECT='8aa8f430-d58e-4cdd-977b-4ea134b36d55';const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);let me,prospects=[],prospectFiles=[],driveFiles=[];
+const FUFY_PROJECT='8aa8f430-d58e-4cdd-977b-4ea134b36d55';const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let me,prospects=[],prospectFiles=[],driveFiles=[];
 (async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=sponsors.html';return}const {data:p}=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();me=p;if(!me||!me.active||!['superadmin','board','treasury','commission'].includes(me.role)){loading.textContent='No tienes permisos para revisar auspicios.';return}loading.classList.add('hide');app.classList.remove('hide');refresh()})();
 async function refresh(){
  const [pr,ir,pfr,dr]=await Promise.all([
