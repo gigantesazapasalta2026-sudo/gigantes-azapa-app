@@ -20,7 +20,7 @@
 <div class="card"><div class="actions"><button class="btn" id="reset">Reiniciar checklist</button><a class="btn alt" href="login.html?switch=1&next=auditoria-final.html">Cambiar usuario</a></div></div>
 </section></main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
-const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY),KEY='gigantes_auditoria_8x8_v1';
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}}),KEY='gigantes_auditoria_8x8_v1';
 const specs=[
 ['Rogers','Entrar al Control Center','Debe abrir el panel general.'],
 ['Rogers','Abrir ambas Tesorerías','Gigantes y Classic/Adulta deben abrir y permitir operar.'],
@@ -50,6 +50,21 @@ function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 document.addEventListener('change',e=>{if(e.target.matches('[data-state]')){state[e.target.dataset.state]=e.target.value;save()}if(e.target.matches('[data-ok]')){state[e.target.dataset.ok]=e.target.checked?'ok':'pending';save()}});
 reset.onclick=()=>{if(confirm('¿Reiniciar todos los resultados de la auditoría?')){state={};save()}};
-(async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('login.html?next=auditoria-final.html');return}const {data:p}=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();if(!p?.active||!['superadmin','board'].includes(p.role)){loading.textContent='Esta auditoría está reservada a Superadmin y Directiva.';return}loading.classList.add('hide');app.classList.remove('hide');render()})();
+(async()=>{
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session){
+   loading.innerHTML='No encontramos una sesión activa en esta pestaña. <a href="login.html?next=auditoria-final.html">Volver al acceso</a>';
+   return;
+ }
+ let p=null;
+ for(let attempt=0;attempt<3&&!p;attempt++){
+   const res=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();
+   if(res.data)p=res.data;
+   if(!p&&attempt<2)await new Promise(r=>setTimeout(r,500*(attempt+1)));
+ }
+ if(!p){loading.textContent='Sesión válida, pero no pudimos cargar los permisos en este momento. Vuelve al Control Center y prueba nuevamente.';return}
+ if(!p.active||!['superadmin','board'].includes(p.role)){loading.textContent='Esta auditoría está reservada a Superadmin y Directiva.';return}
+ loading.classList.add('hide');app.classList.remove('hide');render();
+})();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{}));}
 </script></body></html>
