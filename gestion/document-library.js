@@ -22,7 +22,7 @@ function getClient(){
  if(client)return client;
  if(window.GIGANTES_DB)client=window.GIGANTES_DB;
  else if(typeof sb!=='undefined'&&sb?.auth)client=sb;
- else{if(!window.supabase||!window.GIGANTES_SUPABASE_URL)throw new Error('No se pudo cargar la conexi\u00f3n. Actualiza la p\u00e1gina.');client=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY);}
+ else{if(!window.supabase||!window.GIGANTES_SUPABASE_URL)throw new Error('No se pudo cargar la conexi\u00f3n. Actualiza la p\u00e1gina.');client=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});}
  client.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||(uid&&session?.user?.id&&uid!==session.user.id)){generation++;setTimeout(clearPrivate,0);}});
  return client;
 }
