@@ -15,6 +15,7 @@
 <button class="tab" data-v="documentos">Documentos</button>
 <button class="tab" data-v="balance">Balance anual</button>
 <button class="tab" data-v="cuotas">Cuotas</button>
+<button class="tab" data-v="comprobantes">Comprobantes</button>
 </div>
 
 <section id="resumen" class="view active">
@@ -67,6 +68,12 @@
 <div class="card"><h2>Balance por actividad</h2><div id="annualActivities"></div></div>
 </section>
 
+<section id="comprobantes" class="view">
+<div class="notice"><b>Revisión:</b> un comprobante enviado por Mi Gigantes no se convierte en pago hasta que Tesorería lo aprueba. Aprobar crea un pago contable único; rechazar conserva el respaldo y la observación.</div>
+<div class="kpis"><div class="k"><b id="subPendingK">0</b><span>PENDIENTES</span></div><div class="k"><b id="subApprovedK">0</b><span>APROBADOS</span></div><div class="k"><b id="subRejectedK">0</b><span>RECHAZADOS</span></div><div class="k"><b id="subAmountK">$0</b><span>MONTO PENDIENTE</span></div><div class="k"><b id="subTotalK">0</b><span>TOTAL REGISTROS</span></div></div>
+<div class="card"><div class="toolbar"><div><label>Estado<select id="submissionFilter"><option value="pending_review">Pendientes de revisión</option><option value="approved">Aprobados</option><option value="rejected">Rechazados</option><option value="">Todos</option></select></label></div></div><div id="submissionList"></div></div>
+</section>
+
 <section id="cuotas" class="view">
 <div class="notice"><b>Vista anual:</b> cada fila es un jugador y cada columna un mes. Verde = pagado · amarillo = abono · rojo = vencido · gris = pendiente · azul = exento. Toca un mes para registrar pago o abono.</div>
 <div class="kpis"><div class="k"><b id="activeK">0</b><span>JUGADORES DE ESTA TESORERÍA</span></div><div class="k"><b id="billedK">$0</b><span>CUOTAS DEL AÑO</span></div><div class="k"><b id="paidK">$0</b><span>ABONADO / PAGADO</span></div><div class="k"><b id="debtK">$0</b><span>SALDO PENDIENTE</span></div><div class="k"><b id="alertK">0</b><span>MESES VENCIDOS</span></div></div>
@@ -80,7 +87,7 @@
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);
-let activities=[],transactionsData=[],handoffsData=[],docsData=[],libraryData=[],people=[],chargesData=[],alertsData=[],cfg=null,session=null,units=[],memberAssignments=[],duesConfigs=[],chargePayments=[],currentUnitId=null;
+let activities=[],transactionsData=[],handoffsData=[],docsData=[],libraryData=[],people=[],chargesData=[],alertsData=[],cfg=null,session=null,units=[],memberAssignments=[],duesConfigs=[],chargePayments=[],paymentSubmissions=[],currentUnitId=null;
 const money=n=>new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(Number(n||0));
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function badge(s){s=String(s||'');return '<span class="badge '+s+'">'+s.replaceAll('_',' ').toUpperCase()+'</span>'}
@@ -91,7 +98,7 @@ const {data:p}=await sb.from('profiles').select('role,active').eq('user_id',sess
 loading.classList.add('hide');app.classList.remove('hide');const today=new Date().toISOString().slice(0,10);txDate.value=handoffDate.value=docDate.value=today;await refreshAll()})();
 async function refreshAll(){
  const year=Number(duesYear?.value||new Date().getFullYear()),start=year+'-01-01',end=year+'-12-31';
- const [u,a,ma,t,h,d,l,p,cg,al,dc,cp]=await Promise.all([
+ const [u,a,ma,t,h,d,l,p,cg,al,dc,cp,ps]=await Promise.all([
   sb.from('treasury_units').select('*').eq('active',true).order('name'),
   sb.from('fundraising_activities').select('*').order('event_date',{ascending:false,nullsFirst:false}),
   sb.from('treasury_member_assignments').select('*'),
@@ -103,15 +110,16 @@ async function refreshAll(){
   sb.from('membership_charges').select('id,person_id,period,amount,due_date,status,paid_at,paid_amount,treasury_unit_id,notes').gte('period',start).lte('period',end),
   sb.from('notification_queue').select('id,status').eq('notification_type','dues_overdue').limit(300),
   sb.from('treasury_dues_config').select('*'),
-  sb.from('membership_charge_payments').select('*').gte('payment_date',start).lte('payment_date',end)
+  sb.from('membership_charge_payments').select('*').gte('payment_date',start).lte('payment_date',end),
+  sb.from('payment_submissions').select('*,membership_charges(treasury_unit_id,period,amount,paid_amount)').order('submitted_at',{ascending:false}).limit(500)
  ]);
  units=u.data||[];if(!currentUnitId||!units.some(x=>x.id===currentUnitId))currentUnitId=units[0]?.id||null;
- activities=(a.data||[]);memberAssignments=ma.data||[];transactionsData=t.data||[];handoffsData=h.data||[];docsData=d.data||[];libraryData=l.data||[];people=p.data||[];chargesData=cg.data||[];alertsData=al.data||[];duesConfigs=dc.data||[];chargePayments=cp.data||[];
+ activities=(a.data||[]);memberAssignments=ma.data||[];transactionsData=t.data||[];handoffsData=h.data||[];docsData=d.data||[];libraryData=l.data||[];people=p.data||[];chargesData=cg.data||[];alertsData=al.data||[];duesConfigs=dc.data||[];chargePayments=cp.data||[];paymentSubmissions=ps.data||[];
  cfg=duesConfigs.find(x=>x.unit_id===currentUnitId)||null;
- renderUnitSelector();fillActivitySelects();renderSummary();renderActivities();renderTransactions();renderHandoffs();renderDocuments();renderLibrary();renderDues();fillYears()
+ renderUnitSelector();fillActivitySelects();renderSummary();renderActivities();renderTransactions();renderHandoffs();renderDocuments();renderLibrary();renderDues();renderSubmissions();fillYears()
 }
 function renderUnitSelector(){const v=currentUnitId;unitSelect.innerHTML=units.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join('');unitSelect.value=v||'';const u=units.find(x=>x.id===currentUnitId);unitInfo.innerHTML=u?'<b>'+esc(u.short_name)+'</b>'+(u.manager_name?' · Tesorero/a: '+esc(u.manager_name):'')+(u.notes?'<br>'+esc(u.notes):''):''}
-unitSelect.onchange=async()=>{currentUnitId=unitSelect.value;cfg=duesConfigs.find(x=>x.unit_id===currentUnitId)||null;renderUnitSelector();fillActivitySelects();renderSummary();renderActivities();renderTransactions();renderHandoffs();renderDocuments();renderLibrary();renderDues();renderAnnual()}
+unitSelect.onchange=async()=>{currentUnitId=unitSelect.value;cfg=duesConfigs.find(x=>x.unit_id===currentUnitId)||null;renderUnitSelector();fillActivitySelects();renderSummary();renderActivities();renderTransactions();renderHandoffs();renderDocuments();renderLibrary();renderDues();renderSubmissions();renderAnnual()}
 function unitActivities(){return activities.filter(x=>x.treasury_unit_id===currentUnitId)}
 function unitTransactions(){return transactionsData.filter(x=>x.treasury_unit_id===currentUnitId&&!x.voided_at)}
 function unitTransactionsAll(){return transactionsData.filter(x=>x.treasury_unit_id===currentUnitId)}
@@ -148,6 +156,23 @@ function fillYears(){const years=[...new Set([...activities.map(x=>(x.event_date
 function renderAnnual(){const y=balanceYear.value||String(new Date().getFullYear()),tx=transactionsData.filter(x=>(x.transaction_date||'').startsWith(y)&&!x.voided_at),acts=activities.filter(x=>(x.event_date||'').startsWith(y));const inc=tx.filter(x=>x.transaction_type==='income').reduce((s,x)=>s+Number(x.amount||0),0),exp=tx.filter(x=>x.transaction_type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);yIncome.textContent=money(inc);yExpense.textContent=money(exp);yNet.textContent=money(inc-exp);yActivities.textContent=acts.length;yClosed.textContent=acts.filter(x=>x.status==='completed').length;months.innerHTML=Array.from({length:12},(_,i)=>{const m=String(i+1).padStart(2,'0'),r=tx.filter(x=>(x.transaction_date||'').slice(5,7)===m),mi=r.filter(x=>x.transaction_type==='income').reduce((s,x)=>s+Number(x.amount||0),0),me=r.filter(x=>x.transaction_type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);return '<div class="month"><strong>'+new Date(Number(y),i,1).toLocaleString('es-CL',{month:'long'})+'</strong><small>Ingresos '+money(mi)+'<br>Gastos '+money(me)+'</small><div class="'+(mi-me>=0?'positive':'negative')+'"><b>'+money(mi-me)+'</b></div></div>'}).join('');annualActivities.innerHTML=acts.length?acts.map(a=>{const r=tx.filter(x=>x.activity_id===a.id),ai=r.filter(x=>x.transaction_type==='income').reduce((s,x)=>s+Number(x.amount||0),0),ae=r.filter(x=>x.transaction_type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);return '<div class="row"><div><div class="name">'+esc(a.title)+'</div><div class="meta">'+esc(a.event_date)+' · '+esc(a.activity_type)+'</div></div><div>'+badge(a.status)+'</div><div>'+money(ai)+'</div><div>'+money(ae)+'</div><div class="money">'+money(ai-ae)+'</div></div>'}).join(''):'<div class="meta">Sin actividades en este año.</div>'}
 function exportCSV(){const y=balanceYear.value,rows=transactionsData.filter(x=>(x.transaction_date||'').startsWith(y)&&!x.voided_at);const header=['Fecha','Tipo','Actividad','Categoría','Descripción','Monto','Medio','Contraparte'];const lines=[header,...rows.map(x=>[x.transaction_date,x.transaction_type,activities.find(a=>a.id===x.activity_id)?.title||'General',x.category,x.description,x.amount,x.payment_method,x.counterparty||''])];const csv=lines.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='balance_gigantes_'+y+'.csv';a.click();URL.revokeObjectURL(url)}
 function fillDuesYears(){const now=new Date().getFullYear(),ys=[now-1,now,now+1];const old=duesYear.value;duesYear.innerHTML=ys.map(y=>'<option '+((old?String(y)===old:y===now)?'selected':'')+'>'+y+'</option>').join('')}
+function unitSubmissions(){return paymentSubmissions.filter(x=>x.membership_charges?.treasury_unit_id===currentUnitId)}
+function renderSubmissions(){
+ const rows=unitSubmissions(),pending=rows.filter(x=>x.status==='pending_review'),approved=rows.filter(x=>x.status==='approved'),rejected=rows.filter(x=>x.status==='rejected');
+ subPendingK.textContent=pending.length;subApprovedK.textContent=approved.length;subRejectedK.textContent=rejected.length;subTotalK.textContent=rows.length;subAmountK.textContent=money(pending.reduce((s,x)=>s+Number(x.amount||0),0));
+ let data=submissionFilter?.value?rows.filter(x=>x.status===submissionFilter.value):rows;
+ submissionList.innerHTML=data.length?data.map(x=>{const p=people.find(y=>y.id===x.person_id),period=String(x.membership_charges?.period||'').slice(0,7);return '<div class="row"><div><div class="name">'+esc(p?.full_name||'Jugador')+'</div><div class="meta">'+esc(period||'Sin período')+' · enviado '+new Date(x.submitted_at).toLocaleString('es-CL')+(x.review_notes?'<br>Nota: '+esc(x.review_notes):'')+'</div></div><div>'+badge(x.status)+'</div><div class="money">'+money(x.amount)+'</div><div>'+esc(x.transfer_date)+'</div><div><button class="btn secondary" onclick="viewReceipt(\''+x.storage_path+'\')">Comprobante</button> '+(x.status==='pending_review'?'<button class="btn ok" onclick="reviewSubmission(\''+x.id+'\',\'approved\')">Aprobar</button> <button class="btn bad" onclick="reviewSubmission(\''+x.id+'\',\'rejected\')">Rechazar</button>':'')+'</div></div>'}).join(''):'<div class="meta">No hay comprobantes en este estado.</div>';
+}
+async function reviewSubmission(id,status){
+ const x=paymentSubmissions.find(y=>y.id===id);if(!x||x.status!=='pending_review')return;
+ const note=prompt(status==='approved'?'Nota de aprobación (opcional):':'Motivo del rechazo:','');
+ if(status==='rejected'&&!note?.trim())return alert('Indica el motivo del rechazo.');
+ if(!confirm(status==='approved'?'¿Aprobar comprobante y registrar el pago?':'¿Rechazar este comprobante?'))return;
+ const {error}=await sb.from('payment_submissions').update({status,review_notes:note?.trim()||null,reviewed_at:new Date().toISOString(),reviewed_by:session.user.id}).eq('id',id).eq('status','pending_review');
+ if(error)return alert(error.message);await refreshAll();
+}
+submissionFilter.onchange=renderSubmissions;
+
 function renderDues(){fillDuesYears();const ppl=unitPeople(),year=Number(duesYear.value||new Date().getFullYear()),rows=chargesData.filter(x=>x.treasury_unit_id===currentUnitId&&String(x.period).startsWith(String(year)));activeK.textContent=ppl.length;const billed=rows.reduce((a,x)=>a+Number(x.amount||0),0),paid=rows.reduce((a,x)=>a+Number(x.paid_amount||0),0),debt=rows.filter(x=>x.status!=='waived').reduce((a,x)=>a+Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0)),0);billedK.textContent=money(billed);paidK.textContent=money(paid);debtK.textContent=money(debt);alertK.textContent=rows.filter(x=>x.status==='overdue').length;const u=units.find(x=>x.id===currentUnitId);cfgUnitName.textContent=(u?.name||'')+(u?.manager_name?' · Tesorero/a: '+u.manager_name:'');cfgAmount.value=cfg?.default_amount||'';cfgDueDay.value=cfg?.due_day||10;cfgActive.value=String(!!cfg?.active);cfgRepeat.value=String(cfg?.reminder_repeat_days||7);cfgMsg.textContent=cfg?.active&&cfg?.default_amount?'✓ Cuota mensual activa: '+money(cfg.default_amount):'⚠ Cuota todavía no definida/activada';renderDuesMatrix()}
 function chargeFor(personId,month){const y=Number(duesYear.value||new Date().getFullYear()),prefix=y+'-'+String(month).padStart(2,'0');return chargesData.find(x=>x.person_id===personId&&x.treasury_unit_id===currentUnitId&&String(x.period).startsWith(prefix))}
 function renderDuesMatrix(){const q=duesSearch.value.trim().toLowerCase(),ppl=unitPeople().filter(p=>!q||p.full_name.toLowerCase().includes(q));duesBody.innerHTML=ppl.length?ppl.map(p=>{let total=0;const cells=Array.from({length:12},(_,i)=>{const ch=chargeFor(p.id,i+1);if(!ch)return '<td><button class="dueCell due-none" onclick="editDue(\''+p.id+'\','+(i+1)+')">—</button></td>';total+=Number(ch.paid_amount||0);const cls='due-'+(ch.status==='submitted'?'pending':ch.status),label=ch.status==='paid'?'✓':ch.status==='partial'?money(ch.paid_amount):ch.status==='waived'?'EX':ch.status==='overdue'?'DEBE':'—';return '<td><button class="dueCell '+cls+'" title="'+money(ch.paid_amount)+' / '+money(ch.amount)+'" onclick="editDue(\''+p.id+'\','+(i+1)+')">'+label+'</button></td>'}).join('');return '<tr><td><b>'+esc(p.full_name)+'</b><br><span class="meta">'+esc(p.category||'')+'</span></td>'+cells+'<td><b>'+money(total)+'</b></td></tr>'}).join(''):'<tr><td colspan="14">Sin jugadores para esta tesorería.</td></tr>'}
