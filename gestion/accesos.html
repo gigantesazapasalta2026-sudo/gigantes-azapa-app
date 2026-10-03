@@ -6,7 +6,7 @@
 <div class="card"><h2>Usuarios activos</h2><div id="profiles"></div></div>
 </section></main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
-const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);let me,userId;
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let me,userId;
 (async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=accesos.html';return}userId=session.user.id;const r=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();me=r.data;if(!me||!me.active||me.role!=='superadmin'){loading.textContent='Este módulo requiere rol superadministrador.';return}loading.classList.add('hide');app.classList.remove('hide');refresh()})();
 async function refresh(){
  const [{data:i,error:ie},{data:p,error:pe}]=await Promise.all([
