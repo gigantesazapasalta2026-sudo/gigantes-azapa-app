@@ -32,7 +32,7 @@ function applyDefaults(){
 }
 async function init(){
  if(!window.supabase||!window.GIGANTES_SUPABASE_URL)return;
- sb=window.GIGANTES_DB||supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY);
+ sb=window.GIGANTES_DB||supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
  const u=await sb.auth.getUser();user=u.data?.user;if(!user)return;
  const p=await sb.from('profiles').select('role,active').eq('user_id',user.id).maybeSingle();profile=p.data;
  if(!profile?.active)return;
