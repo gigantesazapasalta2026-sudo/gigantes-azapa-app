@@ -1,0 +1,21 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0f14"><meta name="robots" content="noindex,nofollow"><title>Validar beneficio · Gigantes</title>
+<style>
+:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085;--ok:#166534;--bad:#991b1b}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f6f8;color:#111827}.top{background:var(--d);color:#fff;padding:16px}.in,main{max-width:720px;margin:auto}.topin{display:flex;align-items:center;gap:12px}.top h1{margin:0;font-size:21px}.top p{margin:3px 0 0;color:#f7a472;font-size:11px}.top a{margin-left:auto;color:#fff;text-decoration:none;font-weight:800}.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:18px;margin:16px 0}.field label{display:block;font-weight:800;font-size:12px;margin-bottom:6px}.field input{width:100%;padding:12px;border:1px solid #d0d5dd;border-radius:9px;font:inherit}.btn{border:0;border-radius:9px;background:var(--o);color:#fff;font-weight:900;padding:11px 13px;cursor:pointer}.btn:disabled{opacity:.45}.notice{padding:13px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;font-size:12px;margin:12px 0}.ok{background:#dcfce7;border-color:#bbf7d0;color:var(--ok)}.bad{background:#fee2e2;border-color:#fecaca;color:var(--bad)}.muted{color:var(--m);font-size:12px}.partner{font-weight:900}.hidden{display:none}
+</style></head><body>
+<header class="top"><div class="in topin"><div><h1>✅ Validar beneficio</h1><p>Empresas aliadas · Gigantes de Azapa</p></div><a href="beneficios.html">Beneficios</a></div></header>
+<main><div id="loading" class="notice">Verificando acceso del comercio…</div><section id="app" class="hidden">
+<div class="card"><h2>Comercio autorizado</h2><div id="partnerNames" class="partner"></div><p class="muted">Solo puedes validar códigos de las empresas vinculadas a tu cuenta.</p></div>
+<div class="card"><h2>Ingresar código</h2><div class="field"><label for="token">Código dinámico</label><input id="token" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div><p><button id="validate" class="btn">VALIDAR Y CANJEAR</button></p><div id="result" class="notice">Escanea el QR del miembro o pega el código.</div></div>
+</section></main>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);let access=[];
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+(async()=>{const {data:{session}}=await sb.auth.getSession();const initial=new URLSearchParams(location.search).get('token')||'';if(!session){const next='../validar_beneficio.html'+(initial?'?token='+encodeURIComponent(initial):'');location.href='gestion/login.html?next='+encodeURIComponent(next);return}
+ const a=await sb.from('benefit_company_access').select('partner_id,active').eq('user_id',session.user.id).eq('active',true);if(a.error||!a.data?.length){loading.textContent='Esta cuenta no tiene autorización para validar convenios.';return}
+ access=a.data;const ids=access.map(x=>x.partner_id),p=await sb.from('benefit_partners').select('id,name').in('id',ids).eq('active',true);partnerNames.textContent=(p.data||[]).map(x=>x.name).join(' · ')||'Empresa aliada';loading.classList.add('hidden');app.classList.remove('hidden');token.value=initial;if(initial)validateToken();
+})();
+validate.onclick=validateToken;
+async function validateToken(){const raw=token.value.trim();if(!/^[0-9a-f-]{36}$/i.test(raw)){show('Código no válido.',false);return}validate.disabled=true;show('Verificando código…',null);try{const r=await sb.rpc('redeem_benefit_token',{p_token:raw});if(r.error)throw r.error;show('BENEFICIO VALIDADO · Canje registrado correctamente.',true);token.value='';}catch(e){show(e.message||'No fue posible validar el código.',false);}finally{validate.disabled=false}}
+function show(t,ok){result.textContent=t;result.className='notice'+(ok===true?' ok':ok===false?' bad':'')}
+</script></body></html>
