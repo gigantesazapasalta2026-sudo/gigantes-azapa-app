@@ -48,7 +48,7 @@ async function init(){
  $('#ccAddDocument')?.addEventListener('click',()=>{$('#ccAddPanel').hidden=false;$('#ccAddTitle').focus();});
  $('#ccAddCancel')?.addEventListener('click',()=>{$('#ccAddPanel').hidden=true;$('#ccAddForm').reset();setWordFields();applyDefaults();msg('');});
  $('#ccAddForm')?.addEventListener('submit',submit);
- document.addEventListener('click',e=>{const b=e.target.closest('[data-cc-action="updateversion"]');if(b){e.preventDefault();openVersionDialog(b.dataset.ccKey);}});
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-cc-action]');if(!b)return;if(b.dataset.ccAction==='updateversion'){e.preventDefault();openVersionDialog(b.dataset.ccKey);}else if(b.dataset.ccAction==='editmeta'){e.preventDefault();openMetaDialog(b.dataset.ccKey);}});
 }
 async function submit(e){
  e.preventDefault();if(busy)return;busy=true;
@@ -106,6 +106,75 @@ async function submit(e){
   $('#ccAddForm').reset();setWordFields();applyDefaults();
   setTimeout(()=>location.reload(),700);
  }catch(err){msg(err.message||'No fue posible agregar el documento.');}
+ finally{busy=false;save.disabled=false;}
+}
+
+
+function closeMetaDialog(){document.getElementById('ccMetaDialog')?.remove();}
+function metaDialogShell(doc){
+ closeMetaDialog();
+ const d=document.createElement('dialog');d.id='ccMetaDialog';d.className='cc-version-dialog';
+ d.innerHTML='<form id="ccMetaForm" method="dialog"><div class="cc-version-head"><div><strong>Editar ficha</strong><p></p></div><button type="button" class="cc-doc-btn" id="ccMetaClose">Cerrar</button></div><div class="cc-version-body"><label>Nombre del documento<input id="ccMetaTitle" maxlength="180" required></label><label>Área<input id="ccMetaCategory" maxlength="120" required list="ccMetaCategoryList"><datalist id="ccMetaCategoryList"></datalist></label><label>Estado<select id="ccMetaStatus"><option value="available">Disponible</option><option value="needs_refresh">Requiere renovación</option><option value="reference">Referencia</option><option value="draft">Borrador</option><option value="pending">Pendiente de validación</option><option value="missing">Falta documento</option><option value="archived">Histórico</option></select></label><fieldset id="ccMetaRead"><legend>Puede ver</legend></fieldset><fieldset id="ccMetaEdit"><legend>Puede editar / subir versiones</legend></fieldset><p id="ccMetaStatusText" role="status" aria-live="polite"></p><div class="cc-version-actions"><button type="button" class="cc-doc-btn" id="ccMetaCancel">Cancelar</button><button type="submit" class="cc-doc-btn cc-doc-primary" id="ccMetaSave">Guardar cambios</button></div></div></form>';
+ d.querySelector('.cc-version-head p').textContent='v'+doc.current_version+' · el archivo no se modifica';
+ d.dataset.documentId=doc.id;
+ const title=d.querySelector('#ccMetaTitle'),category=d.querySelector('#ccMetaCategory'),status=d.querySelector('#ccMetaStatus');
+ title.value=doc.title||'';category.value=doc.category||'';status.value=doc.source_status||'available';
+ const cats=[...new Set([...document.querySelectorAll('#ccDocCategory option')].map(o=>o.value).filter(Boolean).concat([doc.category]).filter(Boolean))];
+ const dl=d.querySelector('#ccMetaCategoryList');for(const c of cats)dl.append(new Option(c,c));
+ const labels={superadmin:'Administración general',board:'Directiva',treasury:'Tesorería',coach:'Entrenadores',commission:'Comisiones'};
+ for(const role of ['superadmin','board','treasury','coach','commission']){
+   const l=document.createElement('label'),c=document.createElement('input');c.type='checkbox';c.value=role;c.name='ccMetaReadRole';c.checked=(doc.allowed_roles||[]).includes(role);if(role==='superadmin'){c.checked=true;c.disabled=true;}l.append(c,document.createTextNode(' '+labels[role]));d.querySelector('#ccMetaRead').append(l);
+ }
+ for(const role of ['superadmin','board','treasury']){
+   const l=document.createElement('label'),c=document.createElement('input');c.type='checkbox';c.value=role;c.name='ccMetaEditRole';c.checked=(doc.editor_roles||[]).includes(role);if(role==='superadmin'){c.checked=true;c.disabled=true;}l.append(c,document.createTextNode(' '+labels[role]));d.querySelector('#ccMetaEdit').append(l);
+ }
+ d.querySelector('#ccMetaClose').onclick=closeMetaDialog;d.querySelector('#ccMetaCancel').onclick=closeMetaDialog;
+ d.querySelector('#ccMetaForm').addEventListener('submit',saveMeta);
+ d.addEventListener('cancel',e=>{e.preventDefault();closeMetaDialog();});
+ document.body.append(d);d.showModal();return d;
+}
+async function openMetaDialog(key){
+ try{
+  if(!key?.startsWith('doc:'))throw new Error('Documento no válido.');
+  const id=key.slice(4),check=await sb.auth.getUser();
+  if(check.error||check.data?.user?.id!==user.id)throw new Error('Tu sesión cambió. Vuelve a iniciar sesión.');
+  const q=await sb.from('control_document_catalog').select('*').eq('id',id).maybeSingle();
+  if(q.error||!q.data||q.data.deleted_at)throw new Error('Documento no disponible.');
+  if(!(q.data.editor_roles||[]).includes(profile.role))throw new Error('Tu cuenta no tiene permiso para editar esta ficha.');
+  metaDialogShell(q.data);
+ }catch(err){alert(err.message||'No fue posible abrir la ficha.');}
+}
+async function saveMeta(e){
+ e.preventDefault();if(busy)return;busy=true;
+ const d=document.getElementById('ccMetaDialog'),save=d.querySelector('#ccMetaSave'),statusText=d.querySelector('#ccMetaStatusText');save.disabled=true;
+ const say=t=>statusText.textContent=t;
+ try{
+  const check=await sb.auth.getUser();if(check.error||check.data?.user?.id!==user.id)throw new Error('Tu sesión cambió. Vuelve a iniciar sesión.');
+  const id=d.dataset.documentId,title=esc(d.querySelector('#ccMetaTitle').value),category=esc(d.querySelector('#ccMetaCategory').value),source_status=d.querySelector('#ccMetaStatus').value;
+  if(title.length<2||title.length>180)throw new Error('Revisa el nombre del documento.');
+  if(category.length<2||category.length>120)throw new Error('Indica un área válida.');
+  const allowed=['superadmin',...Array.from(d.querySelectorAll('[name="ccMetaReadRole"]:checked')).map(x=>x.value).filter(x=>x!=='superadmin')];
+  const editors=['superadmin',...Array.from(d.querySelectorAll('[name="ccMetaEditRole"]:checked')).map(x=>x.value).filter(x=>x!=='superadmin')];
+  let treasuryUnit=null;
+  if(category==='Tesorería Club'||category==='Tesorería Classic'){
+   const code=category==='Tesorería Club'?'GIGANTES':'CLASSIC_ADULTA';
+   const t=await sb.from('treasury_units').select('id').eq('code',code).maybeSingle();
+   if(t.error||!t.data?.id)throw new Error('No se pudo identificar la unidad de '+category+'.');
+   treasuryUnit=t.data.id;
+   if(!allowed.includes('treasury'))allowed.push('treasury');
+   if(!editors.includes('treasury'))editors.push('treasury');
+  }
+  const latest=await sb.from('control_document_catalog').select('editor_roles,deleted_at').eq('id',id).maybeSingle();
+  if(latest.error||!latest.data||latest.data.deleted_at)throw new Error('Documento no disponible.');
+  if(!(latest.data.editor_roles||[]).includes(profile.role))throw new Error('Ya no tienes permiso para editar esta ficha.');
+  say('Guardando cambios...');
+  const up=await sb.from('control_document_catalog').update({
+   title,category,source_status,allowed_roles:[...new Set(allowed)],editor_roles:[...new Set(editors)],treasury_unit_id:treasuryUnit,updated_at:new Date().toISOString()
+  }).eq('id',id).select('id,title');
+  if(up.error||up.data?.length!==1)throw new Error(up.error?.message||'No se pudieron guardar los cambios.');
+  say('Ficha actualizada correctamente.');
+  setTimeout(()=>location.reload(),600);
+ }catch(err){say(err.message||'No fue posible actualizar la ficha.');}
  finally{busy=false;save.disabled=false;}
 }
 
