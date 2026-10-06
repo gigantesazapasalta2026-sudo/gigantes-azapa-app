@@ -25,7 +25,7 @@ main{padding:18px 18px;max-width:1450px;margin:auto}.hero{background:linear-grad
 @media(max-width:1180px){.top{grid-template-columns:1fr}.actions{justify-content:flex-start;flex-wrap:wrap}.top p{max-width:none}.kpis{grid-template-columns:repeat(3,1fr)}.grid2,.grid3{grid-template-columns:1fr}.focus-grid{grid-template-columns:1fr}.overview-strip{grid-template-columns:repeat(2,1fr)}.fund-body{grid-template-columns:1fr}}
 @media(max-width:760px){aside{position:static;width:auto;padding-bottom:9px}.brand{border-bottom:0;margin-bottom:4px}.nav{display:flex;overflow:auto;gap:5px}.nav-group{display:contents}.nav-label{display:none}.nav button{min-width:max-content}.nav .sep{display:none}.main{margin-left:0}.top{position:static;padding:10px 12px;grid-template-columns:1fr}.actions{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.actions>.secondary{display:none}.more-panel{position:fixed;left:12px;right:12px;top:auto;width:auto}.top h1{font-size:18px}.top p{font-size:10px}main{padding:12px}.hero{grid-template-columns:1fr;padding:16px}.kpis{grid-template-columns:1fr 1fr}.overview-strip{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr 110px}.row>*:nth-child(n+3){display:none}}
 </style>
-<script>const CANONICAL_HOST='gigantesdeazapa.cl';if(location.hostname==='www.gigantesdeazapa.cl'){const u=new URL(location.href);u.hostname=CANONICAL_HOST;location.replace(u.href);}</script></head>
+<script>const CANONICAL_HOST='gigantesdeazapa.cl';if(location.hostname==='www.gigantesdeazapa.cl'){const u=new URL(location.href);u.hostname=CANONICAL_HOST;location.replace(u.href);}</script><link rel="stylesheet" href="ux.css?v=20261005"></head>
 <body>
 <aside>
   <div class="brand"><img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg" alt="Gigantes de Azapa"><div><b>Gigantes Control</b><small>Club 2030 · Arica</small></div></div>
@@ -221,7 +221,7 @@ function dash(){
  const events=upcomingProjects();
  return header()+
  '<div class="overview-strip"><div class="overview-card red"><strong>'+u.length+'</strong><span>URGENTES</span></div><div class="overview-card amber"><strong>'+n.length+'</strong><span>PARA LOS PRÓXIMOS 7 DÍAS</span></div><div class="overview-card blue"><strong>'+(up.length+events.length)+'</strong><span>LO QUE VIENE</span></div><div class="overview-card gray"><strong>'+owners.length+'</strong><span>SIN RESPONSABLE</span></div></div>'+
- ((db.system?.dq||[]).filter(x=>String(x.severity).toLowerCase()==='high').length?'<div class="notice"><b>⚠ Calidad de datos:</b> hay '+(db.system.dq||[]).filter(x=>String(x.severity).toLowerCase()==='high').length+' observaciones de alta prioridad abiertas. <a href="calidad.html">Revisar calidad</a>.</div>':'')+'<div class="section-heading"><div><h2>Tu tablero de hoy</h2><p>Primero resuelve lo rojo, después lo de esta semana y luego mira lo que viene.</p></div></div>'+
+ ((db.system?.dq||[]).filter(x=>String(x.severity).toLowerCase()==='high').length?'<div class="notice"><b>⚠ Calidad de datos:</b> hay '+(db.system.dq||[]).filter(x=>String(x.severity).toLowerCase()==='high').length+' observaciones de alta prioridad abiertas. <a href="calidad.html">Revisar calidad</a>.</div>':'')+'<div class="gx-guide"><strong>👋 Comienza aquí</strong><p>No necesitas conocer toda la aplicación. Trabaja siempre en este orden:</p><div class="gx-steps"><div class="gx-step"><b>1. Revisa Urgente</b>Resuelve lo rojo o vencido.</div><div class="gx-step"><b>2. Entra a tu área</b>Presidenta, Tesorería, Jugadores, Proyectos o Eventos.</div><div class="gx-step"><b>3. Guarda evidencia</b>Completa datos y adjunta/consulta documentos.</div><div class="gx-step"><b>4. Cierra y comunica</b>Marca tareas listas y usa impresión/exportación cuando corresponda.</div></div></div><div class="section-heading"><div><h2>Tu tablero de hoy</h2><p>Primero resuelve lo rojo, después lo de esta semana y luego mira lo que viene.</p></div></div>'+
  '<div class="focus-grid">'+
  focusColumn('urgent','🔴 Urgente ahora',u.slice(0,6).map(taskCard),u.length)+
  focusColumn('now','🟠 Qué hacer',n.slice(0,6).map(taskCard),n.length)+
@@ -229,7 +229,12 @@ function dash(){
  '</div>'+
  '<div class="section-heading"><div><h2>Accesos rápidos</h2><p>Las funciones que más se usan en la operación diaria.</p></div><a class="link-more" href="#" onclick="route=\'mapa\';render();return false">Ver mapa completo →</a></div>'+
  '<div class="quick">'+
- '<a href="../santiago.html">✈️ Gira Santiago<small>Delegación, pasajes, alojamiento y avance.</small></a>'+
+ '<a href="inscripciones.html">👥 Registro Maestro<small>Crear y actualizar jugadores, familia, documentos y uso operativo.</small></a>'+ 
+ '<a href="proyectos.html">🏆 Proyectos<small>Crear, completar y seguir proyectos, metas, hitos y tareas.</small></a>'+ 
+ '<a href="tesoreria-v2.html?v=20261003d">💰 Tesorería<small>Cuotas, ingresos, egresos, comprobantes y cierres.</small></a>'+ 
+ '<a href="eventos.html">📅 Eventos<small>Calendario, convocatorias y asistencia.</small></a>'+ 
+ '<a href="biblioteca.html?v=20261003g">📚 Documentos<small>Ver PDF, descargar originales y revisar archivos del club.</small></a>'+ 
+ '<a href="gira-santiago.html">✈️ Gira Santiago<small>Fixture, viaje total, acompañantes, staff y pendientes.</small></a>'+
  '<a href="../fufy.html">🏆 Copa FUFY<small>Equipos, operación, fixture y producción.</small></a>'+
  '<a href="recaudacion.html">🌭 Recaudación<small>Ventas, cierres y rendición.</small></a>'+
  '<a href="tesoreria-v2.html?v=20261003d">💰 Tesorería<small>Ingresos, egresos y respaldos.</small></a>'+
@@ -332,4 +337,4 @@ render();
   const p=document.querySelector('.top p'); if(p)p.textContent='Sesión: '+(profile.display_name||session.user.email)+' · '+profile.role;
 })();
 </script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{}));}</script></body></html>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('../sw.js',{scope:'../'}).catch(()=>{}));}</script><script src="ux.js?v=20261005"></script></body></html>
