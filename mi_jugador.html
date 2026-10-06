@@ -39,7 +39,7 @@ async function selectPerson(id){person=people.find(x=>x.id===id);family.querySel
  documents.innerHTML=req.map(x=>docRow(x,d||[])).join('')+imageAuthorizationRow();const pendingDocs=req.filter(x=>!(d||[]).some(z=>z.document_type===x.type&&z.status==='approved')).length+(person.image_authorization===null||person.image_authorization===undefined?1:0);
  const pendingFed=[f?.federation_status,f?.payment_status,f?.epc_status,f?.insurance_status].filter(x=>!x||!/fichado|pago|tiene/i.test(x)).length;
  const pendingCharges=(c||[]).filter(x=>!['paid','waived'].includes(x.status)&&Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0))>0);const sum=pendingCharges.reduce((a,x)=>a+Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0)),0);
- const pct=Number(reqSummary?.completion_percent||0),pendingCount=Number(reqSummary?.pending_requirements??(pendingDocs+pendingFed));completionKpi.textContent=pct+'%';pendingKpi.textContent=pendingCount;completionFill.style.width=Math.max(0,Math.min(100,pct))+'%';completionText.textContent=pendingCount?pct+'% completa · '+pendingCount+' requisito(s) por resolver':'100% completa · ficha al día';dueKpi.textContent='
+ const pct=Number(reqSummary?.completion_percent||0),pendingCount=Number(reqSummary?.pending_requirements??(pendingDocs+pendingFed));completionKpi.textContent=pct+'%';pendingKpi.textContent=pendingCount;completionFill.style.width=Math.max(0,Math.min(100,pct))+'%';completionText.textContent=pendingCount?pct+'% completa · '+pendingCount+' requisito(s) por resolver':'100% completa · ficha al día';dueKpi.textContent='$'+sum.toLocaleString('es-CL');overall.textContent=(pendingCount+pendingCharges.length)?'Tienes requisitos por resolver':'Ficha al día';renderPendingRequirements(reqStatus||[]);
  renderDues(c||[],pay||[]);renderPayments(pay||[]);renderPlayerDevelopment((dev||[])[0]);renderFamilyContacts(contacts||[],contactReqs||[]);injuryLink.href='lesionado.html?person='+encodeURIComponent(id);renderPersonalProfile()
 }
 function escv(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
@@ -158,140 +158,6 @@ async function uploadDoc(type,file){
  alert('Documento recibido. Quedó en revisión de la Directiva.');
  await selectPerson(person.id)
 }
-function downloadMedicalTemplate(){
- const J=window.jspdf?.jsPDF;if(!J){alert('No fue posible preparar el formato. Actualiza la página e inténtalo nuevamente.');return}
- const doc=new J({unit:'mm',format:'a4'});let y=18;
- doc.setFillColor(17,24,39);doc.rect(0,0,210,38,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('GIGANTES DE AZAPA',18,16);
- doc.setTextColor(243,107,33);doc.setFontSize(11);doc.text('Autorización médica y atención de urgencia',18,24);
- doc.setTextColor(255,255,255);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text('Formato interno del club - completar, firmar y volver a cargar en Mi Gigantes',18,31);
- y=49;doc.setTextColor(17,24,39);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('1. Identificación del jugador/a',18,y);y+=8;
- const line=(label,value,x,w)=>{doc.setTextColor(102,112,133);doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.text(label,x,y);doc.setTextColor(17,24,39);doc.setFont('helvetica','normal');doc.setFontSize(9);if(value)doc.text(String(value),x,y+5,{maxWidth:w});doc.setDrawColor(208,213,221);doc.line(x,y+7,x+w,y+7)};
- line('Nombre completo',person?.full_name||'',18,108);line('RUT / documento',person?.rut_passport||'',134,58);y+=15;
- line('Fecha de nacimiento',person?.birth_date||'',18,52);line('Categoría',person?.category||'',77,45);line('Sistema de salud', [person?.health_system,person?.health_provider].filter(Boolean).join(' · '),129,63);y+=17;
- doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(17,24,39);doc.text('2. Antecedentes relevantes para una atención segura',18,y);y+=8;
- ['Alergias conocidas','Medicamentos de uso habitual','Condición médica / restricción / indicación relevante','Contacto de emergencia - nombre y teléfono'].forEach((t,i)=>{doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(102,112,133);doc.text(t,18,y);let v=i===0?(person?.allergies_conditions||''):i===3?([person?.emergency_contact_name,person?.emergency_contact_phone].filter(Boolean).join(' · ')):'';if(v){doc.setTextColor(17,24,39);doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.text(v,18,y+5,{maxWidth:174})}doc.setDrawColor(208,213,221);doc.line(18,y+8,192,y+8);y+=14});
- y+=3;doc.setFillColor(244,246,248);doc.roundedRect(18,y,174,40,3,3,'F');doc.setTextColor(17,24,39);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('3. Autorización',23,y+8);
- doc.setFont('helvetica','normal');doc.setFontSize(8);const auth='Como adulto responsable, autorizo al Club Deportivo Gigantes de Azapa a prestar primeros auxilios y, si la situación lo requiere, coordinar la derivación del jugador/a a un centro asistencial o activar el protocolo de seguro vigente. Declaro que los antecedentes informados son relevantes para una atención segura y me comprometo a actualizarlos si cambian.';doc.text(doc.splitTextToSize(auth,164),23,y+15);y+=49;
- [['Nombre adulto responsable',18,92],['RUT adulto responsable',116,76]].forEach(a=>{doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(102,112,133);doc.text(a[0],a[1],y);doc.line(a[1],y+7,a[1]+a[2],y+7)});y+=15;
- [['Firma',18,92],['Fecha',116,76]].forEach(a=>{doc.text(a[0],a[1],y);doc.line(a[1],y+7,a[1]+a[2],y+7)});y+=17;
- doc.setFillColor(255,247,237);doc.setDrawColor(254,215,170);doc.roundedRect(18,y,174,27,3,3,'FD');doc.setTextColor(154,52,18);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('IMPORTANTE',23,y+7);doc.setFont('helvetica','normal');doc.setFontSize(7.3);const note='Este formato no reemplaza una evaluación médica, certificado de aptitud, receta, indicación profesional ni los requisitos del seguro o de Chile Rugby. El club utiliza estos antecedentes para seguridad, emergencia y coordinación asistencial.';doc.text(doc.splitTextToSize(note,164),23,y+13);
- doc.save('Autorizacion_Medica_Gigantes_'+String(person?.full_name||'Jugador').replace(/[^A-Za-z0-9]+/g,'_')+'.pdf');
-}
-function renderDues(c,submissions){
- let pending=c.filter(x=>!['paid','waived'].includes(x.status)&&Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0))>0);
- let sum=pending.reduce((a,x)=>a+Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0)),0);
- dues.innerHTML='<div class="amount">$'+sum.toLocaleString('es-CL')+'</div><div class="empty">'+pending.length+' cuota(s) con saldo pendiente</div>'+
- pending.map(x=>{
-  const saldo=Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0));
-  const review=(submissions||[]).find(s=>s.charge_id===x.id&&s.status==='pending_review');
-  return '<div class="status"><div><b>'+x.period.slice(0,7)+'</b><div class="empty">Saldo $'+saldo.toLocaleString('es-CL')+' · vence '+x.due_date+'</div></div>'+badge(review?'En revisión':x.status)+(review?'':' <button class="btn" onclick="receipt(\''+x.id+'\','+saldo+')">Comprobante</button>')+'</div>';
- }).join('');
-}
-function receipt(charge,amount){
- let i=document.createElement('input');i.type='file';i.accept='image/*,application/pdf';
- i.onchange=()=>uploadReceipt(charge,amount,i.files[0]);i.click();
-}
-async function uploadReceipt(charge,amount,file){
- if(!file||!person)return;
- let ext=(file.name.split('.').pop()||'bin').toLowerCase(),path=person.id+'/payments/'+Date.now()+'.'+ext;
- let u=await sb.storage.from('member-private').upload(path,file);
- if(u.error){alert(u.error.message);return}
- let r=await sb.from('payment_submissions').insert({person_id:person.id,charge_id:charge,amount,transfer_date:new Date().toISOString().slice(0,10),storage_path:path});
- if(r.error){alert(r.error.message);return}
- alert('Comprobante enviado a revisión.');selectPerson(person.id);
-}
-function renderPlayerDevelopment(r){playerDevelopment.innerHTML=r?'<div class="status"><div><b>Última revisión · '+escv(r.review_date)+'</b><div class="empty"><b>Fortaleza:</b> '+escv(r.strengths||'—')+'<br><b>Foco actual:</b> '+escv(r.focus_area||'—')+'<br><b>Próximo objetivo:</b> '+escv(r.next_goal||'—')+'</div></div><span class="badge ok">Compartido por coach</span></div>':'<div class="empty">El cuerpo técnico aún no ha compartido una revisión evolutiva.</div>'}
-function renderPayments(p){
- payments.innerHTML=p.length?p.map(x=>'<div class="status"><div><b>$'+Number(x.amount).toLocaleString('es-CL')+'</b><div class="empty">'+x.transfer_date+'</div></div>'+badge(x.status)+'</div>').join(''):'<div class="empty">Aún no hay comprobantes enviados.</div>';
-}
-logout.onclick=async()=>{await sb.auth.signOut();location.href='index.html'};
-init();
-</script><script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}</script></body></html>+sum.toLocaleString('es-CL');overall.textContent=(pendingCount+pendingCharges.length)?'Tienes requisitos por resolver':'Ficha al día';renderPendingRequirements(reqStatus||[]);
- renderDues(c||[],pay||[]);renderPayments(pay||[]);renderPlayerDevelopment((dev||[])[0]);renderFamilyContacts(contacts||[],contactReqs||[]);injuryLink.href='lesionado.html?person='+encodeURIComponent(id);renderPersonalProfile()
-}
-function escv(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function renderFamilyContacts(rows,requests){
- const reqs=(requests||[]).filter(x=>x.status==='pending');
- familyContacts.innerHTML=
-   (rows.length?rows.map(r=>'<div class="status"><div><b>'+escv(r.full_name)+'</b><div class="empty">'+escv(r.relationship_type||'Apoderado')+(r.phone?' · '+escv(r.phone):'')+(r.email?' · '+escv(r.email):'')+'</div></div><span class="badge '+(r.has_account?'ok':'warn')+'">'+(r.has_account?'Acceso activo':'Sin cuenta')+'</span></div>').join(''):'<div class="empty">Aún no hay apoderados registrados para este jugador.</div>')+
-   (reqs.length?'<div class="notice"><b>Corrección pendiente:</b> '+reqs.map(x=>escv(x.full_name)+' · '+escv(x.relationship_type)).join(' / ')+'</div>':'')+
-   '<div class="profileActions"><button class="btn secondary" onclick="openFamilyRequest()">+ Agregar / corregir apoderado</button></div>'+
-   '<div id="familyRequestForm"></div>';
-}
-function openFamilyRequest(){
- if(!person)return;
- familyRequestForm.innerHTML='<div class="profileForm" style="margin-top:10px">'+
- '<label>Nombre completo<input id="frName"></label>'+
- '<label>Parentesco<select id="frRel"><option value="Madre">Madre</option><option value="Padre">Padre</option><option value="Apoderado">Apoderado</option><option value="Padrastro">Padrastro</option><option value="Madrastra">Madrastra</option><option value="Tutor">Tutor/a</option></select></label>'+
- '<label>Teléfono<input id="frPhone"></label>'+
- '<label>Correo<input id="frEmail" type="email"></label>'+
- '<label class="span2"><input id="frPrimary" type="checkbox" style="width:auto;margin-right:6px">Contacto principal</label>'+
- '</div><div class="profileActions"><button class="btn" onclick="submitFamilyRequest()">Enviar corrección</button><button class="btn secondary" onclick="familyRequestForm.innerHTML=\'\'">Cancelar</button></div><div id="frMsg" class="saveMsg"></div>';
-}
-async function submitFamilyRequest(){
- if(!person)return;
- const payload={child_person_id:person.id,full_name:frName.value.trim(),relationship_type:frRel.value,phone:frPhone.value.trim()||null,email:frEmail.value.trim().toLowerCase()||null,is_primary:!!frPrimary.checked};
- if(!payload.full_name){frMsg.textContent='Escribe el nombre completo.';return}
- frMsg.textContent='Enviando…';
- const {error}=await sb.from('family_contact_requests').insert(payload);
- if(error){frMsg.textContent='No fue posible enviar: '+error.message;return}
- frMsg.textContent='✓ Solicitud enviada. La Directiva la revisará y, al aprobarla, quedará vinculada automáticamente.';
- await selectPerson(person.id);
-}
-function renderPersonalProfile(){
- if(!person)return;
- personalProfile.innerHTML='<div class="profileForm">'+
- '<label>Nombre completo<input id="pfName" value="'+escv(person.full_name)+'"></label>'+
- '<label>RUT / documento<input id="pfRut" value="'+escv(person.rut_passport)+'"></label>'+
- '<label>Fecha de nacimiento<input id="pfBirth" type="date" value="'+escv(person.birth_date)+'"></label>'+
- '<label>Sexo<select id="pfSex"><option value="">Seleccionar</option><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option><option value="Otro">Otro / prefiero no indicar</option></select></label>'+
- '<label>Teléfono<input id="pfPhone" value="'+escv(person.phone)+'"></label>'+
- '<label>Correo<input id="pfEmail" type="email" value="'+escv(person.email)+'"></label>'+
- '<label class="span2">Dirección<input id="pfAddress" value="'+escv(person.address)+'"></label>'+
- '<label>Comuna<input id="pfCommune" value="'+escv(person.commune)+'"></label>'+
- '<label>Nacionalidad<input id="pfNationality" value="'+escv(person.nationality)+'"></label>'+
- '<label>Sistema de salud<select id="pfHealth"><option value="">Seleccionar</option><option value="Fonasa">Fonasa</option><option value="Isapre">Isapre</option><option value="Particular">Particular</option><option value="Otro">Otro</option></select></label>'+
- '<label>Isapre / prestador<input id="pfProvider" value="'+escv(person.health_provider)+'"></label>'+
- '<label class="span2">Alergias / condiciones relevantes<textarea id="pfAllergies">'+escv(person.allergies_conditions)+'</textarea></label>'+
- '<label>Contacto de emergencia<input id="pfEmergencyName" value="'+escv(person.emergency_contact_name)+'"></label>'+
- '<label>Teléfono de emergencia<input id="pfEmergencyPhone" value="'+escv(person.emergency_contact_phone)+'"></label>'+
- '</div><div class="readonlyHint">Categoría, roles, Chile Rugby, cuotas y permisos no se modifican desde esta ficha.</div><div class="profileActions"><button class="btn" onclick="savePersonalProfile()">Guardar / actualizar</button><button class="btn secondary" onclick="renderPersonalProfile()">Descartar cambios</button></div><div id="profileMsg" class="saveMsg"></div>';
- pfSex.value=person.sex||'';pfHealth.value=person.health_system||'';
-}
-async function savePersonalProfile(){
- const payload={full_name:pfName.value.trim(),rut_passport:pfRut.value.trim(),birth_date:pfBirth.value||'',sex:pfSex.value,phone:pfPhone.value.trim(),email:pfEmail.value.trim().toLowerCase(),address:pfAddress.value.trim(),commune:pfCommune.value.trim(),nationality:pfNationality.value.trim(),health_system:pfHealth.value,health_provider:pfProvider.value.trim(),allergies_conditions:pfAllergies.value.trim(),emergency_contact_name:pfEmergencyName.value.trim(),emergency_contact_phone:pfEmergencyPhone.value.trim()};
- if(!payload.full_name){profileMsg.textContent='El nombre no puede quedar vacío.';return}
- profileMsg.textContent='Guardando cambios…';
- const {data,error}=await sb.from('person_profile_updates').insert({person_id:person.id,payload}).select('new_snapshot').single();
- if(error){profileMsg.textContent='No fue posible guardar: '+error.message;return}
- person={...person,...(data?.new_snapshot||payload)};people=people.map(p=>p.id===person.id?person:p);
- await selectPerson(person.id);
- profileMsg.textContent='✓ Datos actualizados correctamente.';
-}
-function docRow(x,docs){
- let d=docs.find(z=>z.document_type===x.type);
- let actions='';
- if(x.type==='medical_authorization'){
-   actions='<div class="docActions"><button class="btn download" onclick="downloadMedicalTemplate()">Descargar formato</button>'+(d?.status==='approved'?'':'<button class="btn" onclick="pick(\''+x.type+'\',\''+x.accept+'\')">'+(d?'Reemplazar firmado':'Subir firmado')+'</button>')+'</div>';
- }else{
-   actions=d?.status==='approved'?'':'<div class="docActions"><button class="btn" onclick="pick(\''+x.type+'\',\''+x.accept+'\')">'+(d?'Reemplazar':'Subir')+'</button></div>';
- }
- return '<div class="status"><div><div class="docTitle"><b>'+x.label+'</b>'+help(x.help)+'</div><div class="docHint">'+(d?'Subido · '+d.status:'Pendiente')+'</div></div><div>'+badge(d?.status)+'</div>'+actions+'</div>'
-}
-function imageAuthorizationRow(){
- const v=person?.image_authorization;
- const h='Define si el club puede usar fotografías institucionales no sensibles del jugador, por ejemplo en el álbum del equipo y comunicaciones deportivas del club. Puedes cambiar esta decisión más adelante.';
- return '<div class="status"><div><div class="docTitle"><b>Autorización de imagen</b>'+help(h)+'</div><div class="docHint">'+(v===true?'Autorizada':v===false?'No autorizada':'Debes elegir Sí o No')+'</div></div>'+badge(v===true?'Autorizada':v===false?'No autorizada':'Pendiente')+'<div class="consentActions"><button class="consentBtn yes '+(v===true?'active':'')+'" onclick="setImageAuthorization(true)">Sí</button><button class="consentBtn no '+(v===false?'active':'')+'" onclick="setImageAuthorization(false)">No</button></div></div>'
-}
-async function setImageAuthorization(value){
- if(!person)return;
- const {data,error}=await sb.from('person_profile_updates').insert({person_id:person.id,payload:{image_authorization:value}}).select('new_snapshot').single();
- if(error){alert('No fue posible guardar la autorización: '+error.message);return}
- person={...person,...(data?.new_snapshot||{}),image_authorization:value};people=people.map(p=>p.id===person.id?person:p);
- await selectPerson(person.id);
-}
-function pick(type,accept){let i=document.createElement('input');i.type='file';i.accept=accept;i.onchange=()=>uploadDoc(type,i.files[0]);i.click()}
-async function uploadDoc(type,file){if(!file||!person)return;let ext=(file.name.split('.').pop()||'bin').toLowerCase(),path=person.id+'/'+type+'/'+Date.now()+'.'+ext;let u=await sb.storage.from('member-private').upload(path,file);if(u.error){alert(u.error.message);return}let r=await sb.from('member_documents').insert({person_id:person.id,document_type:type,storage_path:path});if(r.error){alert(r.error.message);return}selectPerson(person.id)}
 function downloadMedicalTemplate(){
  const J=window.jspdf?.jsPDF;if(!J){alert('No fue posible preparar el formato. Actualiza la página e inténtalo nuevamente.');return}
  const doc=new J({unit:'mm',format:'a4'});let y=18;
