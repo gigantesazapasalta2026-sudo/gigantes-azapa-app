@@ -63,6 +63,12 @@ async function openDoc(path){const {data,error}=await sb.storage.from('member-pr
 async function verify(id,field,value){const payload={[field]:value,reviewed_by:session.user.id,reviewed_at:new Date().toISOString()};const {error}=await sb.from('registration_requests').update(payload).eq('id',id);if(error)alert(error.message);await refresh()}
 async function passStatus(id,status){const {error}=await sb.from('registration_requests').update({transfer_pass_status:status,reviewed_by:session.user.id,reviewed_at:new Date().toISOString()}).eq('id',id);if(error)alert(error.message);await refresh()}
 async function saveNote(id){const v=document.getElementById('note-'+id).value.trim();const {error}=await sb.from('registration_requests').update({review_notes:v||null,reviewed_by:session.user.id,reviewed_at:new Date().toISOString()}).eq('id',id);if(error)alert(error.message);await refresh()}
+async function openWelcomeDiploma(requestId){
+ const {data,error}=await sb.from('welcome_diplomas').select('public_token').eq('registration_request_id',requestId).is('revoked_at',null).maybeSingle();
+ if(error){alert('No fue posible consultar el diploma: '+error.message);return}
+ if(!data?.public_token){alert('El diploma todavía no está disponible para esta incorporación.');return}
+ window.open('../diploma.html?t='+encodeURIComponent(data.public_token),'_blank','noopener');
+}
 
 function switchPanel(panel,btn){document.querySelectorAll('[data-panel]').forEach(x=>x.classList.remove('active'));btn.classList.add('active');masterPanel.classList.toggle('hide',panel!=='master');requestsPanel.classList.toggle('hide',panel!=='requests')}
 function bindMaster(){personSearch.oninput=renderMasterList;personCat.onchange=renderMasterList;newPersonBtn.onclick=newMasterPerson;savePersonBtn.onclick=saveMasterPerson;reloadPersonBtn.onclick=()=>selectedPerson?openMasterPerson(selectedPerson.id):newMasterPerson();addRelationBtn.onclick=addRelation;addSclBtn.onclick=addToSantiago;addEventBtn.onclick=addToEvent;addPersonCF.onclick=addPersonCustomField}
