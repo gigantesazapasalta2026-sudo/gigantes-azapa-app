@@ -9,7 +9,7 @@
 <header class="top"><div class="topin"><img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg"><div><b>Formación · Control Center</b><small id="who">Validando sesión…</small></div><span class="spacer"></span><a class="btn secondary" href="../formacion.html">🌐 Vista pública</a><a class="btn secondary" href="index.html">← Control Center</a><button class="btn dark" id="logout">Salir</button></div></header>
 <main>
 <section class="hero"><span class="kicker">ACADEMIA GIGANTES · DESARROLLO DEPORTIVO</span><h1>Planificar, enseñar, aprender y dejar registro.</h1><p>Este espacio separa la información pública para familias de la operación privada del cuerpo técnico. Cada entrenador trabaja sobre sus categorías autorizadas y su propia ruta de capacitación.</p></section>
-<div class="tabs"><button data-tab="dashboard" class="active">Resumen</button><button data-tab="planes">Planificación</button><button data-tab="aprendizaje">Mi aprendizaje</button><button data-tab="oportunidades">Oportunidades</button><button data-tab="radar">Radar de cursos</button><button data-tab="staff" id="staffTab" class="hidden">Asignaciones</button><button data-tab="docs">Documentos</button></div>
+<div class="tabs"><button data-tab="dashboard" class="active">Resumen</button><button data-tab="planes">Planificación</button><button data-tab="aprendizaje">Mi aprendizaje</button><button data-tab="oportunidades">Oportunidades</button><button data-tab="radar">Radar de cursos</button><button data-tab="staff" id="staffTab" class="hidden">Asignaciones</button><button data-tab="validacion" id="validationTab" class="hidden">Validar cursos</button><button data-tab="docs">Documentos</button></div>
 <section id="view"></section>
 </main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
@@ -37,6 +37,7 @@ function render(){
  if(tab==='oportunidades')return opportunitiesView();
  if(tab==='radar')return radarView();
  if(tab==='staff')return staffView();
+ if(tab==='validacion')return validationView();
  return docsView();
 }
 function dashboard(){
@@ -102,6 +103,13 @@ function opportunitiesView(){
  view.innerHTML='<div class="panel"><h2>Radar internacional de capacitación</h2><p>Oportunidades oficiales o federativas para entrenadores, árbitros y oficiales. Antes de inscribirse siempre verificamos elegibilidad, cupos y reconocimiento.</p>'+
  (rows.length?rows.map(o=>'<div class="row"><div><span class="badge '+(o.status==='open'?'ok':o.status==='upcoming'?'warn':'')+'">'+esc(String(o.status).toUpperCase())+'</span> <span class="badge">'+esc(o.country||'Internacional')+'</span></div><b>'+esc(o.title)+'</b><small>'+esc(o.provider)+' · '+esc(o.modality||'modalidad por confirmar')+(o.start_date?' · '+esc(o.start_date)+(o.end_date?' → '+esc(o.end_date):''):'')+(o.accreditation?'<br><b>Acreditación:</b> '+esc(o.accreditation):'')+(o.eligibility_note?'<br>'+esc(o.eligibility_note):'')+'</small><div class="actions">'+(o.resource_url?'<a class="btn secondary" target="_blank" rel="noopener" href="'+esc(o.resource_url)+'">Fuente oficial</a>':'')+'</div></div>').join(''):'<div class="empty">No hay oportunidades registradas.</div>')+'</div>';
 }
+function validationView(){
+ if(!canAdmin()){tab='dashboard';return render()}
+ view.innerHTML='<div class="panel"><h2>Validación de cursos y certificados</h2><p>La Directiva revisa la evidencia antes de marcar un curso como verificado.</p>'+
+ (learningRecords.length?learningRecords.map(r=>'<div class="row"><div><span class="badge '+(r.verification_status==='verified'?'ok':r.verification_status==='rejected'?'danger':'warn')+'">'+esc(String(r.verification_status).toUpperCase())+'</span></div><b>'+esc(r.course_title)+'</b><small>'+esc(r.provider)+(r.completed_on?' · '+esc(r.completed_on):'')+(r.hours!=null?' · '+esc(r.hours)+' h':'')+(r.certificate_name?'<br>'+esc(r.certificate_name):'')+'</small><div class="actions">'+(r.certificate_path?'<button class="btn secondary" onclick="openLearningCertificate(\''+r.certificate_path+'\')">Ver certificado</button>':'')+'<button class="btn primary" onclick="verifyLearningRecord(\''+r.id+'\',\'verified\')">Verificar</button><button class="btn secondary" onclick="verifyLearningRecord(\''+r.id+'\',\'rejected\')">Rechazar</button></div></div>').join(''):'<div class="empty">No hay cursos registrados para revisar.</div>')+'</div>';
+}
+async function openLearningCertificate(path){const {data,error}=await window.GIGANTES_DB.storage.from('sport-learning-private').createSignedUrl(path,600);if(error||!data?.signedUrl)return alert(error?.message||'No se pudo abrir');window.open(data.signedUrl,'_blank')}
+async function verifyLearningRecord(id,status){const payload={verification_status:status,verified_by:profile.user_id,verified_at:new Date().toISOString(),updated_at:new Date().toISOString()};const {error}=await window.GIGANTES_DB.from('sport_learning_records').update(payload).eq('id',id);if(error)return alert(error.message);await load();tab='validacion';render();}
 function staffView(){
  if(!canAdmin()){tab='dashboard';return render()}
  view.innerHTML='<div class="grid2"><div class="panel"><h2>Asignar cuerpo técnico</h2><p>Los roles administrativos del Control Center y las funciones deportivas son independientes.</p><div class="form"><label>Usuario<select id="sUser">'+profiles.map(p=>'<option value="'+p.user_id+'">'+esc(p.display_name||p.email||p.user_id)+'</option>').join('')+'</select></label><label>Categoría<select id="sTeam">'+teams.filter(t=>t.status!=='inactive').map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('')+'</select></label><label>Función<select id="sRole"><option value="head_coach">Head Coach</option><option value="coach">Coach</option><option value="assistant">Asistente</option><option value="mentor">Mentor</option><option value="referee">Referee</option><option value="assistant_referee">Árbitro asistente</option><option value="table_official">Mesa / control</option><option value="sport_director">Dirección deportiva</option></select></label><div style="align-self:end"><button class="btn primary" onclick="saveAssignment()">Asignar</button></div></div></div><div class="panel"><h2>Asignaciones activas</h2>'+
@@ -120,7 +128,7 @@ async function load(){
   sb.from('sport_training_opportunities').select('*').eq('active',true).order('priority',{ascending:true}).order('start_date',{ascending:true,nullsFirst:false})
  ];
  if(canAdmin())calls.push(sb.from('profiles').select('user_id,display_name,email,role,active').eq('active',true).order('display_name'));
- const rs=await Promise.all(calls);teams=rs[0].data||[];assignments=rs[1].data||[];plans=rs[2].data||[];catalog=rs[3].data||[];progress=rs[4].data||[];opportunities=rs[5].data||[];profiles=canAdmin()?(rs[6].data||[]):[];render();
+ const rs=await Promise.all(calls);teams=rs[0].data||[];assignments=rs[1].data||[];plans=rs[2].data||[];catalog=rs[3].data||[];progress=rs[4].data||[];opportunities=rs[5].data||[];learningRecords=canAdmin()?(rs[6].data||[]):[];profiles=canAdmin()?(rs[7].data||[]):[];render();
 }
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('button[data-tab]');if(!b)return;if(b.dataset.tab==='staff'&&!canAdmin())return;tab=b.dataset.tab;render()};
 logout.onclick=async()=>{await sb.auth.signOut();location.replace('login.html')};
@@ -128,6 +136,6 @@ logout.onclick=async()=>{await sb.auth.signOut();location.replace('login.html')}
  const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('login.html');return}
  const {data:p}=await sb.from('profiles').select('user_id,display_name,email,role,active').eq('user_id',session.user.id).maybeSingle();
  if(!p||!p.active||!['superadmin','board','coach','commission'].includes(p.role)){location.replace('../mi_jugador.html');return}
- profile=p;who.textContent=(p.display_name||session.user.email)+' · '+p.role;if(canAdmin())staffTab.classList.remove('hidden');await load();
+ profile=p;who.textContent=(p.display_name||session.user.email)+' · '+p.role;if(canAdmin()){staffTab.classList.remove('hidden');validationTab.classList.remove('hidden')}await load();
 })();
 </script></body></html>
