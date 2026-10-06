@@ -15,11 +15,19 @@ window.GIGANTES_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Mv2-Dmoh24cSI_CYFFgA5
 // Private document library across authenticated management pages.
 (()=>{const own=document.currentScript;if(!own?.src)return;const base=new URL('gestion/',own.src);if(location.origin!==base.origin||!location.pathname.startsWith(base.pathname))return;const page=location.pathname.slice(base.pathname.length);if(['login.html','biblioteca.html','presentacion.html'].includes(page))return;const start=()=>{const s=document.createElement('script');s.src=new URL('document-library.js?v=20261006-1',base).href;document.head.appendChild(s);};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();})();
 
-// Resilient browser storage for Supabase Auth: sessionStorage first, mirrored to localStorage.
+// Resilient browser storage for Supabase Auth.
+// localStorage is authoritative so all Chrome tabs share the freshest refresh token.
+// sessionStorage is only a fallback for browsers that block localStorage.
 window.GIGANTES_AUTH_STORAGE={
-  getItem(key){try{const s=sessionStorage.getItem(key);if(s!==null)return s}catch{}try{return localStorage.getItem(key)}catch{return null}},
-  setItem(key,value){try{sessionStorage.setItem(key,value)}catch{}try{localStorage.setItem(key,value)}catch{}},
-  removeItem(key){try{sessionStorage.removeItem(key)}catch{}try{localStorage.removeItem(key)}catch{}}
+  getItem(key){
+    try{
+      const v=localStorage.getItem(key);
+      if(v!==null){try{sessionStorage.setItem(key,v)}catch{};return v}
+    }catch{}
+    try{return sessionStorage.getItem(key)}catch{return null}
+  },
+  setItem(key,value){try{localStorage.setItem(key,value)}catch{}try{sessionStorage.setItem(key,value)}catch{}},
+  removeItem(key){try{localStorage.removeItem(key)}catch{}try{sessionStorage.removeItem(key)}catch{}}
 };
 
 // Add private player-development shortcut to Control Center tools.
