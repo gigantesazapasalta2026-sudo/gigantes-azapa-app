@@ -1,0 +1,16 @@
+:root{--gx-orange:#f36b21;--gx-dark:#0b0f14;--gx-text:#111827;--gx-muted:#667085;--gx-line:#e5e7eb;--gx-bg:#f4f6f8;--gx-ok:#166534;--gx-warn:#92400e;--gx-bad:#991b1b}
+.gx-page-tools{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
+.gx-page-tools button,.gx-page-tools a{border:1px solid #d0d5dd;background:#fff;color:#111827;border-radius:9px;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer;text-decoration:none}
+.gx-page-tools .gx-primary{background:var(--gx-dark);color:#fff;border-color:var(--gx-dark)}
+.gx-guide{border:1px solid #bfdbfe;background:#eff6ff;border-radius:13px;padding:13px 14px;margin:12px 0;color:#1e3a8a}
+.gx-guide strong{display:block;font-size:13px;margin-bottom:5px}.gx-guide p{margin:0;font-size:11.5px;line-height:1.5}
+.gx-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:10px}
+.gx-step{background:#fff;border:1px solid #dbeafe;border-radius:10px;padding:10px;color:#1e3a8a;font-size:11px;line-height:1.35}
+.gx-step b{display:block;margin-bottom:4px}
+.gx-toast{position:fixed;right:16px;bottom:16px;z-index:99999;background:#111827;color:#fff;padding:11px 13px;border-radius:10px;box-shadow:0 12px 30px #0003;font-size:11px;font-weight:800;max-width:320px}
+.gx-help-fab{position:fixed;right:16px;bottom:16px;z-index:9998;width:44px;height:44px;border-radius:50%;border:0;background:var(--gx-orange);color:#fff;font-size:18px;font-weight:900;cursor:pointer;box-shadow:0 8px 24px #0003}
+.gx-help-panel{position:fixed;right:16px;bottom:70px;z-index:9998;width:min(360px,calc(100vw - 32px));max-height:70vh;overflow:auto;background:#fff;border:1px solid var(--gx-line);border-radius:14px;box-shadow:0 20px 50px #0003;padding:14px;display:none}
+.gx-help-panel.open{display:block}.gx-help-panel h3{margin:0 0 8px;font-size:15px}.gx-help-panel p,.gx-help-panel li{font-size:11px;line-height:1.45;color:#475467}
+.gx-help-panel ol{padding-left:20px}.gx-help-panel a{color:#1d4ed8;font-weight:800}
+.gx-print-title{display:none}
+@media print{.gx-page-tools,.gx-help-fab,.gx-help-panel,.top a,.toolbar button,.btn{display:none!important}.gx-print-title{display:block!important;margin:0 0 12px}.card,.panel,.req{box-shadow:none!important;border:1px solid #ddd!important;break-inside:avoid}body{background:#fff!important}a{color:#000!important;text-decoration:none!important}}
