@@ -39,7 +39,7 @@ async function init(){const {data:{session},error:sessionError}=await sb.auth.ge
 }
 async function selectPerson(id){person=people.find(x=>x.id===id);family.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.id===id));
  const [{data:f},{data:d},{data:c},{data:pay},{data:dev},{data:contacts},{data:contactReqs},{data:reqSummary},{data:reqStatus}]=await Promise.all([sb.from('federation_status').select('*').eq('person_id',id).maybeSingle(),sb.from('member_documents').select('*').eq('person_id',id).order('uploaded_at',{ascending:false}),sb.from('membership_charges').select('*').eq('person_id',id).order('period',{ascending:false}),sb.from('payment_submissions').select('*').eq('person_id',id).order('submitted_at',{ascending:false}),sb.from('sport_player_development_reviews').select('review_date,strengths,focus_area,next_goal').eq('person_id',id).eq('shared_with_family',true).order('review_date',{ascending:false}).limit(1),sb.rpc('get_family_contacts',{target_child:id}),sb.from('family_contact_requests').select('*').eq('child_person_id',id).order('created_at',{ascending:false}),sb.from('member_completion_summary').select('*').eq('person_id',id).maybeSingle(),sb.from('member_requirement_status').select('*').eq('person_id',id).order('sort_order')]);
- name.textContent=person.full_name;avatar.title='Foto de identificación del jugador. Si la autorización de imagen está en Sí, podrá mostrarse también en el álbum público del equipo.';meta.textContent=[person.category,person.rut_passport?'RUT/ID terminado en '+person.rut_passport.slice(-4):'RUT pendiente'].filter(Boolean).join(' · ');
+ name.textContent=person.full_name;avatar.title='Foto de identificación del jugador. Si la autorización de imagen está en Sí, podrá mostrarse también en el álbum público del equipo.';avatar.src='https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg';const profilePhoto=(d||[]).find(z=>z.document_type==='profile_photo'&&z.status==='approved');if(profilePhoto){const signed=await sb.storage.from('member-private').createSignedUrl(profilePhoto.storage_path,3600);if(!signed.error&&signed.data?.signedUrl)avatar.src=signed.data.signedUrl}meta.textContent=[person.category,person.rut_passport?'RUT/ID terminado en '+person.rut_passport.slice(-4):'RUT pendiente'].filter(Boolean).join(' · ');
  federation.innerHTML=status('Inscripción BD',f?.federation_status,'Confirma que el jugador está incorporado en el registro de Chile Rugby.')+status('Pago registro',f?.payment_status,'Acredita que el proceso de registro federativo quedó pagado y vigente.')+status('EPC',f?.epc_status,'El EPC forma parte de los antecedentes exigidos por Chile Rugby para mantener la situación del jugador regularizada.')+status('Seguro',f?.insurance_status,'Es fundamental para activar el protocolo correspondiente ante una lesión o accidente cubierto.');
  health.textContent=[person.health_system,person.health_provider].filter(Boolean).join(' · ')||'Pendiente';health.className='badge '+(person.health_system?'ok':'warn');
  documents.innerHTML=req.map(x=>docRow(x,d||[])).join('')+imageAuthorizationRow();const pendingDocs=req.filter(x=>!(d||[]).some(z=>z.document_type===x.type&&z.status==='approved')).length+(person.image_authorization===null||person.image_authorization===undefined?1:0);
@@ -121,7 +121,9 @@ async function savePersonalProfile(){
 function docRow(x,docs){
  let d=docs.find(z=>z.document_type===x.type);
  let actions='';
- if(x.type==='medical_authorization'){
+ if(x.type==='profile_photo'){
+   actions='<div class="docActions"><button class="btn" onclick="pick(\''+x.type+'\',\''+x.accept+'\')">'+(d?'Cambiar foto':'Subir foto')+'</button></div>';
+ }else if(x.type==='medical_authorization'){
    actions='<div class="docActions"><button class="btn download" onclick="downloadMedicalTemplate()">Descargar formato</button>'+(d?.status==='approved'?'':'<button class="btn" onclick="pick(\''+x.type+'\',\''+x.accept+'\')">'+(d?'Reemplazar firmado':'Subir firmado')+'</button>')+'</div>';
  }else{
    actions=d?.status==='approved'?'':'<div class="docActions"><button class="btn" onclick="pick(\''+x.type+'\',\''+x.accept+'\')">'+(d?'Reemplazar':'Subir')+'</button></div>';
@@ -159,9 +161,10 @@ async function uploadDoc(type,file){
  let ext=(file.name.split('.').pop()||'bin').toLowerCase(),path=person.id+'/'+type+'/'+Date.now()+'.'+ext;
  let u=await sb.storage.from('member-private').upload(path,file);
  if(u.error){alert(u.error.message);return}
- let r=await sb.from('member_documents').insert({person_id:person.id,document_type:type,storage_path:path,expires_at,status:'pending_review'});
+ const isProfilePhoto=type==='profile_photo';
+ let r=await sb.from('member_documents').insert({person_id:person.id,document_type:type,storage_path:path,expires_at,status:isProfilePhoto?'approved':'pending_review',reviewed_at:isProfilePhoto?new Date().toISOString():null});
  if(r.error){alert(r.error.message);return}
- alert('Documento recibido. Quedó en revisión de la Directiva.');
+ alert(isProfilePhoto?'Foto actualizada correctamente. Ya quedó activa en tu ficha.':'Documento recibido. Quedó en revisión de la Directiva.');
  await selectPerson(person.id)
 }
 function downloadMedicalTemplate(){
