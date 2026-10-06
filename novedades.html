@@ -1,11 +1,186 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0f14"><title>Novedades · Gigantes de Azapa</title><style>
-:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f6f8;color:#111827}.hero{background:linear-gradient(135deg,#0b0f14,#2a180e);color:#fff;padding:72px 18px 36px}.in,main{max-width:940px;margin:auto}.hero h1{font-size:clamp(2rem,6vw,4rem);margin:0 0 8px}.hero p{color:#d1d5db;max-width:720px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.tab{border:1px solid #ddd;background:#fff;border-radius:999px;padding:8px 12px;font-weight:800;cursor:pointer}.tab.active{background:#111;color:#fff}.card{background:#fff;border:1px solid var(--l);border-radius:16px;padding:18px;margin:14px 0}.pin{display:inline-block;background:#fff7ed;color:#9a3412;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900}.meta{font-size:12px;color:var(--m)}.body{white-space:pre-wrap;line-height:1.6}.empty{padding:28px;text-align:center;color:var(--m)}a{color:#c2410c;font-weight:800;text-decoration:none}</style></head><body>
-<section class="hero"><div class="in"><h1>📣 Novedades</h1><p>Conoce lo que está haciendo Gigantes de Azapa: actividades, giras, campeonatos, recaudaciones, bingos, ventas, encuentros y avances del club.</p><a href="index.html" style="color:#f6a16f">← Volver al inicio</a></div></section>
-<main><div id="loading" class="card">Cargando novedades públicas…</div><section id="feed"></section></main>
-<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0f14">
+<title>Novedades · Gigantes de Azapa</title>
+<style>
+:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085;--bg:#f4f6f8}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:#111827}
+.hero{background:linear-gradient(135deg,#0b0f14,#2a180e);color:#fff;padding:72px 18px 38px}
+.in,main{max-width:1080px;margin:auto}
+.hero h1{font-size:clamp(2.4rem,7vw,4.8rem);line-height:.95;margin:0 0 10px}
+.hero p{color:#d1d5db;max-width:760px;line-height:1.55}
+.back{color:#f6a16f;font-weight:900;text-decoration:none}
+.section{padding:34px 18px}
+.section h2{font-size:clamp(1.7rem,4vw,2.7rem);margin:0 0 8px}
+.lead{color:var(--m);max-width:760px;line-height:1.55}
+.kicker{font-size:.7rem;font-weight:950;letter-spacing:.7px;text-transform:uppercase;color:var(--o)}
+.featured{display:grid;grid-template-columns:1.15fr .925fr .925fr;gap:14px;margin-top:20px}
+.feature{background:#fff;border:1px solid var(--l);border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(17,24,39,.06);display:flex;flex-direction:column;min-height:100%}
+.feature-media{position:relative;aspect-ratio:16/10;background:#111827;overflow:hidden}
+.feature.sale .feature-media{aspect-ratio:4/3}
+.feature-media img{width:100%;height:100%;object-fit:cover;display:block}
+.feature-media:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.5))}
+.flag{position:absolute;left:12px;top:12px;z-index:2;border-radius:999px;padding:7px 9px;font-size:.65rem;font-weight:950;background:#fff;color:#111827;box-shadow:0 4px 14px #0002}
+.flag.today{background:var(--o);color:#fff}
+.feature-body{padding:16px 17px 18px;display:flex;flex-direction:column;flex:1}
+.feature h3{font-size:1.25rem;line-height:1.12;margin:4px 0 8px}
+.feature p{color:#667085;line-height:1.52;font-size:.86rem;margin:0 0 12px}
+.feature-meta{font-size:.72rem;color:#667085;font-weight:800;margin-bottom:12px}
+.prices{display:flex;gap:7px;flex-wrap:wrap;margin:2px 0 13px}
+.prices span{font-size:.67rem;font-weight:900;background:#fff7ed;color:#9a3412;border-radius:999px;padding:6px 8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;background:#111827;color:#fff;text-decoration:none;font-weight:900;border-radius:10px;padding:10px 12px;margin-top:auto}
+.btn.orange{background:var(--o)}
+.feed-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:10px}
+.card{background:#fff;border:1px solid var(--l);border-radius:16px;padding:18px;margin:14px 0}
+.pin{display:inline-block;background:#fff7ed;color:#9a3412;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900}
+.meta{font-size:12px;color:var(--m)}
+.body{white-space:pre-wrap;line-height:1.6}
+.empty{padding:28px;text-align:center;color:var(--m)}
+.card a{color:#c2410c;font-weight:800;text-decoration:none}
+.loading{opacity:.78}
+@media(max-width:900px){.featured{grid-template-columns:1fr 1fr}.feature.sale{grid-column:1/-1}.feature.sale{display:grid;grid-template-columns:.8fr 1.2fr}.feature.sale .feature-media{aspect-ratio:auto;min-height:320px}}
+@media(max-width:620px){.hero{padding-top:58px}.featured{grid-template-columns:1fr}.feature.sale{grid-column:auto;display:flex}.feature.sale .feature-media{aspect-ratio:4/3;min-height:0}.feature-media{aspect-ratio:16/10}.section{padding:28px 14px}.feed-head{display:block}}
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="in">
+    <div class="kicker" style="color:#f6a16f">Lo que está pasando ahora</div>
+    <h1>📣 Novedades</h1>
+    <p>Actividades, giras, campeonatos, recaudaciones y avances del club, reunidos en un solo lugar.</p>
+    <a class="back" href="index.html">← Volver al inicio</a>
+  </div>
+</section>
+
+<main>
+<section class="section">
+  <div class="kicker">Destacado</div>
+  <h2>Lo próximo en Gigantes</h2>
+  <p class="lead">Tres hitos que hoy necesitan la atención de jugadores, familias y comunidad.</p>
+
+  <div class="featured">
+    <article class="feature sale">
+      <div class="feature-media" id="saleMedia">
+        <img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/app-2026/comunidad-familias-arica.jpg" alt="Venta solidaria Gigantes de Azapa" loading="eager">
+        <span class="flag today" id="saleFlag">HOY · 6 OCT</span>
+      </div>
+      <div class="feature-body">
+        <div class="kicker">Recaudación · actividad del día</div>
+        <h3 id="saleTitle">Gran Venta Solidaria · Sopaipillas + Empanadas de queso</h3>
+        <div class="feature-meta">Martes 6 de octubre · desde las 19:00 · Cancha 3, Estadio Carlos Dittborn</div>
+        <p id="saleSummary">Todo lo recaudado va en directo beneficio del desarrollo de nuestros jugadores y actividades deportivas.</p>
+        <div class="prices" id="salePrices">
+          <span>Sopaipilla · $700</span><span>4 · $2.000</span><span>Empanada queso · $1.500</span><span>3 · $3.500</span>
+        </div>
+        <a class="btn orange" href="recaudacion.html">Ver venta y apoyar →</a>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature-media">
+        <img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/ALVARO_FUFY_MEMORIAL_APP.jpg" alt="Copa Internacional FUFY 2026" loading="lazy">
+        <span class="flag">24 OCTUBRE</span>
+      </div>
+      <div class="feature-body">
+        <div class="kicker">Copa Internacional FUFY 2026</div>
+        <h3>Arica se prepara para una jornada de rugby y tradición</h3>
+        <div class="feature-meta">24 de octubre · Estadio Carlos Dittborn</div>
+        <p>La Copa FUFY se acerca. Organización, auspicios, logística, cancha, alimentación, seguridad y comunicaciones ya están en marcha.</p>
+        <a class="btn" href="fufy.html">Ver Copa FUFY →</a>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="feature-media">
+        <img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/app-2026/m10-equipo.jpg" alt="Gira Santiago 2026" loading="lazy">
+        <span class="flag">6–9 NOVIEMBRE</span>
+      </div>
+      <div class="feature-body">
+        <div class="kicker">Gira Santiago 2026</div>
+        <h3>La delegación se prepara para viajar a Santiago</h3>
+        <div class="feature-meta">6 al 9 de noviembre · Santiago</div>
+        <p>Avanzan nómina, pasajes, alojamiento y documentación. Stade Français está confirmado como rival de nuestras categorías infantiles.</p>
+        <a class="btn" href="santiago.html">Ver Gira Santiago →</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="section" style="padding-top:8px">
+  <div class="feed-head">
+    <div>
+      <div class="kicker">Actualizaciones</div>
+      <h2 style="margin-bottom:0">Más novedades del club</h2>
+    </div>
+  </div>
+  <div id="loading" class="card loading">Cargando publicaciones públicas…</div>
+  <section id="feed"></section>
+</section>
+</main>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);
-(async()=>{const [{data:a,error},{data:ps}]=await Promise.all([sb.from('announcements').select('id,title,body,pinned,published_at,audience_type,project_id,team_id').eq('public_visible',true).eq('active',true).lte('published_at',new Date().toISOString()).order('pinned',{ascending:false}).order('published_at',{ascending:false}).limit(100),sb.from('projects').select('id,public_slug,code').eq('public_visible',true)]);const pmap=Object.fromEntries((ps||[]).map(p=>[p.id,p.public_slug||p.code]));
-loading.remove();if(error){feed.innerHTML='<div class="card empty">No fue posible cargar las novedades.</div>';return}
-feed.innerHTML=(a||[]).length?(a||[]).map(x=>'<article class="card">'+(x.pinned?'<span class="pin">DESTACADO</span>':'')+'<h2>'+esc(x.title)+'</h2><div class="meta">'+new Date(x.published_at).toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'})+'</div><p class="body">'+esc(x.body)+'</p>'+(x.project_id&&pmap[x.project_id]?'<p><a href="proyecto.html?slug='+encodeURIComponent(pmap[x.project_id])+'">Ver proyecto y avances →</a></p>':'')+'</article>').join(''):'<div class="card empty">Todavía no hay novedades públicas.</div>'})();
+const money=v=>new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(Number(v));
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-</script><script src="form-bridge.js"></script></body></html>
+(async()=>{
+  const now=new Date();
+  const todayCL=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
+  saleFlag.textContent=todayCL==='2026-10-06'?'HOY · 6 OCT':'6 OCTUBRE';
+
+  try{
+    const [sale,ann,ps]=await Promise.all([
+      sb.from('fundraising_activities')
+        .select('title,event_date,public_summary,sales_menu,flyer_url,status')
+        .eq('public_visible',true)
+        .eq('event_date','2026-10-06')
+        .in('status',['planned','active','pending_close','completed'])
+        .order('event_date',{ascending:true})
+        .limit(5),
+      sb.from('announcements')
+        .select('id,title,body,pinned,published_at,audience_type,project_id,team_id')
+        .eq('public_visible',true).eq('active',true)
+        .lte('published_at',new Date().toISOString())
+        .order('pinned',{ascending:false})
+        .order('published_at',{ascending:false})
+        .limit(100),
+      sb.from('projects').select('id,public_slug,code').eq('public_visible',true)
+    ]);
+
+    const saleRow=(sale.data||[]).find(x=>/sopaip|empanad|venta solidaria/i.test(String(x.title||'')))||(sale.data||[])[0];
+    if(saleRow){
+      saleTitle.textContent=saleRow.title||saleTitle.textContent;
+      saleSummary.textContent=saleRow.public_summary||saleSummary.textContent;
+      const menu=Array.isArray(saleRow.sales_menu)?saleRow.sales_menu:[];
+      if(menu.length){
+        salePrices.innerHTML=menu.map(x=>'<span>'+esc(x.item||'Producto')+(x.price!=null?' · '+money(x.price):'')+'</span>').join('');
+      }
+      if(saleRow.flyer_url){
+        saleMedia.querySelector('img').src=saleRow.flyer_url;
+        saleMedia.querySelector('img').alt=saleRow.title||'Venta solidaria Gigantes de Azapa';
+      }
+    }
+
+    loading.remove();
+    if(ann.error){
+      feed.innerHTML='<div class="card empty">Las novedades destacadas están disponibles arriba. Las publicaciones adicionales se volverán a cargar automáticamente cuando estén disponibles.</div>';
+      return;
+    }
+    const pmap=Object.fromEntries((ps.data||[]).map(p=>[p.id,p.public_slug||p.code]));
+    feed.innerHTML=(ann.data||[]).length
+      ?ann.data.map(x=>'<article class="card">'+(x.pinned?'<span class="pin">DESTACADO</span>':'')+'<h2>'+esc(x.title)+'</h2><div class="meta">'+new Date(x.published_at).toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'})+'</div><p class="body">'+esc(x.body)+'</p>'+(x.project_id&&pmap[x.project_id]?'<p><a href="proyecto.html?slug='+encodeURIComponent(pmap[x.project_id])+'">Ver proyecto y avances →</a></p>':'')+'</article>').join('')
+      :'<div class="card empty">No hay publicaciones adicionales por ahora. Las tres novedades principales están destacadas arriba.</div>';
+  }catch(e){
+    loading.remove();
+    feed.innerHTML='<div class="card empty">Las novedades destacadas están disponibles arriba.</div>';
+  }
+})();
+</script>
+<script src="form-bridge.js"></script>
+</body>
+</html>
