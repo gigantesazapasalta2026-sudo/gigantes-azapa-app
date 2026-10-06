@@ -15,7 +15,7 @@ const incomingRefreshToken=hashParams.get('refresh_token');
 const incomingCode=queryParams.get('code');
 
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{
-  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
+  auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
 });
 
 if(recoveryMode){pageTitle.textContent='Crear nueva contraseña';pageSub.textContent='Recuperación segura de acceso';}
@@ -95,7 +95,7 @@ sendLink.onclick=async()=>{
     email:e,
     options:{
       emailRedirectTo:new URL('activar.html',location.href).href,
-      shouldCreateUser:true
+      shouldCreateUser:false
     }
   });
   sendLink.disabled=false;
