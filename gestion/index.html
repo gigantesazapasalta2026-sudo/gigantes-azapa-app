@@ -59,7 +59,7 @@ main{padding:18px 18px;max-width:1450px;margin:auto}.hero{background:linear-grad
         <a href="notificaciones.html">🔔 Notificaciones</a>
         <a href="comunicaciones.html">💬 Comunicaciones</a>
         <a href="accesos.html">🔐 Accesos y roles</a>
-        <a href="inscripciones.html">🏉 Solicitudes de incorporación</a>
+        <a href="inscripciones.html">👥 Registro Maestro e incorporaciones</a>
         <a href="sponsors.html">🏢 Interesados auspicio</a>
       </div></details>
     </div>
@@ -238,7 +238,7 @@ function dash(){
  '</div>'+
  legalDocsSection(4)+'<div class="panel" style="margin-top:14px"><h2>Portafolio del club</h2><p>Avance general de los proyectos activos.</p>'+projectRows()+'</div>';
 }
-function personas(){return header()+'<div class="notice"><b>Regla de diseño:</b> una persona = un ID único. Jugador, apoderado, entrenador, dirigente o colaborador son roles asociados a esa persona. GitHub Pages no debe contener RUT, salud, teléfonos, direcciones ni seguros.</div><div class="grid3"><div class="mini"><strong>1. Identidad</strong><small>Nombre, documento, nacimiento y contactos validados en fuente privada.</small></div><div class="mini"><strong>2. Roles</strong><small>Jugador · apoderado · coach · directiva · colaborador.</small></div><div class="mini"><strong>3. Cumplimiento</strong><small>Chile Rugby · EPC · seguro · autorizaciones · cuotas · viajes.</small></div></div><div class="panel"><h2>Flujo de depuración</h2><p>Registro Maestro → normalizar nombres/RUT → detectar duplicados → cruzar Chile Rugby → validar categoría/seguro/EPC → habilitar para proyectos.</p></div>'}
+function personas(){return header()+'<div class="notice"><b>Fuente única:</b> todas las altas y correcciones de jugadores se realizan desde la app. Giras, eventos, cuotas y Chile Rugby reutilizan esa misma ficha.</div><div class="grid3"><div class="mini"><strong>1. Registro Maestro</strong><small>Nombre, categoría, nacimiento, contacto, autorizaciones y estado del club.</small></div><div class="mini"><strong>2. Familia y documentos</strong><small>Vínculos de apoderados y documentos privados asociados a la persona.</small></div><div class="mini"><strong>3. Uso operativo</strong><small>Agregar a Santiago o confirmar en eventos sin duplicar la ficha.</small></div></div><div class="panel"><h2>Gestión central</h2><p>Crear o editar una persona aquí garantiza que los demás módulos trabajen sobre el mismo ID.</p><p><a class="btn primary" href="inscripciones.html">Abrir Registro Maestro</a> <a class="btn secondary" href="gira-santiago.html">Gira Santiago</a> <a class="btn secondary" href="eventos.html">Eventos</a></p></div>'}
 function projects(){return header()+'<div class="panel"><h2>Proyectos activos</h2><p>Cada proyecto debe tener dueño, fecha, presupuesto, documentos y evidencia.</p>'+projectRows()+'</div>'}
 function tasks(){return header()+'<div class="panel"><h2>Backlog ejecutivo</h2><p>Primero resolver CRÍTICAS y tareas sin responsable.</p>'+taskRows()+'</div>'}
 function docs(){return header()+legalDocsSection()+'<div class="panel"><h2>Mapa de fuentes operativas</h2><p>Estas fuentes alimentan módulos específicos; el Centro de Control evita depender de abrirlas manualmente.</p><table class="table"><thead><tr><th>Fuente</th><th>Rol</th><th>Estado</th></tr></thead><tbody>'+db.docs.map(d=>'<tr><td><b>'+d[0]+'</b></td><td>'+badge(d[1])+'</td><td>'+badge(d[2])+'</td></tr>').join('')+'</tbody></table></div>'}
