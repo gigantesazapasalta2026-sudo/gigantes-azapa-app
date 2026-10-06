@@ -135,11 +135,42 @@ function imageAuthorizationRow(){
  const h='Define si el club puede usar fotografías institucionales no sensibles del jugador, por ejemplo en el álbum del equipo y comunicaciones deportivas del club. Puedes cambiar esta decisión más adelante.';
  return '<div class="status"><div><div class="docTitle"><b>Autorización de imagen</b>'+help(h)+'</div><div class="docHint">'+(v===true?'Autorizada':v===false?'No autorizada':'Debes elegir Sí o No')+'</div></div>'+badge(v===true?'Autorizada':v===false?'No autorizada':'Pendiente')+'<div class="consentActions"><button class="consentBtn yes '+(v===true?'active':'')+'" onclick="setImageAuthorization(true)">Sí</button><button class="consentBtn no '+(v===false?'active':'')+'" onclick="setImageAuthorization(false)">No</button></div></div>'
 }
+async function clearPublicAlbumPhotoFiles(){
+ if(!person)return;
+ const list=await sb.storage.from('member-album-public').list(person.id,{limit:20});
+ if(!list.error&&list.data?.length){
+   const paths=list.data.filter(x=>x.name).map(x=>person.id+'/'+x.name);
+   if(paths.length)await sb.storage.from('member-album-public').remove(paths);
+ }
+}
+async function publishCurrentProfilePhotoToAlbum(){
+ if(!person)return;
+ if(person.image_authorization!==true){
+   await clearPublicAlbumPhotoFiles();
+   await sb.rpc('sync_member_album_photo',{target_person:person.id,public_object_path:null});
+   return;
+ }
+ const q=await sb.from('member_documents').select('storage_path,uploaded_at,status').eq('person_id',person.id).eq('document_type','profile_photo').eq('status','approved').order('uploaded_at',{ascending:false}).limit(1);
+ const doc=(q.data||[])[0];
+ if(!doc?.storage_path){
+   await sb.rpc('sync_member_album_photo',{target_person:person.id,public_object_path:null});
+   return;
+ }
+ const d=await sb.storage.from('member-private').download(doc.storage_path);
+ if(d.error||!d.data)return;
+ await clearPublicAlbumPhotoFiles();
+ const ext=(doc.storage_path.split('.').pop()||'jpg').toLowerCase();
+ const publicPath=person.id+'/profile.'+ext;
+ const up=await sb.storage.from('member-album-public').upload(publicPath,d.data,{upsert:true,contentType:d.data.type||('image/'+(ext==='jpg'?'jpeg':ext))});
+ if(up.error){console.error('No se pudo publicar foto en álbum',up.error);return}
+ await sb.rpc('sync_member_album_photo',{target_person:person.id,public_object_path:publicPath});
+}
 async function setImageAuthorization(value){
  if(!person)return;
  const {data,error}=await sb.from('person_profile_updates').insert({person_id:person.id,payload:{image_authorization:value}}).select('new_snapshot').single();
  if(error){alert('No fue posible guardar la autorización: '+error.message);return}
  person={...person,...(data?.new_snapshot||{}),image_authorization:value};people=people.map(p=>p.id===person.id?person:p);
+ await publishCurrentProfilePhotoToAlbum();
  await selectPerson(person.id);
 }
 function pick(type,accept){let i=document.createElement('input');i.type='file';i.accept=accept;i.onchange=()=>uploadDoc(type,i.files[0]);i.click()}
@@ -164,7 +195,10 @@ async function uploadDoc(type,file){
  const isProfilePhoto=type==='profile_photo';
  let r=await sb.from('member_documents').insert({person_id:person.id,document_type:type,storage_path:path,expires_at,status:isProfilePhoto?'approved':'pending_review',reviewed_at:isProfilePhoto?new Date().toISOString():null});
  if(r.error){alert(r.error.message);return}
- alert(isProfilePhoto?'Foto actualizada correctamente. Ya quedó activa en tu ficha.':'Documento recibido. Quedó en revisión de la Directiva.');
+ if(isProfilePhoto&&person.image_authorization===true){
+   await publishCurrentProfilePhotoToAlbum();
+ }
+ alert(isProfilePhoto?(person.image_authorization===true?'Foto actualizada. Ya quedó activa en tu ficha y en el álbum público.':'Foto actualizada correctamente. Ya quedó activa en tu ficha; se publicará en el álbum sólo si autorizas el uso de imagen.'):'Documento recibido. Quedó en revisión de la Directiva.');
  await selectPerson(person.id)
 }
 function downloadMedicalTemplate(){
