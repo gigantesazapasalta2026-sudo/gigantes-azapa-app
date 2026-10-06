@@ -65,7 +65,7 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);
   <div class="featured">
     <article class="feature sale">
       <div class="feature-media" id="saleMedia">
-        <img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/app-2026/comunidad-familias-arica.jpg" alt="Venta solidaria Gigantes de Azapa" loading="eager">
+        <img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/app-2026/venta-solidaria-06-octubre-2026.jpg" alt="Gran Venta Solidaria Gigantes de Azapa · Sopaipillas y empanadas de queso" loading="eager">
         <span class="flag today" id="saleFlag">HOY · 6 OCT</span>
       </div>
       <div class="feature-body">
@@ -160,10 +160,7 @@ function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
       if(menu.length){
         salePrices.innerHTML=menu.map(x=>'<span>'+esc(x.item||'Producto')+(x.price!=null?' · '+money(x.price):'')+'</span>').join('');
       }
-      if(saleRow.flyer_url){
-        saleMedia.querySelector('img').src=saleRow.flyer_url;
-        saleMedia.querySelector('img').alt=saleRow.title||'Venta solidaria Gigantes de Azapa';
-      }
+      if(saleRow.flyer_url){ /* El afiche principal de hoy queda fijado para evitar depender del flyer dinámico. */ }
     }
 
     loading.remove();
