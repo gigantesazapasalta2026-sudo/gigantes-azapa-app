@@ -9,7 +9,7 @@
 <header class="top"><div class="topin"><img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg"><div><b>Formación · Control Center</b><small id="who">Validando sesión…</small></div><span class="spacer"></span><a class="btn secondary" href="../formacion.html">🌐 Vista pública</a><a class="btn secondary" href="index.html">← Control Center</a><button class="btn dark" id="logout">Salir</button></div></header>
 <main>
 <section class="hero"><span class="kicker">ACADEMIA GIGANTES · DESARROLLO DEPORTIVO</span><h1>Planificar, enseñar, aprender y dejar registro.</h1><p>Este espacio separa la información pública para familias de la operación privada del cuerpo técnico. Cada entrenador trabaja sobre sus categorías autorizadas y su propia ruta de capacitación.</p></section>
-<div class="tabs"><button data-tab="dashboard" class="active">Resumen</button><button data-tab="planes">Planificación</button><button data-tab="aprendizaje">Mi aprendizaje</button><button data-tab="radar">Radar de cursos</button><button data-tab="staff" id="staffTab" class="hidden">Asignaciones</button><button data-tab="docs">Documentos</button></div>
+<div class="tabs"><button data-tab="dashboard" class="active">Resumen</button><button data-tab="planes">Planificación</button><button data-tab="aprendizaje">Mi aprendizaje</button><button data-tab="oportunidades">Oportunidades</button><button data-tab="radar">Radar de cursos</button><button data-tab="staff" id="staffTab" class="hidden">Asignaciones</button><button data-tab="docs">Documentos</button></div>
 <section id="view"></section>
 </main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
@@ -34,6 +34,7 @@ function render(){
  if(tab==='dashboard')return dashboard();
  if(tab==='planes')return planesView();
  if(tab==='aprendizaje')return learningView();
+ if(tab==='oportunidades')return opportunitiesView();
  if(tab==='radar')return radarView();
  if(tab==='staff')return staffView();
  return docsView();
@@ -95,6 +96,12 @@ function learningView(){
 }
 async function saveLearning(cid){const el=document.getElementById('ls_'+cid),status=el.value,payload={user_id:profile.user_id,catalog_id:cid,status,completed_on:status==='completed'?new Date().toISOString().slice(0,10):null,updated_at:new Date().toISOString()};const {error}=await sb.from('sport_learning_progress').upsert(payload,{onConflict:'user_id,catalog_id'});if(error)return alert(error.message);await load();render();}
 async function learningEvidence(cid){const current=progress.find(p=>p.catalog_id===cid)||{};const url=prompt('Enlace al certificado o evidencia (puede ser Drive):',current.certificate_url||'');if(url===null)return;const notes=prompt('Notas / institución / número de certificado:',current.notes||'');if(notes===null)return;const expires=prompt('Fecha de vencimiento si aplica (AAAA-MM-DD) o dejar vacío:',current.expires_on||'');if(expires===null)return;const payload={user_id:profile.user_id,catalog_id:cid,status:current.status||'in_progress',certificate_url:url.trim()||null,notes:notes.trim()||null,expires_on:expires.trim()||null,updated_at:new Date().toISOString()};const {error}=await sb.from('sport_learning_progress').upsert(payload,{onConflict:'user_id,catalog_id'});if(error)return alert(error.message);await load();render();}
+function opportunitiesView(){
+ const order={open:1,upcoming:2,watch:3,reference:4,closed:5};
+ const rows=[...opportunities].sort((a,b)=>(order[a.status]||9)-(order[b.status]||9)||String(a.start_date||'9999').localeCompare(String(b.start_date||'9999')));
+ view.innerHTML='<div class="panel"><h2>Radar internacional de capacitación</h2><p>Oportunidades oficiales o federativas para entrenadores, árbitros y oficiales. Antes de inscribirse siempre verificamos elegibilidad, cupos y reconocimiento.</p>'+
+ (rows.length?rows.map(o=>'<div class="row"><div><span class="badge '+(o.status==='open'?'ok':o.status==='upcoming'?'warn':'')+'">'+esc(String(o.status).toUpperCase())+'</span> <span class="badge">'+esc(o.country||'Internacional')+'</span></div><b>'+esc(o.title)+'</b><small>'+esc(o.provider)+' · '+esc(o.modality||'modalidad por confirmar')+(o.start_date?' · '+esc(o.start_date)+(o.end_date?' → '+esc(o.end_date):''):'')+(o.accreditation?'<br><b>Acreditación:</b> '+esc(o.accreditation):'')+(o.eligibility_note?'<br>'+esc(o.eligibility_note):'')+'</small><div class="actions">'+(o.resource_url?'<a class="btn secondary" target="_blank" rel="noopener" href="'+esc(o.resource_url)+'">Fuente oficial</a>':'')+'</div></div>').join(''):'<div class="empty">No hay oportunidades registradas.</div>')+'</div>';
+}
 function staffView(){
  if(!canAdmin()){tab='dashboard';return render()}
  view.innerHTML='<div class="grid2"><div class="panel"><h2>Asignar cuerpo técnico</h2><p>Los roles administrativos del Control Center y las funciones deportivas son independientes.</p><div class="form"><label>Usuario<select id="sUser">'+profiles.map(p=>'<option value="'+p.user_id+'">'+esc(p.display_name||p.email||p.user_id)+'</option>').join('')+'</select></label><label>Categoría<select id="sTeam">'+teams.filter(t=>t.status!=='inactive').map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('')+'</select></label><label>Función<select id="sRole"><option value="head_coach">Head Coach</option><option value="coach">Coach</option><option value="assistant">Asistente</option><option value="mentor">Mentor</option><option value="referee">Referee</option><option value="assistant_referee">Árbitro asistente</option><option value="table_official">Mesa / control</option><option value="sport_director">Dirección deportiva</option></select></label><div style="align-self:end"><button class="btn primary" onclick="saveAssignment()">Asignar</button></div></div></div><div class="panel"><h2>Asignaciones activas</h2>'+
