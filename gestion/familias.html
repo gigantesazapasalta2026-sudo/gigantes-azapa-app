@@ -1,0 +1,36 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Familias · Control Center</title><style>
+:root{--o:#f36b21;--d:#0b0f14;--m:#667085;--l:#e5e7eb;--s:#f4f6f8}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--s);color:#111827}.top{background:var(--d);color:#fff}.topin{max-width:1200px;margin:auto;padding:12px 16px;display:flex;gap:10px;align-items:center}.spacer{flex:1}.btn{border:0;border-radius:9px;padding:9px 11px;font-size:11px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex}.primary{background:var(--o);color:#fff}.secondary{background:#fff;border:1px solid #d0d5dd;color:#111827}main{max-width:1200px;margin:auto;padding:16px}.panel{background:#fff;border:1px solid var(--l);border-radius:14px;padding:15px;margin-bottom:12px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{font-size:27px;font-weight:900}.muted{color:var(--m);font-size:11px;line-height:1.45}.row{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-top:1px solid #eef0f2}.row:first-child{border-top:0}.badge{display:inline-flex;padding:5px 8px;border-radius:99px;font-size:9px;font-weight:900;background:#eef2ff;color:#3730a3}.warn{background:#fef3c7;color:#92400e}.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.toolbar input,.toolbar select{padding:9px;border:1px solid #d0d5dd;border-radius:8px}.actions{display:flex;gap:6px;flex-wrap:wrap}@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}.actions{justify-content:flex-start}}</style></head><body>
+<header class="top"><div class="topin"><b>Familias y Apoderados</b><div class="spacer"></div><a class="btn secondary" href="index.html">← Control Center</a></div></header>
+<main><div class="grid"><div class="panel"><div class="metric" id="pendingCount">0</div><div class="muted">Correcciones pendientes</div></div><div class="panel"><div class="metric" id="familyCount">0</div><div class="muted">Grupos familiares</div></div><div class="panel"><div class="metric" id="relationCount">0</div><div class="muted">Relaciones registradas</div></div><div class="panel"><div class="metric" id="guardianCount">0</div><div class="muted">Accesos familiares vinculados</div></div></div>
+<div class="panel"><h2>Correcciones enviadas desde Mi Gigantes</h2><p class="muted">Al aprobar una solicitud, el vínculo familiar queda aplicado automáticamente. Si el adulto ya existe por correo o teléfono, se reutiliza; si no existe, se crea su persona.</p><div class="toolbar"><input id="search" placeholder="Buscar jugador o apoderado"><select id="status"><option value="pending">Pendientes</option><option value="approved">Aprobadas</option><option value="rejected">Rechazadas</option><option value="">Todas</option></select></div><div id="requests"></div></div>
+<div class="panel"><h2>Registro Maestro vivo</h2><p class="muted">Esta vista se construye desde Supabase y es la fuente operativa actual. El Excel queda como respaldo histórico/exportación, no como segunda base paralela.</p><div id="master"></div></div></main>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+let reqs=[],rows=[];
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+async function load(){
+ const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('login.html');return}
+ const {data:p}=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();if(!p?.active||!['superadmin','board'].includes(p.role)){location.replace('index.html');return}
+ const [a,b,c,d,e]=await Promise.all([
+  sb.from('family_contact_requests').select('*,people!family_contact_requests_child_person_id_fkey(full_name)').order('created_at',{ascending:false}),
+  sb.from('family_groups').select('id').eq('active',true),
+  sb.from('relationships').select('id'),
+  sb.from('guardian_links').select('id'),
+  sb.from('member_registry_master').select('*').order('full_name')
+ ]);
+ reqs=a.data||[];rows=e.data||[];familyCount.textContent=(b.data||[]).length;relationCount.textContent=(c.data||[]).length;guardianCount.textContent=(d.data||[]).length;render();
+}
+function render(){
+ const s=status.value,q=search.value.trim().toLowerCase();
+ const r=reqs.filter(x=>(!s||x.status===s)&&(!q||[x.full_name,x.relationship_type,x.people?.full_name,x.email,x.phone].join(' ').toLowerCase().includes(q)));
+ pendingCount.textContent=reqs.filter(x=>x.status==='pending').length;
+ requests.innerHTML=r.length?r.map(x=>'<div class="row"><div><b>'+esc(x.people?.full_name||'Jugador')+'</b><div class="muted">Jugador</div></div><div><b>'+esc(x.full_name)+'</b><div class="muted">'+esc(x.relationship_type)+(x.is_primary?' · Principal':'')+'</div></div><div class="muted">'+esc([x.phone,x.email].filter(Boolean).join(' · '))+'<br><span class="badge '+(x.status==='pending'?'warn':x.status==='approved'?'ok':'bad')+'">'+esc(x.status)+'</span></div><div class="actions">'+(x.status==='pending'?'<button class="btn primary" onclick="review(\''+x.id+'\',\'approved\')">Aprobar</button><button class="btn secondary" onclick="review(\''+x.id+'\',\'rejected\')">Rechazar</button>':'')+'</div></div>').join(''):'<div class="muted">No hay solicitudes en este estado.</div>';
+ master.innerHTML=rows.slice(0,120).map(x=>'<div class="row"><div><b>'+esc(x.full_name)+'</b><div class="muted">'+esc(x.category||'Sin categoría')+'</div></div><div class="muted">'+esc(x.guardian1_name||'Sin apoderado principal')+'<br>'+esc(x.guardian1_relationship||'')+'</div><div class="muted">'+esc([x.guardian1_phone,x.guardian1_email].filter(Boolean).join(' · '))+'</div><div><span class="badge '+(x.rut_passport&&x.health_system?'ok':'warn')+'">'+(x.rut_passport&&x.health_system?'Identidad base OK':'Completar')+'</span></div></div>').join('');
+}
+async function review(id,newStatus){
+ const note=newStatus==='rejected'?(prompt('Motivo del rechazo:','Datos no coinciden con el registro')||'Rechazado por Directiva'):null;
+ const {error}=await sb.from('family_contact_requests').update({status:newStatus,review_note:note}).eq('id',id);
+ if(error)return alert(error.message);await load();
+}
+status.onchange=render;search.oninput=render;load();
+</script></body></html>
