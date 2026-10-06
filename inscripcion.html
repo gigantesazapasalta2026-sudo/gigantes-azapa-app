@@ -75,13 +75,13 @@
 <section class="card"><h2>7. Reglamento Interno · lectura y aceptación obligatoria</h2>
 <p class="sub">Antes de enviar la incorporación debes revisar el Reglamento Interno, de Convivencia, Participación y Protección de Gigantes de Azapa.</p>
 <div class="rulebox">
-  <div class="rulehead"><div><span class="rulebadge">VERSIÓN 1.0 · 2026-2030</span><h3 style="margin:9px 0 4px">Reglamento Interno de Gigantes de Azapa</h3><div class="rulemeta">La aceptación quedará asociada al jugador, correo, fecha, hora y versión del documento.</div></div><div style="font-size:2rem">📘</div></div>
+  <div class="rulehead"><div><span class="rulebadge">VERSIÓN 1.0 · 2026-2030 · BORRADOR</span><h3 style="margin:9px 0 4px">Reglamento Interno de Gigantes de Azapa</h3><div class="rulemeta">La aceptación quedará asociada al jugador, correo, fecha, hora y versión del documento.</div></div><div style="font-size:2rem">📘</div></div>
   <div class="ruleactions">
-    <a class="ruleview" href="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/documentos/reglamento-interno-gigantes-azapa-v1.0-aprobado.pdf" target="_blank" rel="noopener">👁️ Ver Reglamento PDF</a>
+    <a class="ruleview" href="assets/docs/reglamento-interno-gigantes-azapa-v1.0.pdf" target="_blank" rel="noopener">👁️ Ver Reglamento PDF</a>
     <button class="ruledownload" type="button" id="downloadRules">⬇️ Descargar PDF</button>
   </div>
-  <div class="notice okbox" style="margin:0"><b>Versión oficial aprobada:</b> Reglamento Interno V1.0, aprobado por la Directiva el 6 de octubre de 2026. Si en el futuro existe una modificación sustancial, la app podrá solicitar una nueva aceptación.</div>
-  <div class="ruleaccept"><label class="check"><input id="regulation" type="checkbox"><span><b>Declaro haber leído y acepto el Reglamento Interno V1.0.</b> Esta aceptación queda asociada a la inscripción del jugador y a la versión vigente del documento.</span></label></div>
+  <div class="notice okbox" style="margin:0"><b>Estado actual:</b> Borrador V1.0 pendiente de aprobación formal por la Directiva. Puedes revisarlo y descargarlo desde ahora. Cuando la Directiva apruebe la versión definitiva, la aceptación electrónica quedará vinculada a esa versión.</div>
+  <div class="ruleaccept"><label class="check"><input id="regulation" type="checkbox"><span><b>Declaro haber leído el Reglamento Interno V1.0 y acepto cumplirlo una vez aprobada formalmente esta versión por la Directiva.</b> La app registrará la versión, fecha y hora asociadas a esta inscripción.</span></label></div>
 </div>
 </section>
 
@@ -96,12 +96,11 @@
 
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
-const RULES_PDF='https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/documentos/reglamento-interno-gigantes-azapa-v1.0-aprobado.pdf';
+const RULES_PDF='assets/docs/reglamento-interno-gigantes-azapa-v1.0.pdf';
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY),$=id=>document.getElementById(id);
 function age(){if(!$('dob').value)return null;const d=new Date($('dob').value+'T12:00:00'),n=new Date();let a=n.getFullYear()-d.getFullYear();const m=n.getMonth()-d.getMonth();if(m<0||(m===0&&n.getDate()<d.getDate()))a--;return a}
 function minorUI(){const a=age();$('guardianReq').textContent=(a!==null&&a>=18)?'':'*'}
 function transferUI(){$('transferBlock').classList.toggle('hidden',$('previousClub').value!=='yes')}function imageUI(){const ok=$('imageAuth').value==='yes';$('photoBlock').classList.toggle('hidden',!ok);if(!ok){$('playerPhoto').value='';$('photoPreview').style.display='none'}}
-$('downloadRules').addEventListener('click',()=>{const a=document.createElement('a');a.href=RULES_PDF;a.download='Reglamento_Interno_Gigantes_Azapa_V1.0_APROBADO.pdf';document.body.appendChild(a);a.click();a.remove();});
 $('dob').addEventListener('change',minorUI);$('previousClub').addEventListener('change',transferUI);$('imageAuth').addEventListener('change',imageUI);minorUI();transferUI();imageUI();
 $('playerPhoto').addEventListener('change',()=>{const f=$('playerPhoto').files[0];if(!f){$('photoPreview').style.display='none';return}const u=URL.createObjectURL(f);$('photoPreview').src=u;$('photoPreview').style.display='block'});
 function trim(id){return $(id).value.trim()}function yes(id){return $(id).value==='yes'}
@@ -114,11 +113,11 @@ $('downloadRules').onclick=async()=>{
   const btn=$('downloadRules'),old=btn.textContent;
   btn.disabled=true;btn.textContent='Preparando descarga…';
   try{
-    const res=await fetch('https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/documentos/reglamento-interno-gigantes-azapa-v1.0-aprobado.pdf');
+    const res=await fetch(RULES_PDF);
     if(!res.ok)throw new Error('download');
     const blob=await res.blob(),u=URL.createObjectURL(blob),a=document.createElement('a');
     a.href=u;a.download='Reglamento_Interno_Gigantes_Azapa_V1.0.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500);
-  }catch(e){window.open('https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/documentos/reglamento-interno-gigantes-azapa-v1.0-aprobado.pdf','_blank','noopener')}
+  }catch(e){window.open(RULES_PDF,'_blank','noopener')}
   finally{btn.disabled=false;btn.textContent=old}
 };
 $('send').onclick=async()=>{
@@ -143,6 +142,6 @@ $('send').onclick=async()=>{
  const failed=[];
  for(const [path,file] of uploads){const {error:e}=await sb.storage.from('member-private').upload(path,file,{upsert:false,contentType:file.type});if(e)failed.push(path.split('/').pop())}
  if(failed.length){show('✅ La ficha quedó registrada, pero falló la carga de: '+failed.join(', ')+'. La Directiva verá el expediente como incompleto y solicitará nuevamente esos archivos.',true);return}
- show('✅ Expediente recibido correctamente. Código: '+id.slice(0,8).toUpperCase()+'. La Directiva verificará BD Chile Rugby, Rugby Seguro y el pase si corresponde. Cuando todo quede validado, tu acceso a Mi Gigantes quedará habilitado automáticamente.',true);
+ show('✅ Expediente recibido correctamente. Código: '+id.slice(0,8).toUpperCase()+'. La Directiva verificará BD Chile Rugby, Rugby Seguro y el pase si corresponde. Cuando todo quede validado, tu acceso a Mi Gigantes quedará habilitado automáticamente y se generará tu Diploma de Bienvenida.',true);
 };
 </script><script src="form-bridge.js"></script></body></html>
