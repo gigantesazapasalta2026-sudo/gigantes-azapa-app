@@ -9,13 +9,13 @@
 <header class="top"><div class="topin"><img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg"><div><b>Formación · Control Center</b><small id="who">Validando sesión…</small></div><span class="spacer"></span><a class="btn secondary" href="../formacion.html">🌐 Vista pública</a><a class="btn secondary" href="index.html">← Control Center</a><button class="btn dark" id="logout">Salir</button></div></header>
 <main>
 <section class="hero"><span class="kicker">ACADEMIA GIGANTES · DESARROLLO DEPORTIVO</span><h1>Planificar, enseñar, aprender y dejar registro.</h1><p>Este espacio separa la información pública para familias de la operación privada del cuerpo técnico. Cada entrenador trabaja sobre sus categorías autorizadas y su propia ruta de capacitación.</p></section>
-<div class="tabs"><button data-tab="dashboard" class="active">Resumen</button><button data-tab="planes">Planificación</button><button data-tab="aprendizaje">Mi aprendizaje</button><button data-tab="staff" id="staffTab" class="hidden">Asignaciones</button><button data-tab="docs">Documentos</button></div>
+<div class="tabs"><button data-tab="dashboard" class="active">Resumen</button><button data-tab="planes">Planificación</button><button data-tab="aprendizaje">Mi aprendizaje</button><button data-tab="radar">Radar de cursos</button><button data-tab="staff" id="staffTab" class="hidden">Asignaciones</button><button data-tab="docs">Documentos</button></div>
 <section id="view"></section>
 </main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
-let profile=null,teams=[],assignments=[],plans=[],catalog=[],progress=[],profiles=[],tab='dashboard';
+let profile=null,teams=[],assignments=[],plans=[],catalog=[],progress=[],profiles=[],opportunities=[],tab='dashboard';
 const DOCS=[
 ['Plan Maestro Formación 2026–2030','https://docs.google.com/document/d/1MmhE5dQQrL0KCF1YSeZwWSNdjatRLhXS7Z1iyr3TlzE/edit'],
 ['Plantilla Planificación por Categoría','https://docs.google.com/document/d/1vdgZxfc_s8-oY6mm_CWwu_fvMQ1UeqpkTuVpyKW5-OM/edit'],
@@ -34,6 +34,7 @@ function render(){
  if(tab==='dashboard')return dashboard();
  if(tab==='planes')return planesView();
  if(tab==='aprendizaje')return learningView();
+ if(tab==='radar')return radarView();
  if(tab==='staff')return staffView();
  return docsView();
 }
@@ -80,6 +81,12 @@ async function savePlan(id){
 }
 async function publishPlan(id){if(!confirm('¿Publicar los objetivos generales de esta planificación para las familias?'))return;const {error}=await sb.from('sport_plans').update({status:'published',public_visible:true,updated_at:new Date().toISOString()}).eq('id',id);if(error)return alert(error.message);await load();render();}
 async function unpublishPlan(id){const {error}=await sb.from('sport_plans').update({status:'draft',public_visible:false,updated_at:new Date().toISOString()}).eq('id',id);if(error)return alert(error.message);await load();render();}
+function radarView(){
+ const order={open:0,upcoming:1,watch:2,reference:3,closed:4};
+ const rows=[...opportunities].sort((a,b)=>(order[a.status]??9)-(order[b.status]??9)||String(a.start_date||'9999').localeCompare(String(b.start_date||'9999')));
+ view.innerHTML='<div class="panel"><h2>Radar internacional de capacitaciones</h2><p>Oportunidades para entrenadores, árbitros y oficiales. Verifica siempre requisitos e inscripción en la fuente oficial antes de pagar o viajar.</p>'+
+ (rows.length?rows.map(o=>'<div class="row"><div><span class="badge '+(o.status==='open'?'ok':o.status==='upcoming'?'warn':'')+'">'+esc(o.status.toUpperCase())+'</span> <span class="badge">'+esc(o.country||'Internacional')+'</span></div><b>'+esc(o.title)+'</b><small>'+esc(o.provider)+' · '+esc(o.modality||'Modalidad por confirmar')+(o.start_date?' · '+esc(o.start_date)+(o.end_date?' → '+esc(o.end_date):''):'')+'<br>'+esc(o.accreditation||'')+(o.eligibility_note?'<br>'+esc(o.eligibility_note):'')+'</small><div class="actions">'+(o.resource_url?'<a class="btn secondary" target="_blank" rel="noopener" href="'+esc(o.resource_url)+'">Fuente oficial</a>':'')+'</div></div>').join(''):'<div class="empty">Sin oportunidades cargadas.</div>')+'</div>';
+}
 function learningView(){
  const pm=new Map(progress.map(p=>[p.catalog_id,p]));
  view.innerHTML='<div class="panel"><h2>Mi ruta de aprendizaje</h2><p>Completa recursos oficiales en su plataforma de origen y registra aquí tu avance. Los certificados oficiales no son emitidos por Gigantes.</p>'+
@@ -102,10 +109,11 @@ async function load(){
   sb.from('sport_staff_assignments').select('*').eq('active',true),
   sb.from('sport_plans').select('*').order('start_date',{ascending:false}),
   sb.from('sport_learning_catalog').select('*').eq('active',true).order('sort_order'),
-  sb.from('sport_learning_progress').select('*').eq('user_id',profile.user_id)
+  sb.from('sport_learning_progress').select('*').eq('user_id',profile.user_id),
+  sb.from('sport_training_opportunities').select('*').eq('active',true).order('priority',{ascending:true}).order('start_date',{ascending:true,nullsFirst:false})
  ];
  if(canAdmin())calls.push(sb.from('profiles').select('user_id,display_name,email,role,active').eq('active',true).order('display_name'));
- const rs=await Promise.all(calls);teams=rs[0].data||[];assignments=rs[1].data||[];plans=rs[2].data||[];catalog=rs[3].data||[];progress=rs[4].data||[];profiles=canAdmin()?(rs[5].data||[]):[];render();
+ const rs=await Promise.all(calls);teams=rs[0].data||[];assignments=rs[1].data||[];plans=rs[2].data||[];catalog=rs[3].data||[];progress=rs[4].data||[];opportunities=rs[5].data||[];profiles=canAdmin()?(rs[6].data||[]):[];render();
 }
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('button[data-tab]');if(!b)return;if(b.dataset.tab==='staff'&&!canAdmin())return;tab=b.dataset.tab;render()};
 logout.onclick=async()=>{await sb.auth.signOut();location.replace('login.html')};
