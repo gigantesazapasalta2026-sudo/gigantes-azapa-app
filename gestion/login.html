@@ -18,11 +18,28 @@ const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPA
 const loading=document.getElementById('loading'),login=document.getElementById('login'),msg=document.getElementById('msg'),repair=document.getElementById('repair');
 const switchUser=new URLSearchParams(location.search).get('switch')==='1';
 async function showLogin(){loading.classList.add('hide');login.classList.remove('hide')}
+function clearBrowserAuth(){
+  const remove=[];
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i)||'';if(/^sb-.*-auth-token$/.test(k)||k.includes('supabase.auth.token'))remove.push(k)}}catch{}
+  try{remove.forEach(k=>localStorage.removeItem(k))}catch{}
+  try{for(let i=sessionStorage.length-1;i>=0;i--){const k=sessionStorage.key(i)||'';if(/^sb-.*-auth-token$/.test(k)||k.includes('supabase.auth.token'))sessionStorage.removeItem(k)}}catch{}
+}
+async function authUserWithTimeout(ms=4500){
+  return await Promise.race([
+    sb.auth.getUser(),
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error('AUTH_TIMEOUT')),ms))
+  ]);
+}
 (async()=>{
-  if(switchUser){await sb.auth.signOut({scope:'local'});await showLogin();return}
-  const {data:{user},error}=await sb.auth.getUser();
-  if(user&&!error){const u=new URL(nextPath,location.href);u.searchParams.set('_fresh',Date.now().toString());location.replace(u.href);return}
-  if(error)await sb.auth.signOut({scope:'local'}).catch(()=>{});
+  if(switchUser){try{await Promise.race([sb.auth.signOut({scope:'local'}),new Promise(r=>setTimeout(r,1800))])}catch{}clearBrowserAuth();await showLogin();return}
+  try{
+    const {data:{user},error}=await authUserWithTimeout();
+    if(user&&!error){const u=new URL(nextPath,location.href);u.searchParams.set('_fresh',Date.now().toString());location.replace(u.href);return}
+    if(error)clearBrowserAuth();
+  }catch(e){
+    console.warn('Sesión local atascada o vencida; se limpia este navegador.',e);
+    clearBrowserAuth();
+  }
   await showLogin();
 })();
 signin.onclick=async()=>{
