@@ -20,11 +20,12 @@ const req=[
 function badge(s){s=s||'Pendiente';let c=/approved|pago|fichado|tiene/i.test(s)?'ok':/rejected|expired|overdue|no tiene/i.test(s)?'bad':'warn';return '<span class="badge '+c+'">'+s+'</span>'}
 function help(text){return '<span class="helpIcon" tabindex="0" title="'+escv(text)+'" onclick="this.classList.toggle(\'show\')">ⓘ<span class="helpBubble">'+escv(text)+'</span></span>'}
 function status(n,s,h){return '<div class="status"><div><div class="docTitle"><b>'+n+'</b>'+(h?help(h):'')+'</div></div>'+badge(s)+'</div>'}
-async function init(){const {data:{session}}=await sb.auth.getSession();if(!session){location.href='gestion/login.html?next=../mi_jugador.html';return}
- const {data:own}=await sb.from('people').select('*').eq('auth_user_id',session.user.id).maybeSingle();
- const {data:links}=await sb.from('guardian_links').select('child_person_id,relationship_type,is_primary').eq('guardian_user_id',session.user.id);
+async function init(){const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError){loading.textContent='No fue posible validar tu sesión. Actualiza la página e inténtalo nuevamente.';return}if(!session){location.href='gestion/login.html?next=../mi_gigantes.html';return}
+ const {data:own,error:ownError}=await sb.from('people').select('*').eq('auth_user_id',session.user.id).maybeSingle();
+ const {data:links,error:linksError}=await sb.from('guardian_links').select('child_person_id,relationship_type,is_primary').eq('guardian_user_id',session.user.id);
+ if(ownError||linksError){console.error('Mi Gigantes · error cargando vínculos',ownError||linksError);loading.textContent='No fue posible cargar tus jugadores en este momento. Vuelve a actualizar; si persiste, la Directiva puede revisar el acceso.';return}
  let ids=(links||[]).map(x=>x.child_person_id);let children=[];
- if(ids.length){const r=await sb.from('people').select('*').in('id',ids);children=r.data||[]}
+ if(ids.length){const r=await sb.from('people').select('*').in('id',ids);if(r.error){console.error('Mi Gigantes · error cargando jugadores',r.error);loading.textContent='No fue posible cargar tus jugadores en este momento. Vuelve a actualizar; si persiste, la Directiva puede revisar el acceso.';return}children=r.data||[]}
  people=[...(own?[own]:[]),...children.filter(c=>!own||c.id!==own.id)];
  if(!people.length){loading.textContent='Tu cuenta está autenticada, pero todavía no tiene jugadores vinculados. La Directiva debe completar la vinculación.';return}
  family.innerHTML=people.map((p,i)=>'<button class="personBtn'+(i===0?' active':'')+'" data-id="'+p.id+'">'+p.full_name+'</button>').join('');
