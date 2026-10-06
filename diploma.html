@@ -74,9 +74,7 @@ function fmtDate(v){return new Date(v).toLocaleDateString('es-CL',{day:'numeric'
 async function load(){
   const token=new URLSearchParams(location.search).get('t');
   if(!token){$('status').textContent='Este enlace de diploma no es válido.';return}
-  const {data,error}=await sb.rpc('get_welcome_diploma',{p_token:token});
-  const row=Array.isArray(data)?data[0]:data;
-  if(error||!row){$('status').textContent='No encontramos un diploma vigente asociado a este enlace.';return}
+  const res=await fetch(GIGANTES_SUPABASE_URL+'/functions/v1/welcome-diploma?t='+encodeURIComponent(token),{headers:{apikey:GIGANTES_SUPABASE_PUBLISHABLE_KEY}});const payload=await res.json().catch(()=>({}));const row=payload.diploma;if(!res.ok||!row){$('status').textContent='No encontramos un diploma vigente asociado a este enlace.';return}
   $('playerName').textContent=row.player_name;
   $('category').textContent=row.category?'Categoría '+row.category:'Integrante de Gigantes de Azapa';
   $('issued').textContent=fmtDate(row.issued_at);
