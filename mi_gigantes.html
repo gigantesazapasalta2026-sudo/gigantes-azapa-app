@@ -11,7 +11,7 @@
 <div class="card" style="margin-top:14px"><h2>🎁 Beneficios Gigantes</h2><p class="empty">Genera tu credencial dinámica para usar convenios del club.</p><a class="btn" href="mi_beneficios.html">ABRIR MI CREDENCIAL</a> <a class="btn" href="beneficios.html">VER CONVENIOS</a></div><div class="card" style="margin-top:14px"><h2>🎓 Mi Formación</h2><p class="empty">Registra cursos, capacitaciones y sube tus diplomas o certificados. Disponible para jugadores, apoderados, entrenadores, dirigentes y voluntarios.</p><a class="btn" href="mi_formacion.html">ABRIR MI PASAPORTE FORMATIVO</a></div><div class="card" style="margin-top:14px"><h2>📣 Novedades</h2><p class="empty">Avisos oficiales del club, equipo o proyecto con confirmación de lectura.</p><a class="btn" href="novedades.html">VER NOVEDADES</a></div><div class="card" style="margin-top:14px"><h2>✈️ Gira Santiago 2026</h2><p class="empty">Registra tus vuelos y consulta en un solo lugar llegada a Santiago, transfers, alojamiento, itinerario, partidos, actividades y novedades de la gira.</p><div class="profileActions"><a class="btn" href="mi_viaje.html">REGISTRAR MIS VUELOS</a><a class="btn secondary" href="santiago.html">🏉 VER TODA LA GIRA</a></div></div><div class="card" style="margin-top:14px"><h2>📅 Próximos eventos</h2><p class="empty">Confirma asistencia a entrenamientos, partidos y actividades del club.</p><a class="btn" href="mis_eventos.html">VER MIS EVENTOS</a></div><div class="card" style="margin-top:14px;border:2px solid #fecaca"><h2>🚑 ¿Se lesionó?</h2><p class="empty">Activa el protocolo del seguro, llama a GEA y registra el accidente.</p><a id="injuryLink" class="btn" href="lesionado.html">JUGADOR LESIONADO · ACTIVAR SEGURO</a></div>
 <div class="notice"><b>Todo se gestiona desde Mi Gigantes.</b> Revisa los datos precargados, actualiza lo necesario y usa el símbolo ⓘ para saber por qué pedimos cada antecedente. Los estados oficiales de Chile Rugby, cuotas y validación de documentos los confirma el club.</div></section></main>
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script><script>
-const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);let people=[],person=null;
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let people=[],person=null;
 const req=[
  {type:'profile_photo',label:'Foto del jugador',accept:'image/*',help:'La foto identifica al jugador en su ficha y podrá utilizarse en el álbum público del equipo sólo si la autorización de imagen está en Sí.'},
  {type:'identity_card',label:'Cédula vigente',accept:'image/*,application/pdf',help:'Nos permite verificar identidad y vigencia. Es especialmente importante antes de viajes para evitar problemas por documentos vencidos o datos incorrectos.'},
@@ -25,7 +25,21 @@ function setAccordion(card,open){if(!card)return;card.classList.toggle('collapse
 function setupAccordions(){document.querySelectorAll('#portal .card').forEach(card=>{if(card.dataset.accordionReady)return;const h=card.querySelector(':scope > h2');if(!h)return;card.dataset.accordionReady='1';card.classList.add('accordion');h.setAttribute('role','button');h.setAttribute('tabindex','0');h.setAttribute('aria-expanded','false');h.title='Toca para abrir o cerrar';const toggle=()=>setAccordion(card,card.classList.contains('collapsed'));h.addEventListener('click',toggle);h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});setAccordion(card,!!card.querySelector('#pendingRequirements'))})}
 function openSection(id){const card=document.getElementById(id);if(!card)return;setAccordion(card,true);setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'start'}),40)}
 function collapseAll(){document.querySelectorAll('#portal .card.accordion').forEach(card=>setAccordion(card,false));window.scrollTo({top:0,behavior:'smooth'})}
-async function init(){const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError){loading.textContent='No fue posible validar tu sesión. Actualiza la página e inténtalo nuevamente.';return}if(!session){location.href='gestion/login.html?next=../mi_gigantes.html';return}
+async function init(){
+ let session=null;
+ try{
+   const s=await sb.auth.getSession();session=s.data?.session||null;
+   if(s.error)throw s.error;
+   if(session){
+     const verified=await Promise.race([sb.auth.getUser(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('AUTH_TIMEOUT')),4500))]);
+     if(verified.error||!verified.data?.user)throw verified.error||new Error('INVALID_SESSION');
+   }
+ }catch(e){
+   console.warn('Mi Gigantes · sesión local inválida o atascada',e);
+   try{await Promise.race([sb.auth.signOut({scope:'local'}),new Promise(r=>setTimeout(r,1500))])}catch{}
+   location.replace('gestion/login.html?next=../mi_gigantes.html&repair=1');return;
+ }
+ if(!session){location.replace('gestion/login.html?next=../mi_gigantes.html');return}
  const {data:own,error:ownError}=await sb.from('people').select('*').eq('auth_user_id',session.user.id).maybeSingle();
  const {data:links,error:linksError}=await sb.from('guardian_links').select('child_person_id,relationship_type,is_primary').eq('guardian_user_id',session.user.id);
  if(ownError||linksError){console.error('Mi Gigantes · error cargando vínculos',ownError||linksError);loading.textContent='No fue posible cargar tus jugadores en este momento. Vuelve a actualizar; si persiste, la Directiva puede revisar el acceso.';return}
