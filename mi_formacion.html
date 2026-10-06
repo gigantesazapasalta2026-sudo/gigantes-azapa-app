@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0f14">
+<title>Mi Formación · Gigantes de Azapa</title>
+<style>
+:root{--o:#f36b21;--d:#0b0f14;--m:#667085;--l:#e5e7eb;--bg:#f4f6f8;--ok:#15803d;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:#111827}.top{background:#0b0f14;color:#fff;padding:13px 16px}.topin{max-width:1050px;margin:auto;display:flex;gap:12px;align-items:center}.logo{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#fff}.top b{display:block}.top small{color:#f5a06f}.top .spacer{flex:1}.btn{border:0;border-radius:9px;padding:9px 11px;font-weight:900;font-size:11px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.primary{background:var(--o);color:#fff}.secondary{background:#fff;color:#111;border:1px solid #d0d5dd}.dark{background:#111827;color:#fff}main{max-width:1050px;margin:auto;padding:16px}.hero{background:linear-gradient(135deg,#111827,#352014);color:#fff;border-radius:18px;padding:21px}.hero h1{font-size:28px;margin:5px 0 8px}.hero p{color:#d1d5db;line-height:1.55;margin:0}.kicker{font-size:10px;color:#f6a16f;font-weight:900;letter-spacing:.7px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}.card,.panel{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px}.card h3,.panel h2{margin:0 0 7px}.card p,.panel p{color:var(--m);font-size:12px;line-height:1.5}.metric{font-size:28px;font-weight:900}.badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:900;background:#f3f4f6;color:#374151}.ok{background:#dcfce7;color:#166534}.warn{background:#fef3c7;color:#92400e}.bad{background:#fee2e2;color:#991b1b}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form label{font-size:10px;font-weight:900;color:#475467}.form input,.form select,.form textarea{width:100%;border:1px solid #d0d5dd;border-radius:9px;padding:9px;font:inherit;font-size:12px;background:#fff}.form textarea{min-height:80px;resize:vertical}.span2{grid-column:span 2}.row{padding:12px 0;border-top:1px solid #eef0f2}.row:first-child{border-top:0}.row b{display:block}.row small{display:block;color:var(--m);line-height:1.45;margin-top:4px}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px;color:#9a3412;font-size:11px;line-height:1.45}.empty{color:var(--m);font-size:12px;padding:10px 0}input[type=file]{display:none}@media(max-width:760px){.grid,.form{grid-template-columns:1fr}.span2{grid-column:auto}.topin{flex-wrap:wrap}.top .spacer{display:none;width:100%}.btn{flex:1}}
+</style></head><body>
+<header class="top"><div class="topin"><img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg"><div><b>Mi Formación</b><small id="who">Gigantes de Azapa</small></div><span class="spacer"></span><a class="btn secondary" href="mi_jugador.html">← Mi Gigantes</a><button class="btn dark" id="logout">Salir</button></div></header>
+<main>
+<section class="hero"><span class="kicker">PASAPORTE FORMATIVO GIGANTES</span><h1>Aprender también es hacer crecer el club.</h1><p>Cualquier miembro del club puede registrar cursos y subir sus certificados: jugadores, apoderados, entrenadores, árbitros, dirigentes y voluntarios. Así construimos una comunidad cada vez más preparada.</p></section>
+
+<div class="grid">
+<div class="card"><span class="badge">REGISTRADOS</span><div class="metric" id="kTotal">0</div><p>Cursos y capacitaciones en tu historial.</p></div>
+<div class="card"><span class="badge">VERIFICADOS</span><div class="metric" id="kVerified">0</div><p>Certificados revisados por la Directiva.</p></div>
+<div class="card"><span class="badge">HORAS</span><div class="metric" id="kHours">0</div><p>Horas de formación declaradas.</p></div>
+</div>
+
+<section class="panel" style="margin-top:14px">
+<div class="actions" style="justify-content:space-between"><div><h2>Mi historial de formación</h2><p>Registra cursos antiguos y nuevos. Puedes subir diploma, certificado o comprobante.</p></div><button class="btn primary" onclick="showForm()">+ Subir curso</button></div>
+<div id="editor"></div><div id="records"></div>
+</section>
+
+<section class="panel"><h2>¿Qué cursos podemos registrar?</h2><p>World Rugby, Chile Rugby, UAR, Sudamérica Rugby, primeros auxilios, salvaguarda, arbitraje, preparación física, liderazgo, administración deportiva, leyes del juego, bienestar del jugador y otras capacitaciones útiles para el club.</p><div class="notice"><b>Importante:</b> “Verificado” significa que la Directiva revisó la evidencia. No transforma un curso interno en acreditación oficial ni reemplaza al organismo que emitió el certificado.</div></section>
+</main>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+let session=null,person=null,recordsData=[];
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function badge(s){const c=s==='verified'?'ok':s==='rejected'?'bad':'warn';const t={verified:'VERIFICADO',rejected:'RECHAZADO',pending:'PENDIENTE'}[s]||String(s).toUpperCase();return '<span class="badge '+c+'">'+t+'</span>'}
+function areaName(a){return ({coach:'Coaching',referee:'Arbitraje',player_welfare:'Bienestar del jugador',first_aid:'Primeros auxilios',strength_conditioning:'Preparación física',leadership:'Liderazgo',administration:'Administración deportiva',safeguarding:'Salvaguarda',laws:'Leyes del juego',other:'Otros'})[a]||a}
+function showForm(x){
+ x=x||{};
+ editor.innerHTML='<div class="card" style="margin:12px 0"><h3>'+(x.id?'Editar curso':'Nuevo curso')+'</h3><div class="form">'+
+ '<label class="span2">Nombre del curso<input id="fTitle" value="'+esc(x.course_title||'')+'" placeholder="Ej: RugbyReady"></label>'+
+ '<label>Institución / proveedor<input id="fProvider" value="'+esc(x.provider||'')+'" placeholder="World Rugby, UAR, Chile Rugby…"></label>'+
+ '<label>País<input id="fCountry" value="'+esc(x.country||'')+'" placeholder="Chile, Argentina…"></label>'+
+ '<label>Área<select id="fArea"><option value="coach">Coaching</option><option value="referee">Arbitraje</option><option value="player_welfare">Bienestar del jugador</option><option value="first_aid">Primeros auxilios</option><option value="strength_conditioning">Preparación física</option><option value="leadership">Liderazgo</option><option value="administration">Administración deportiva</option><option value="safeguarding">Salvaguarda</option><option value="laws">Leyes del juego</option><option value="other">Otros</option></select></label>'+
+ '<label>Nivel<input id="fLevel" value="'+esc(x.level||'')+'" placeholder="Nivel 1, introductorio…"></label>'+
+ '<label>Fecha de término<input id="fDate" type="date" value="'+esc(x.completed_on||'')+'"></label>'+
+ '<label>Horas<input id="fHours" type="number" min="0" step="0.5" value="'+esc(x.hours??'')+'"></label>'+
+ '<label>Número de certificado<input id="fCredential" value="'+esc(x.credential_number||'')+'"></label>'+
+ '<label>Enlace del curso<input id="fUrl" type="url" value="'+esc(x.course_url||'')+'" placeholder="https://..."></label>'+
+ '<label class="span2">Notas<textarea id="fNotes">'+esc(x.notes||'')+'</textarea></label>'+
+ '<label class="span2">Diploma / certificado<input id="fFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"><button type="button" class="btn secondary" onclick="document.getElementById(\'fFile\').click()">Seleccionar archivo</button> <span id="fileName" class="empty">'+esc(x.certificate_name||'Sin archivo seleccionado')+'</span></label>'+
+ '</div><div class="actions"><button class="btn primary" onclick="saveRecord(\''+(x.id||'')+'\',\''+(x.certificate_path||'')+'\')">Guardar</button><button class="btn secondary" onclick="editor.innerHTML=\'\'">Cancelar</button></div></div>';
+ fArea.value=x.learning_area||'coach';fFile.onchange=()=>fileName.textContent=fFile.files[0]?.name||'Sin archivo seleccionado';
+}
+function editRecord(id){showForm(recordsData.find(x=>x.id===id))}
+async function saveRecord(id,existingPath){
+ const payload={user_id:session.user.id,person_id:person?.id||null,course_title:fTitle.value.trim(),provider:fProvider.value.trim(),country:fCountry.value.trim()||null,learning_area:fArea.value,level:fLevel.value.trim()||null,completed_on:fDate.value||null,hours:fHours.value===''?null:Number(fHours.value),credential_number:fCredential.value.trim()||null,course_url:fUrl.value.trim()||null,notes:fNotes.value.trim()||null};
+ if(!payload.course_title||!payload.provider)return alert('Completa nombre del curso e institución.');
+ const file=fFile.files[0];
+ if(file){
+  const ext=(file.name.split('.').pop()||'bin').toLowerCase();
+  const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  const path=session.user.id+'/'+Date.now()+'-'+safe;
+  const up=await sb.storage.from('sport-learning-private').upload(path,file,{upsert:false});
+  if(up.error)return alert('No se pudo subir el certificado: '+up.error.message);
+  payload.certificate_path=path;payload.certificate_name=file.name;
+ }
+ let q=id?sb.from('sport_learning_records').update(payload).eq('id',id):sb.from('sport_learning_records').insert(payload);
+ const {error}=await q;if(error)return alert(error.message);
+ if(file&&existingPath&&existingPath!==payload.certificate_path)await sb.storage.from('sport-learning-private').remove([existingPath]);
+ editor.innerHTML='';await load();
+}
+async function openCertificate(path){const {data,error}=await sb.storage.from('sport-learning-private').createSignedUrl(path,600);if(error||!data?.signedUrl)return alert(error?.message||'No se pudo abrir');window.open(data.signedUrl,'_blank')}
+async function deleteRecord(id,path){if(!confirm('¿Eliminar este curso de tu historial?'))return;const {error}=await sb.from('sport_learning_records').delete().eq('id',id);if(error)return alert(error.message);if(path)await sb.storage.from('sport-learning-private').remove([path]);await load();}
+async function load(){
+ const {data:r,error}=await sb.from('sport_learning_records').select('*').eq('user_id',session.user.id).order('completed_on',{ascending:false,nullsFirst:false}).order('created_at',{ascending:false});if(error)return alert(error.message);recordsData=r||[];
+ kTotal.textContent=recordsData.length;kVerified.textContent=recordsData.filter(x=>x.verification_status==='verified').length;kHours.textContent=recordsData.reduce((a,x)=>a+Number(x.hours||0),0);
+ records.innerHTML=recordsData.length?recordsData.map(x=>'<div class="row"><div>'+badge(x.verification_status)+' <span class="badge">'+esc(areaName(x.learning_area))+'</span></div><b>'+esc(x.course_title)+'</b><small>'+esc(x.provider)+(x.country?' · '+esc(x.country):'')+(x.completed_on?' · '+esc(x.completed_on):'')+(x.hours!=null?' · '+esc(x.hours)+' h':'')+(x.level?' · '+esc(x.level):'')+(x.notes?'<br>'+esc(x.notes):'')+'</small><div class="actions">'+(x.certificate_path?'<button class="btn secondary" onclick="openCertificate(\''+x.certificate_path+'\')">Ver certificado</button>':'')+'<button class="btn secondary" onclick="editRecord(\''+x.id+'\')">Editar</button><button class="btn secondary" onclick="deleteRecord(\''+x.id+'\',\''+(x.certificate_path||'')+'\')">Eliminar</button></div></div>').join(''):'<div class="empty">Aún no has registrado cursos. Usa “+ Subir curso” para comenzar tu Pasaporte Formativo.</div>';
+}
+logout.onclick=async()=>{await sb.auth.signOut();location.replace('index.html')};
+(async()=>{
+ const g=await sb.auth.getSession();session=g.data.session;if(!session){location.replace('gestion/login.html?next=../mi_formacion.html');return}
+ who.textContent=session.user.email||'Mi cuenta';
+ const {data:p}=await sb.from('people').select('id,full_name').eq('auth_user_id',session.user.id).maybeSingle();person=p||null;if(person)who.textContent=person.full_name;
+ await load();
+})();
+</script></body></html>
