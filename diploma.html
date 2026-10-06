@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0f14">
+<meta name="robots" content="noindex,nofollow">
+<title>Diploma de Bienvenida · Gigantes de Azapa</title>
+<style>
+:root{--o:#f36b21;--d:#0b0f14;--m:#667085;--line:#e5e7eb}
+*{box-sizing:border-box}
+body{margin:0;background:#eef1f4;font-family:Inter,Arial,sans-serif;color:#111827;padding:24px}
+.shell{max-width:1100px;margin:auto}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
+.top a{color:#9a3412;font-weight:900;text-decoration:none}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.primary{background:var(--o);color:#fff}.dark{background:#111827;color:#fff}
+.notice{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;color:var(--m)}
+.certificate{position:relative;aspect-ratio:1.414/1;background:#fff;border:14px solid #111827;overflow:hidden;box-shadow:0 24px 70px #0002;display:flex;align-items:center;justify-content:center;text-align:center;padding:5.5% 7%}
+.certificate:before{content:"";position:absolute;inset:13px;border:4px solid var(--o);pointer-events:none}
+.corner{position:absolute;width:180px;height:180px;border-radius:50%;background:var(--o);opacity:.09}.c1{left:-70px;top:-70px}.c2{right:-70px;bottom:-70px}
+.logo{width:116px;height:116px;border-radius:50%;object-fit:cover;box-shadow:0 8px 22px #0002;margin-bottom:8px}
+.kicker{color:#c2410c;font-weight:950;letter-spacing:2px;font-size:clamp(.65rem,1.3vw,.9rem);text-transform:uppercase}
+h1{font-size:clamp(2rem,5vw,4.7rem);line-height:.92;letter-spacing:-.04em;margin:10px 0 4px;color:#111827}
+.subtitle{font-size:clamp(1rem,2.2vw,1.7rem);font-weight:900;color:#f36b21;margin:0 0 22px}
+.given{font-family:Georgia,serif;color:#667085;font-size:clamp(.8rem,1.4vw,1rem);margin-bottom:5px}
+.name{font-family:Georgia,serif;font-size:clamp(1.9rem,4.6vw,4rem);font-weight:700;line-height:1.05;margin:0 auto 8px;max-width:85%;border-bottom:2px solid #f36b21;padding-bottom:8px}
+.category{font-weight:900;color:#374151;font-size:clamp(.78rem,1.4vw,1rem)}
+.message{max-width:720px;margin:22px auto 0;color:#475467;line-height:1.55;font-size:clamp(.76rem,1.3vw,.96rem)}
+.motto{margin-top:16px;font-weight:950;color:#111827;font-size:clamp(.72rem,1.2vw,.9rem)}
+.foot{position:absolute;bottom:4.7%;left:7%;right:7%;display:flex;justify-content:space-between;align-items:end;gap:14px;color:#667085;font-size:clamp(.62rem,1vw,.78rem)}
+.sign{text-align:center;min-width:180px}.line{height:1px;background:#98a2b3;margin-bottom:6px}
+.loading{padding:36px;text-align:center}
+@media(max-width:700px){body{padding:10px}.top{display:block}.actions{margin-top:10px}.certificate{border-width:8px;padding:6% 5%;min-height:560px;aspect-ratio:auto}.certificate:before{inset:8px;border-width:3px}.logo{width:82px;height:82px}.foot{position:static;margin-top:22px;display:grid;grid-template-columns:1fr 1fr}.sign{min-width:0}}
+@media print{body{background:#fff;padding:0}.top,.notice{display:none!important}.shell{max-width:none}.certificate{box-shadow:none;width:297mm;height:210mm;aspect-ratio:auto;border-width:10mm;page-break-inside:avoid}@page{size:A4 landscape;margin:0}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <a href="index.html">← Volver a Gigantes</a>
+    <div class="actions">
+      <button class="btn dark" id="printBtn" disabled>🖨️ Imprimir</button>
+      <button class="btn primary" id="pdfBtn" disabled>⬇️ Descargar / Guardar PDF</button>
+    </div>
+  </div>
+  <div id="status" class="notice loading">Preparando tu Diploma de Bienvenida…</div>
+  <section id="certificate" class="certificate" hidden>
+    <span class="corner c1"></span><span class="corner c2"></span>
+    <div>
+      <img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg" alt="Gigantes de Azapa">
+      <div class="kicker">Club Deportivo · Arica, Chile</div>
+      <h1>Diploma de Bienvenida</h1>
+      <div class="subtitle">Ahora formas parte de la Familia Gigantes</div>
+      <div class="given">Otorgado a</div>
+      <div id="playerName" class="name"></div>
+      <div id="category" class="category"></div>
+      <p class="message">En reconocimiento a tu incorporación a Gigantes de Azapa. Desde hoy compartes una camiseta, una comunidad y los valores que nos unen dentro y fuera de la cancha.</p>
+      <div class="motto">Somos Rugby · Somos Equipo · Somos Familia · Somos Gigantes de Azapa</div>
+      <div class="foot">
+        <div><b>Arica</b><br><span id="issued"></span></div>
+        <div class="sign"><div class="line"></div><b>Directiva</b><br>Gigantes de Azapa Rugby Club</div>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);
+function fmtDate(v){return new Date(v).toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric',timeZone:'America/Santiago'})}
+async function load(){
+  const token=new URLSearchParams(location.search).get('t');
+  if(!token){$('status').textContent='Este enlace de diploma no es válido.';return}
+  const {data,error}=await sb.rpc('get_welcome_diploma',{p_token:token});
+  const row=Array.isArray(data)?data[0]:data;
+  if(error||!row){$('status').textContent='No encontramos un diploma vigente asociado a este enlace.';return}
+  $('playerName').textContent=row.player_name;
+  $('category').textContent=row.category?'Categoría '+row.category:'Integrante de Gigantes de Azapa';
+  $('issued').textContent=fmtDate(row.issued_at);
+  $('status').hidden=true;$('certificate').hidden=false;$('printBtn').disabled=false;$('pdfBtn').disabled=false;
+}
+$('printBtn').onclick=()=>window.print();
+$('pdfBtn').onclick=()=>window.print();
+load();
+</script>
+</body></html>
