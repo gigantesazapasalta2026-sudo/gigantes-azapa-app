@@ -21,3 +21,6 @@ window.GIGANTES_AUTH_STORAGE={
   setItem(key,value){try{sessionStorage.setItem(key,value)}catch{}try{localStorage.setItem(key,value)}catch{}},
   removeItem(key){try{sessionStorage.removeItem(key)}catch{}try{localStorage.removeItem(key)}catch{}}
 };
+
+// Add private player-development shortcut to Control Center tools.
+(()=>{const own=document.currentScript;if(!own?.src)return;const center=new URL('gestion/index.html',own.src);if(location.origin!==center.origin||location.pathname!==center.pathname)return;const add=()=>{const menu=document.querySelector('.more-panel');if(!menu||menu.querySelector('a[href="desarrollo-jugadores.html"]'))return;const a=document.createElement('a');a.href='desarrollo-jugadores.html';a.textContent='🏉 Desarrollo del Jugador';const before=menu.querySelector('a[href="formacion.html"]');before?menu.insertBefore(a,before):menu.appendChild(a)};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add,{once:true});else add();})();
