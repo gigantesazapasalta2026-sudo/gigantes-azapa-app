@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0f14">
+<title>Formación · Control Center Gigantes</title>
+<style>
+:root{--o:#f36b21;--d:#0b0f14;--m:#667085;--l:#e5e7eb;--bg:#f4f6f8;--ok:#15803d;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:#111827}.top{background:#0b0f14;color:#fff;padding:13px 16px;position:sticky;top:0;z-index:20}.topin{max-width:1180px;margin:auto;display:flex;gap:12px;align-items:center}.logo{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#fff}.top b{display:block}.top small{color:#f5a06f}.top .spacer{flex:1}.btn{border:0;border-radius:9px;padding:9px 11px;font-weight:900;font-size:11px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.primary{background:var(--o);color:#fff}.secondary{background:#fff;color:#111;border:1px solid #d0d5dd}.dark{background:#111827;color:#fff}main{max-width:1180px;margin:auto;padding:18px}.hero{background:linear-gradient(135deg,#111827,#352014);color:#fff;border-radius:18px;padding:20px}.hero h1{margin:5px 0 8px;font-size:28px}.hero p{margin:0;color:#d1d5db;line-height:1.55}.kicker{font-size:10px;color:#f6a16f;font-weight:900;letter-spacing:.7px}.tabs{display:flex;gap:7px;overflow:auto;margin:14px 0}.tabs button{border:1px solid var(--l);background:#fff;border-radius:999px;padding:8px 12px;font-weight:900;white-space:nowrap;cursor:pointer}.tabs button.active{background:#111827;color:#fff;border-color:#111827}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.card,.panel{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px}.card h3,.panel h2{margin:0 0 7px}.card p,.panel p{color:var(--m);font-size:12px;line-height:1.5}.badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:900;background:#f3f4f6;color:#374151}.ok{background:#dcfce7;color:#166534}.warn{background:#fef3c7;color:#92400e}.row{padding:11px 0;border-top:1px solid #eef0f2}.row:first-child{border-top:0}.row b{display:block}.row small{display:block;color:var(--m);margin-top:3px;line-height:1.4}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form label{font-size:10px;font-weight:900;color:#475467}.form input,.form select,.form textarea{width:100%;border:1px solid #d0d5dd;border-radius:9px;padding:9px;font:inherit;font-size:12px;background:#fff}.form textarea{min-height:85px;resize:vertical}.span2{grid-column:span 2}.empty{color:var(--m);font-size:12px;padding:12px 0}.metric{font-size:28px;font-weight:900}.hidden{display:none}.course{display:grid;grid-template-columns:minmax(0,1fr) 140px 110px;gap:8px;align-items:center;padding:10px 0;border-top:1px solid #eef0f2}.course:first-child{border-top:0}.course a{color:#c2410c;font-size:10px;font-weight:900;text-decoration:none}.note{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px;color:#9a3412;font-size:11px;line-height:1.45}.doclinks a{display:block;padding:8px 0;border-top:1px solid #eee;text-decoration:none;font-weight:800}.doclinks a:first-child{border-top:0}@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.course{grid-template-columns:1fr 120px}}@media(max-width:620px){.grid,.form{grid-template-columns:1fr}.span2{grid-column:auto}.topin{flex-wrap:wrap}.top .spacer{display:none;width:100%}.course{grid-template-columns:1fr}.btn{flex:1}}
+</style></head><body>
+<header class="top"><div class="topin"><img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg"><div><b>Formación · Control Center</b><small id="who">Validando sesión…</small></div><span class="spacer"></span><a class="btn secondary" href="../formacion.html">🌐 Vista pública</a><a class="btn secondary" href="index.html">← Control Center</a><button class="btn dark" id="logout">Salir</button></div></header>
+<main>
+<section class="hero"><span class="kicker">ACADEMIA GIGANTES · DESARROLLO DEPORTIVO</span><h1>Planificar, enseñar, aprender y dejar registro.</h1><p>Este espacio separa la información pública para familias de la operación privada del cuerpo técnico. Cada entrenador trabaja sobre sus categorías autorizadas y su propia ruta de capacitación.</p></section>
+<div class="tabs"><button data-tab="dashboard" class="active">Resumen</button><button data-tab="planes">Planificación</button><button data-tab="aprendizaje">Mi aprendizaje</button><button data-tab="staff" id="staffTab" class="hidden">Asignaciones</button><button data-tab="docs">Documentos</button></div>
+<section id="view"></section>
+</main>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+let profile=null,teams=[],assignments=[],plans=[],catalog=[],progress=[],profiles=[],tab='dashboard';
+const DOCS=[
+['Plan Maestro Formación 2026–2030','https://docs.google.com/document/d/1MmhE5dQQrL0KCF1YSeZwWSNdjatRLhXS7Z1iyr3TlzE/edit'],
+['Plantilla Planificación por Categoría','https://docs.google.com/document/d/1vdgZxfc_s8-oY6mm_CWwu_fvMQ1UeqpkTuVpyKW5-OM/edit'],
+['Ruta Entrenadores, Árbitros y Oficiales','https://docs.google.com/document/d/1R8GjFtrfyLvoOXunL6n5K58iOG_-Hg1p5jhrnCmJQPs/edit'],
+['Catálogo World Rugby + Academia Gigantes','https://docs.google.com/document/d/12i8OwTZ8Lhq7j4U--EUxmY23heS8gKwRl9fkmB0LoZ4/edit'],
+['Carpeta Academia Gigantes','https://drive.google.com/drive/folders/17EIm-C2ev_XW8Y0LMX4ULWQWkuricaNE']
+];
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function canAdmin(){return ['superadmin','board'].includes(profile?.role)}
+function myTeamIds(){if(canAdmin())return teams.map(t=>t.id);return assignments.filter(a=>a.active&&a.user_id===profile.user_id&&a.team_id).map(a=>a.team_id)}
+function teamName(id){return teams.find(t=>t.id===id)?.name||'Categoría'}
+function statusBadge(s){const c=s==='published'?'ok':s==='draft'?'warn':'';return '<span class="badge '+c+'">'+esc(String(s).toUpperCase())+'</span>'}
+function activeTeams(){const ids=new Set(myTeamIds());return teams.filter(t=>ids.has(t.id))}
+function render(){
+ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+ if(tab==='dashboard')return dashboard();
+ if(tab==='planes')return planesView();
+ if(tab==='aprendizaje')return learningView();
+ if(tab==='staff')return staffView();
+ return docsView();
+}
+function dashboard(){
+ const ats=activeTeams(),pub=plans.filter(p=>p.status==='published').length,done=progress.filter(p=>p.status==='completed').length;
+ view.innerHTML='<div class="grid">'+
+ '<div class="card"><span class="badge">CATEGORÍAS</span><div class="metric">'+ats.length+'</div><p>Categorías en las que tienes acceso técnico.</p></div>'+
+ '<div class="card"><span class="badge">PLANES PUBLICADOS</span><div class="metric">'+pub+'</div><p>Planificaciones visibles para familias.</p></div>'+
+ '<div class="card"><span class="badge">FORMACIÓN COMPLETADA</span><div class="metric">'+done+'</div><p>Actividades registradas como completadas en tu ruta.</p></div></div>'+
+ '<div class="grid2" style="margin-top:12px"><div class="panel"><h2>Mis categorías</h2><p>Cada categoría debe tener planificación vigente y objetivos claros.</p>'+
+ (ats.length?ats.map(t=>'<div class="row"><b>'+esc(t.name)+'</b><small>'+esc(t.age_group||'')+' · '+(plans.filter(p=>p.team_id===t.id).length)+' planes registrados</small><div class="actions"><button class="btn primary" onclick="openNewPlan(\''+t.id+'\')">+ Nueva planificación</button></div></div>').join(''):'<div class="empty">Aún no tienes una categoría asignada. La Directiva puede hacerlo en Asignaciones.</div>')+
+ '</div><div class="panel"><h2>Ruta recomendada</h2><p>1. Mantén vigente la planificación. 2. Publica sólo objetivos generales. 3. Completa tu formación. 4. Guarda evidencias. 5. Revisa y ajusta después de cada período.</p><div class="note">Nunca publiques evaluaciones individuales de menores, antecedentes médicos ni comparaciones entre jugadores.</div></div></div>';
+}
+function planesView(){
+ const ats=activeTeams(),ids=new Set(ats.map(t=>t.id)),mine=plans.filter(p=>ids.has(p.team_id)).sort((a,b)=>String(b.start_date||'').localeCompare(String(a.start_date||'')));
+ view.innerHTML='<div class="panel"><div class="actions" style="justify-content:space-between"><div><h2>Planificación deportiva</h2><p>Crea planes anuales, mensuales, semanales o de sesión. La versión pública se activa sólo cuando el plan está listo.</p></div>'+(ats.length?'<button class="btn primary" onclick="openNewPlan(\''+ats[0].id+'\')">+ Nueva planificación</button>':'')+'</div><div id="planEditor"></div>'+
+ (mine.length?mine.map(p=>'<div class="row"><div>'+statusBadge(p.status)+' <span class="badge">'+esc(teamName(p.team_id))+'</span></div><b>'+esc(p.title)+'</b><small>'+esc(p.period_type)+' · '+esc(p.start_date||'sin fecha')+' → '+esc(p.end_date||'sin fecha')+(p.public_visible?' · Visible para familias':' · Privado')+'</small><div class="actions"><button class="btn secondary" onclick="editPlan(\''+p.id+'\')">Editar</button>'+(p.status!=='published'?'<button class="btn primary" onclick="publishPlan(\''+p.id+'\')">Publicar</button>':'<button class="btn secondary" onclick="unpublishPlan(\''+p.id+'\')">Volver a borrador</button>')+'</div></div>').join(''):'<div class="empty">No hay planificaciones privadas o públicas para tus categorías.</div>')+'</div>';
+}
+function formPlan(p){
+ const ats=activeTeams(),x=p||{},team=x.team_id||ats[0]?.id||'';
+ return '<div class="card" style="margin:12px 0"><h3>'+(x.id?'Editar':'Nueva')+' planificación</h3><div class="form">'+
+ '<label>Categoría<select id="pTeam">'+ats.map(t=>'<option value="'+t.id+'" '+(t.id===team?'selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select></label>'+
+ '<label>Tipo<select id="pType"><option value="annual">Anual</option><option value="monthly">Mensual</option><option value="weekly">Semanal</option><option value="session">Sesión</option></select></label>'+
+ '<label class="span2">Título<input id="pTitle" value="'+esc(x.title||'')+'" placeholder="Ej: Objetivos de octubre · M12"></label>'+
+ '<label>Inicio<input id="pStart" type="date" value="'+esc(x.start_date||'')+'"></label><label>Término<input id="pEnd" type="date" value="'+esc(x.end_date||'')+'"></label>'+
+ '<label class="span2">Resumen público<textarea id="pSummary">'+esc(x.summary||'')+'</textarea></label>'+
+ '<label class="span2">Objetivos técnicos<textarea id="pTechnical">'+esc(x.technical_objectives||'')+'</textarea></label>'+
+ '<label class="span2">Objetivos tácticos<textarea id="pTactical">'+esc(x.tactical_objectives||'')+'</textarea></label>'+
+ '<label class="span2">Objetivos físicos<textarea id="pPhysical">'+esc(x.physical_objectives||'')+'</textarea></label>'+
+ '<label class="span2">Objetivos cognitivos<textarea id="pCognitive">'+esc(x.cognitive_objectives||'')+'</textarea></label>'+
+ '<label class="span2">Objetivos valóricos<textarea id="pValues">'+esc(x.values_objectives||'')+'</textarea></label>'+
+ '<label class="span2">Seguridad / bienestar<textarea id="pSafety">'+esc(x.safety_notes||'')+'</textarea></label>'+
+ '<label class="span2">Contenido de sesión / metodología<textarea id="pSession">'+esc(x.session_content||'')+'</textarea></label>'+
+ '<label class="span2">Reflexión privada del entrenador<textarea id="pReflection">'+esc(x.coach_reflection||'')+'</textarea></label></div>'+
+ '<div class="actions"><button class="btn primary" onclick="savePlan(\''+(x.id||'')+'\')">Guardar borrador</button><button class="btn secondary" onclick="document.getElementById(\'planEditor\').innerHTML=\'\'">Cancelar</button></div></div>';
+}
+function openNewPlan(teamId){tab='planes';render();planEditor.innerHTML=formPlan({team_id:teamId});}
+function editPlan(id){const p=plans.find(x=>x.id===id);planEditor.innerHTML=formPlan(p);document.getElementById('pType').value=p.period_type||'monthly';}
+async function savePlan(id){
+ const payload={team_id:pTeam.value,period_type:pType.value,title:pTitle.value.trim(),start_date:pStart.value||null,end_date:pEnd.value||null,summary:pSummary.value.trim()||null,technical_objectives:pTechnical.value.trim()||null,tactical_objectives:pTactical.value.trim()||null,physical_objectives:pPhysical.value.trim()||null,cognitive_objectives:pCognitive.value.trim()||null,values_objectives:pValues.value.trim()||null,safety_notes:pSafety.value.trim()||null,session_content:pSession.value.trim()||null,coach_reflection:pReflection.value.trim()||null,status:'draft',public_visible:false,updated_at:new Date().toISOString()};
+ if(!payload.title)return alert('Escribe un título.');
+ const q=id?sb.from('sport_plans').update(payload).eq('id',id):sb.from('sport_plans').insert(payload);
+ const {error}=await q;if(error)return alert(error.message);await load();tab='planes';render();
+}
+async function publishPlan(id){if(!confirm('¿Publicar los objetivos generales de esta planificación para las familias?'))return;const {error}=await sb.from('sport_plans').update({status:'published',public_visible:true,updated_at:new Date().toISOString()}).eq('id',id);if(error)return alert(error.message);await load();render();}
+async function unpublishPlan(id){const {error}=await sb.from('sport_plans').update({status:'draft',public_visible:false,updated_at:new Date().toISOString()}).eq('id',id);if(error)return alert(error.message);await load();render();}
+function learningView(){
+ const pm=new Map(progress.map(p=>[p.catalog_id,p]));
+ view.innerHTML='<div class="panel"><h2>Mi ruta de aprendizaje</h2><p>Completa recursos oficiales en su plataforma de origen y registra aquí tu avance. Los certificados oficiales no son emitidos por Gigantes.</p>'+
+ catalog.map(c=>{const p=pm.get(c.id)||{};return '<div class="course"><div><b>'+esc(c.title)+'</b><small>'+esc(c.provider)+' · '+esc(c.track)+(c.description?'<br>'+esc(c.description):'')+'</small>'+(c.resource_url?'<a target="_blank" rel="noopener" href="'+esc(c.resource_url)+'">Abrir recurso →</a>':'')+'</div><select id="ls_'+c.id+'"><option value="not_started">No iniciado</option><option value="in_progress">En progreso</option><option value="completed">Completado</option><option value="expired">Vencido</option></select><button class="btn secondary" onclick="saveLearning(\''+c.id+'\')">Guardar</button></div>'}).join('')+'</div>';
+ catalog.forEach(c=>{const el=document.getElementById('ls_'+c.id),p=pm.get(c.id);if(el&&p)el.value=p.status});
+}
+async function saveLearning(cid){const el=document.getElementById('ls_'+cid),status=el.value,payload={user_id:profile.user_id,catalog_id:cid,status,completed_on:status==='completed'?new Date().toISOString().slice(0,10):null,updated_at:new Date().toISOString()};const {error}=await sb.from('sport_learning_progress').upsert(payload,{onConflict:'user_id,catalog_id'});if(error)return alert(error.message);await load();render();}
+function staffView(){
+ if(!canAdmin()){tab='dashboard';return render()}
+ view.innerHTML='<div class="grid2"><div class="panel"><h2>Asignar cuerpo técnico</h2><p>Los roles administrativos del Control Center y las funciones deportivas son independientes.</p><div class="form"><label>Usuario<select id="sUser">'+profiles.map(p=>'<option value="'+p.user_id+'">'+esc(p.display_name||p.email||p.user_id)+'</option>').join('')+'</select></label><label>Categoría<select id="sTeam">'+teams.filter(t=>t.status!=='inactive').map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('')+'</select></label><label>Función<select id="sRole"><option value="head_coach">Head Coach</option><option value="coach">Coach</option><option value="assistant">Asistente</option><option value="mentor">Mentor</option><option value="referee">Referee</option><option value="assistant_referee">Árbitro asistente</option><option value="table_official">Mesa / control</option><option value="sport_director">Dirección deportiva</option></select></label><div style="align-self:end"><button class="btn primary" onclick="saveAssignment()">Asignar</button></div></div></div><div class="panel"><h2>Asignaciones activas</h2>'+
+ (assignments.length?assignments.map(a=>'<div class="row"><b>'+esc(profiles.find(p=>p.user_id===a.user_id)?.display_name||a.user_id)+'</b><small>'+esc(teamName(a.team_id))+' · '+esc(a.staff_role)+'</small><div class="actions"><button class="btn secondary" onclick="disableAssignment(\''+a.id+'\')">Desactivar</button></div></div>').join(''):'<div class="empty">Sin asignaciones cargadas.</div>')+'</div></div>';
+}
+async function saveAssignment(){const payload={user_id:sUser.value,team_id:sTeam.value,staff_role:sRole.value,active:true};const {error}=await sb.from('sport_staff_assignments').upsert(payload,{onConflict:'user_id,team_id,staff_role'});if(error)return alert(error.message);await load();render();}
+async function disableAssignment(id){const {error}=await sb.from('sport_staff_assignments').update({active:false,ends_on:new Date().toISOString().slice(0,10)}).eq('id',id);if(error)return alert(error.message);await load();render();}
+function docsView(){view.innerHTML='<div class="grid2"><div class="panel"><h2>Documentos maestros</h2><p>Patrimonio técnico de la Academia Gigantes.</p><div class="doclinks">'+DOCS.map(d=>'<a href="'+d[1]+'" target="_blank" rel="noopener">📄 '+esc(d[0])+' →</a>').join('')+'</div></div><div class="panel"><h2>Regla de uso</h2><p>Drive conserva documentos y metodología. Supabase conserva planificación viva, permisos, asignaciones y progreso. La app pública muestra solamente objetivos generales autorizados.</p><div class="note">Los cursos oficiales deben realizarse en World Rugby/Chile Rugby u organismo correspondiente. Gigantes registra la evidencia, pero no reemplaza la certificación oficial.</div></div></div>'}
+async function load(){
+ const calls=[
+  sb.from('sport_teams').select('*').order('sort_order'),
+  sb.from('sport_staff_assignments').select('*').eq('active',true),
+  sb.from('sport_plans').select('*').order('start_date',{ascending:false}),
+  sb.from('sport_learning_catalog').select('*').eq('active',true).order('sort_order'),
+  sb.from('sport_learning_progress').select('*').eq('user_id',profile.user_id)
+ ];
+ if(canAdmin())calls.push(sb.from('profiles').select('user_id,display_name,email,role,active').eq('active',true).order('display_name'));
+ const rs=await Promise.all(calls);teams=rs[0].data||[];assignments=rs[1].data||[];plans=rs[2].data||[];catalog=rs[3].data||[];progress=rs[4].data||[];profiles=canAdmin()?(rs[5].data||[]):[];render();
+}
+document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('button[data-tab]');if(!b)return;if(b.dataset.tab==='staff'&&!canAdmin())return;tab=b.dataset.tab;render()};
+logout.onclick=async()=>{await sb.auth.signOut();location.replace('login.html')};
+(async()=>{
+ const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('login.html');return}
+ const {data:p}=await sb.from('profiles').select('user_id,display_name,email,role,active').eq('user_id',session.user.id).maybeSingle();
+ if(!p||!p.active||!['superadmin','board','coach','commission'].includes(p.role)){location.replace('../mi_jugador.html');return}
+ profile=p;who.textContent=(p.display_name||session.user.email)+' · '+p.role;if(canAdmin())staffTab.classList.remove('hidden');await load();
+})();
+</script></body></html>
