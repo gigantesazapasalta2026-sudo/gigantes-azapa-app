@@ -361,7 +361,19 @@ render();
 (async function secureControlCenter(){
   if(!window.GIGANTES_SUPABASE_URL||!window.GIGANTES_SUPABASE_PUBLISHABLE_KEY){location.replace('login.html');return}
   const client=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
-  const {data:{session}}=await client.auth.getSession();
+  let session=null;
+  try{
+    const s=await client.auth.getSession();session=s.data?.session||null;
+    if(s.error)throw s.error;
+    if(session){
+      const verified=await Promise.race([client.auth.getUser(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('AUTH_TIMEOUT')),4500))]);
+      if(verified.error||!verified.data?.user)throw verified.error||new Error('INVALID_SESSION');
+    }
+  }catch(e){
+    console.warn('Control Center · sesión local inválida o atascada',e);
+    try{await Promise.race([client.auth.signOut({scope:'local'}),new Promise(r=>setTimeout(r,1500))])}catch{}
+    location.replace('login.html?repair=1');return;
+  }
   if(!session){location.replace('login.html');return}
   let profile=null;
   for(let attempt=0;attempt<3&&!profile;attempt++){
