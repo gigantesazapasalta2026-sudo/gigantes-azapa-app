@@ -121,13 +121,39 @@ function buildSmartDocument(type){
 }
 function smartDocName(type){return ({reception:'Acta_Recepcion',reporter_contact:'Contacto_Denunciante',guardian_contact:'Comunicacion_Responsable_NNA',assessment:'Evaluacion_Inicial',authority_referral:'Constancia_Derivacion_Autoridad',board_report:'Informe_Reservado_Directorio',discipline_referral:'Oficio_Comision_Disciplina',protective_measure:'Solicitud_Medida_Proteccion',respondent_contact:'Contacto_Persona_Denunciada',closure:'Acta_Cierre'})[type]||'Documento_DS22'}
 function prepareSmartDocument(){docBody.value=buildSmartDocument(docType.value)}
-function downloadSmartDocument(){
+function smartDocumentPdfBlob(){
  if(!docBody.value.trim())prepareSmartDocument();
  const {jsPDF}=window.jspdf,d=new jsPDF(),lines=d.splitTextToSize(docBody.value,178);
  let y=16;d.setFontSize(10);
  for(const line of lines){if(y>278){d.addPage();y=16}d.text(line,16,y);y+=5.2}
- d.save(smartDocName(docType.value)+'_'+(report.case_code||report.id)+'.pdf');
+ return d.output('blob')
+}
+function downloadSmartDocument(){
+ const blob=smartDocumentPdfBlob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download=smartDocName(docType.value)+'_'+(report.case_code||report.id)+'.pdf';a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),60000);
  addEvent('smart_document_generated','Documento generado: '+smartDocName(docType.value));
+}
+async function archiveSmartDocument(){
+ const blob=smartDocumentPdfBlob(),name=smartDocName(docType.value)+'_'+(report.case_code||report.id)+'.pdf',path=reportId+'/generated/'+Date.now()+'-'+name.replace(/[^a-zA-Z0-9._-]/g,'_');
+ const up=await sb.storage.from('protection-reports-private').upload(path,blob,{contentType:'application/pdf',upsert:false});
+ if(up.error)return alert('No se pudo guardar el PDF: '+up.error.message);
+ const ins=await sb.from('protection_report_documents').insert({report_id:reportId,doc_code:docType.value,doc_name:smartDocName(docType.value),storage_path:path,original_name:name,uploaded_by:user.id,notes:'Documento generado desde el expediente DS22'});
+ if(ins.error)return alert('El PDF se subió, pero no pudo registrarse: '+ins.error.message);
+ await addEvent('smart_document_archived','Documento archivado: '+name);
+ alert('Documento guardado dentro del expediente.');
+}
+async function shareSmartDocument(){
+ const blob=smartDocumentPdfBlob(),name=smartDocName(docType.value)+'_'+(report.case_code||report.id)+'.pdf',file=new File([blob],name,{type:'application/pdf'});
+ try{
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+   await navigator.share({title:name,text:'Documento del expediente '+(report.case_code||''),files:[file]});
+   await addEvent('smart_document_shared','Se abrió el menú de compartir: '+name);
+  }else{
+   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
+   alert('El PDF fue descargado. Tu dispositivo no permite compartir archivos directamente desde esta página.');
+  }
+ }catch(e){if(e?.name!=='AbortError')alert('No se pudo compartir: '+e.message)}
 }
 async function addEvent(type,summary,metadata={}){
  return sb.from('protection_report_events').insert({report_id:reportId,event_type:type,summary,actor_user_id:user.id,metadata})
@@ -183,4 +209,4 @@ referDiscipline.onclick=async()=>{
  alert('Derivación enviada correctamente: '+dc.data.case_code);
  await refresh()
 };
-prepareDoc.onclick=prepareSmartDocument;downloadDoc.onclick=downloadSmartDocument;
+prepareDoc.onclick=prepareSmartDocument;downloadDoc.onclick=downloadSmartDocument;archiveDoc.onclick=archiveSmartDocument;shareDoc.onclick=shareSmartDocument;
