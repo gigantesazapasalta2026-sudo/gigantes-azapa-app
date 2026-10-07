@@ -19,8 +19,8 @@
 </main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
-const requestedNext=new URLSearchParams(location.search).get('next')||'index.html';
-const nextPath=/^(?!\/\/)(?![a-z][a-z0-9+.-]*:)[a-zA-Z0-9_./?-]+$/.test(requestedNext)?requestedNext:'index.html';
+const requestedNext=new URLSearchParams(location.search).get('next')||'../mi_gigantes.html';
+const nextPath=/^(?!\/\/)(?![a-z][a-z0-9+.-]*:)[a-zA-Z0-9_./?-]+$/.test(requestedNext)?requestedNext:'../mi_gigantes.html';
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
 const loading=document.getElementById('loading'),login=document.getElementById('login'),msg=document.getElementById('msg'),repair=document.getElementById('repair'),firstAccess=document.getElementById('firstAccess');
 const switchUser=new URLSearchParams(location.search).get('switch')==='1';
