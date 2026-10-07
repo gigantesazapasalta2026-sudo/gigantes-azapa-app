@@ -1,33 +1,93 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Accesos · Gigantes</title><style>
-:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial;background:#f4f6f8;color:#111}.top{background:#0b0f14;color:#fff;padding:18px}.in,main{max-width:1000px;margin:auto}.top h1{margin:0;font-size:22px}.top a{color:#f6a16f;text-decoration:none}.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px;margin:16px 0}.grid{display:grid;grid-template-columns:2fr 1fr auto;gap:10px}label{font-size:11px;font-weight:900;display:block;margin-bottom:4px}input,select{width:100%;padding:10px;border:1px solid #d0d5dd;border-radius:8px}.btn{border:0;border-radius:8px;background:var(--o);color:#fff;padding:10px 12px;font-weight:900;cursor:pointer;align-self:end}.row{padding:10px 0;border-top:1px solid #eee}.rowActions{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:7px}.rowActions select{width:auto;min-width:140px;padding:7px}.btn.secondary{background:#fff;color:#111;border:1px solid var(--l)}.btn.bad{background:#991b1b}.meta{font-size:12px;color:var(--m)}.hide{display:none}@media(max-width:680px){.grid{grid-template-columns:1fr}}</style><link rel="stylesheet" href="ux.css?v=20261005"></head><body>
+:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial;background:#f4f6f8;color:#111}.top{background:#0b0f14;color:#fff;padding:18px}.in,main{max-width:1000px;margin:auto}.top h1{margin:0;font-size:22px}.top a{color:#f6a16f;text-decoration:none}.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px;margin:16px 0}.grid{display:grid;grid-template-columns:2fr 1fr auto;gap:10px}label{font-size:11px;font-weight:900;display:block;margin-bottom:4px}input,select{width:100%;padding:10px;border:1px solid #d0d5dd;border-radius:8px}.btn{border:0;border-radius:8px;background:var(--o);color:#fff;padding:10px 12px;font-weight:900;cursor:pointer;align-self:end}.row{padding:12px 0;border-top:1px solid #eee}.rowActions{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-end;margin-top:9px}.rowActions select{width:auto;min-width:170px;padding:7px}.badges{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:11px;font-weight:900}.badge.admin{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}.fieldMini{display:flex;flex-direction:column;gap:4px}.fieldMini span{font-size:10px;font-weight:900;color:#667085;text-transform:uppercase;letter-spacing:.03em}.btn.secondary{background:#fff;color:#111;border:1px solid var(--l)}.btn.bad{background:#991b1b}.meta{font-size:12px;color:var(--m)}.hide{display:none}@media(max-width:680px){.grid{grid-template-columns:1fr}}</style><link rel="stylesheet" href="ux.css?v=20261005"></head><body>
 <header class="top"><div class="in"><h1>Accesos y roles</h1><a href="index.html">← Control Center</a></div></header><main><div id="loading">Verificando acceso…</div><section id="app" class="hide">
 <div class="card"><h2>Invitar usuario</h2><div class="grid"><div><label>Correo</label><input id="email" type="email"></div><div><label>Rol</label><select id="role"><option value="board">Directiva</option><option value="treasury">Tesorería</option><option value="coach">Entrenador</option><option value="commission">Comisión</option><option value="member">Miembro</option></select></div><button id="invite" class="btn">Preautorizar</button></div><p class="meta">La persona entra con enlace mágico. No compartimos contraseñas comunes.</p><div id="msg" class="meta"></div></div>
 <div class="card"><h2>Activación manual temporal</h2><p class="meta">Modo de contingencia mientras corregimos el acceso general. Autoriza o reactiva una cuenta sin cambiar su rol real si ya existe.</p><div class="grid"><div><label>Correo del usuario</label><input id="manualEmail" type="email" placeholder="correo@ejemplo.cl"></div><div><label>Rol si aún no tiene cuenta</label><select id="manualRole"><option value="guardian">Apoderado</option><option value="player">Jugador adulto</option><option value="member">Miembro</option><option value="coach">Entrenador</option><option value="commission">Comisión</option><option value="board">Directiva</option><option value="treasury">Tesorería</option></select></div><button id="manualActivate" class="btn">Activar usuario</button></div><div id="manualMsg" class="meta"></div></div>
 <div class="card"><h2>Invitaciones activas</h2><div id="invites"></div></div>
-<div class="card"><h2>Usuarios activos</h2><div id="profiles"></div></div>
+<div class="card"><h2>Usuarios y permisos</h2><p class="meta">El tipo de usuario se detecta automáticamente desde su ficha y vínculos familiares. El permiso administrativo se configura por separado.</p><div id="profiles"></div></div>
 </section></main>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let me,userId;
 (async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=accesos.html';return}userId=session.user.id;const r=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();me=r.data;if(!me||!me.active||me.role!=='superadmin'){loading.textContent='Este módulo requiere rol superadministrador.';return}loading.classList.add('hide');app.classList.remove('hide');refresh()})();
+const ADMIN_ROLES=['superadmin','board','treasury','coach','commission'];
+const ADMIN_LABELS={superadmin:'Superadministrador',board:'Directiva',treasury:'Tesorería',coach:'Entrenador',commission:'Comisión'};
+const BASE_LABELS={guardian:'Apoderado',player:'Jugador',member:'Miembro'};
+let functionalByUser={};
+
+function isAdult(birthDate){
+ if(!birthDate)return false;
+ const d=new Date(birthDate+'T00:00:00Z');if(Number.isNaN(d.getTime()))return false;
+ const n=new Date();let age=n.getUTCFullYear()-d.getUTCFullYear();
+ const m=n.getUTCMonth()-d.getUTCMonth();if(m<0||(m===0&&n.getUTCDate()<d.getUTCDate()))age--;
+ return age>=18;
+}
+function inviteRoleLabel(role){return ADMIN_LABELS[role]||BASE_LABELS[role]||role}
 async function refresh(){
  const [{data:i,error:ie},{data:p,error:pe}]=await Promise.all([
   sb.from('access_invitations').select('id,email,role,active,created_at').eq('active',true).order('created_at',{ascending:false}),
-  sb.from('profiles').select('user_id,display_name,role,active,created_at').order('created_at',{ascending:false})
+  sb.from('profiles').select('user_id,display_name,email,role,active,created_at').order('created_at',{ascending:false})
  ]);
  if(ie||pe){msg.textContent='No fue posible cargar accesos.';return}
- invites.innerHTML=(i||[]).length?(i||[]).map(x=>'<div class="row"><b>'+esc(x.email)+'</b><div class="meta">'+esc(x.role)+' · '+new Date(x.created_at).toLocaleString('es-CL')+'</div><div class="rowActions"><button class="btn bad" onclick="cancelInvite(\''+x.id+'\')">Cancelar invitación</button></div></div>').join(''):'<div class="meta">Sin invitaciones pendientes.</div>';
+
+ const ids=(p||[]).map(x=>x.user_id);
+ let peopleData=[],guardianData=[];
+ if(ids.length){
+  const [{data:people,error:peopleErr},{data:guardians,error:guardianErr}]=await Promise.all([
+   sb.from('people').select('auth_user_id,full_name,category,birth_date').in('auth_user_id',ids),
+   sb.from('guardian_links').select('guardian_user_id,child_person_id').in('guardian_user_id',ids)
+  ]);
+  if(peopleErr||guardianErr){msg.textContent='Se cargaron los usuarios, pero no todos sus tipos pudieron verificarse.'}
+  peopleData=people||[];guardianData=guardians||[];
+ }
+
+ const peopleMap={};
+ for(const person of peopleData){if(person.auth_user_id)peopleMap[person.auth_user_id]=person}
+ const guardianCount={};
+ for(const gl of guardianData)guardianCount[gl.guardian_user_id]=(guardianCount[gl.guardian_user_id]||0)+1
+
+ functionalByUser={};
+ for(const x of (p||[])){
+  const person=peopleMap[x.user_id]||null;
+  const isGuardian=!!guardianCount[x.user_id]||x.role==='guardian';
+  const hasPlayerCategory=!!String(person?.category||'').trim();
+  const isPlayer=hasPlayerCategory||x.role==='player';
+  const playerText=isPlayer?(isAdult(person?.birth_date)||/^(mayores|classic|senior|adult)/i.test(String(person?.category||''))?'Jugador adulto':'Jugador'):null;
+  const types=[];if(playerText)types.push(playerText);if(isGuardian)types.push('Apoderado');if(!types.length)types.push('Miembro');
+  const baseRole=isGuardian?'guardian':(isPlayer?'player':'member');
+  functionalByUser[x.user_id]={types,baseRole,person,children:guardianCount[x.user_id]||0};
+ }
+
+ invites.innerHTML=(i||[]).length?(i||[]).map(x=>'<div class="row"><b>'+esc(x.email)+'</b><div class="meta">'+esc(inviteRoleLabel(x.role))+' · '+new Date(x.created_at).toLocaleString('es-CL')+'</div><div class="rowActions"><button class="btn bad" onclick="cancelInvite(\''+x.id+'\')">Cancelar invitación</button></div></div>').join(''):'<div class="meta">Sin invitaciones pendientes.</div>';
  profiles.innerHTML=(p||[]).length?(p||[]).map(x=>profileRow(x)).join(''):'<div class="meta">Sin usuarios todavía.</div>';
 }
 function profileRow(x){
- const own=x.user_id===userId,roles=['superadmin','board','treasury','coach','commission','guardian','player','member'];
- return '<div class="row"><b>'+esc(x.display_name||'Usuario')+(own?' · Tú':'')+'</b><div class="meta">'+esc(x.role)+' · '+(x.active?'Activo':'Inactivo')+'</div>'+
- (own?'<div class="meta">Tu propio rol/estado está protegido.</div>':'<div class="rowActions"><select id="role-'+x.user_id+'">'+roles.map(r=>'<option value="'+r+'" '+(r===x.role?'selected':'')+'>'+r+'</option>').join('')+'</select><select id="active-'+x.user_id+'"><option value="true" '+(x.active?'selected':'')+'>Activo</option><option value="false" '+(!x.active?'selected':'')+'>Inactivo</option></select><button class="btn secondary" onclick="saveProfile(\''+x.user_id+'\',\''+escAttr(x.role)+'\','+(x.active?'true':'false')+')">Guardar</button></div>')+'</div>';
+ const own=x.user_id===userId,fun=functionalByUser[x.user_id]||{types:['Miembro'],baseRole:'member',children:0};
+ const adminRole=ADMIN_ROLES.includes(x.role)?x.role:'none';
+ const adminText=adminRole==='none'?'Sin permiso administrativo':ADMIN_LABELS[adminRole];
+ const options=[
+  ['none','Sin permiso administrativo'],
+  ['board','Directiva'],
+  ['treasury','Tesorería'],
+  ['coach','Entrenador'],
+  ['commission','Comisión'],
+  ['superadmin','Superadministrador']
+ ];
+ const name=fun.person?.full_name||x.display_name||x.email||'Usuario';
+ const emailText=x.email&&x.email.toLowerCase()!==String(name).toLowerCase()?'<div class="meta">'+esc(x.email)+'</div>':'';
+ const typeBadges=fun.types.map(t=>'<span class="badge">'+esc(t)+'</span>').join('');
+ const adminBadge=adminRole!=='none'?'<span class="badge admin">'+esc(adminText)+'</span>':'';
+ const detail=fun.children?'<div class="meta">'+fun.children+' jugador(es) menor(es) vinculado(s)</div>':'';
+ return '<div class="row"><b>'+esc(name)+(own?' · Tú':'')+'</b>'+emailText+
+ '<div class="badges">'+typeBadges+adminBadge+'</div>'+detail+
+ '<div class="meta">Permiso administrativo: '+esc(adminText)+' · Estado: '+(x.active?'Activo':'Inactivo')+'</div>'+
+ (own?'<div class="meta">Tu propio permiso/estado está protegido.</div>':'<div class="rowActions"><label class="fieldMini"><span>Permiso administrativo</span><select id="role-'+x.user_id+'">'+options.map(o=>'<option value="'+o[0]+'" '+(o[0]===adminRole?'selected':'')+'>'+o[1]+'</option>').join('')+'</select></label><label class="fieldMini"><span>Estado de cuenta</span><select id="active-'+x.user_id+'"><option value="true" '+(x.active?'selected':'')+'>Activo</option><option value="false" '+(!x.active?'selected':'')+'>Inactivo</option></select></label><button class="btn secondary" onclick="saveProfile(\''+x.user_id+'\',\''+escAttr(x.role)+'\','+(x.active?'true':'false')+')">Guardar</button></div>')+'</div>';
 }
 async function cancelInvite(id){if(!confirm('¿Cancelar esta invitación?'))return;const {error}=await sb.from('access_invitations').update({active:false}).eq('id',id).eq('active',true);if(error)return alert(error.message);await refresh()}
 async function saveProfile(id,oldRole,oldActive){
- const roleValue=document.getElementById('role-'+id).value,activeValue=document.getElementById('active-'+id).value==='true';
+ const selectedPermission=document.getElementById('role-'+id).value,activeValue=document.getElementById('active-'+id).value==='true';
+ const roleValue=selectedPermission==='none'?(functionalByUser[id]?.baseRole||'member'):selectedPermission;
  if(roleValue===oldRole&&activeValue===oldActive)return;
- if(roleValue==='superadmin'&&oldRole!=='superadmin'&&!confirm('¿Promover este usuario a SUPERADMIN? Tendrá acceso administrativo amplio.'))return;
+ if(roleValue==='superadmin'&&oldRole!=='superadmin'&&!confirm('¿Dar permiso de SUPERADMINISTRADOR a este usuario? Tendrá acceso administrativo amplio.'))return;
  if(!activeValue&&oldActive&&!confirm('¿Desactivar este usuario? No podrá operar con su perfil mientras esté inactivo.'))return;
  const {error}=await sb.from('profiles').update({role:roleValue,active:activeValue}).eq('user_id',id);
  if(error)return alert(error.message);await refresh();
