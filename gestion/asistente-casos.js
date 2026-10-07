@@ -30,7 +30,44 @@ const words=s=>norm(s).split(' ').filter(x=>x.length>2);
 function bind(){
  document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{question.value=(question.value?question.value+' ':'')+b.textContent;searchGuidance()});
  searchBtn.onclick=searchGuidance;clearBtn.onclick=()=>{question.value='';results.innerHTML='<div class="empty">Escribe una situación para comenzar.</div>'};
- question.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')searchGuidance()})
+ question.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')searchGuidance()});
+ if(window.wizardBtn)wizardBtn.onclick=startWizard;
+ if(window.freeBtn)freeBtn.onclick=()=>{wizard.style.display='none';freeAsk.style.display='grid';question.focus()}
+}
+let wizardState={risk:null,nna:null,respondent:null,crime:null};
+function startWizard(){wizardState={risk:null,nna:null,respondent:null,crime:null};freeAsk.style.display='none';wizard.style.display='block';renderWizardStep(0)}
+function wizButtons(options,next){
+ return '<div class="actions">'+options.map(o=>'<button class="btn sec" data-v="'+esc(o.v)+'">'+esc(o.t)+'</button>').join('')+'</div>'
+}
+function renderWizardStep(step){
+ const screens=[
+  {q:'¿Hay alguien en riesgo ahora mismo?',opts:[{v:'yes',t:'Sí'},{v:'no',t:'No'},{v:'unknown',t:'No estoy seguro'}],key:'risk'},
+  {q:'¿Hay un niño, niña o adolescente involucrado?',opts:[{v:'yes',t:'Sí'},{v:'no',t:'No'}],key:'nna'},
+  {q:'¿Quién es la persona denunciada?',opts:[{v:'trainer',t:'Entrenador / staff'},{v:'player',t:'Jugador/a'},{v:'parent',t:'Apoderado / familiar'},{v:'leader',t:'Dirigente / voluntario'},{v:'other',t:'Otro'}],key:'respondent'},
+  {q:'¿Los hechos podrían constituir delito?',opts:[{v:'yes',t:'Sí / podría ser'},{v:'no',t:'No aparenta delito'},{v:'unknown',t:'No lo sé'}],key:'crime'}
+ ];
+ if(step>=screens.length){finishWizard();return}
+ const s=screens[step];
+ wizard.innerHTML='<div class="casebox"><b>Paso '+(step+1)+' de '+screens.length+'</b><br>'+esc(s.q)+'</div>'+wizButtons(s.opts,step+1)+'<div class="actions" style="margin-top:10px"><button id="wizCancel" class="btn sec">Cancelar</button></div>';
+ wizard.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{wizardState[s.key]=b.dataset.v;renderWizardStep(step+1)});
+ wizCancel.onclick=()=>{wizard.style.display='none';freeAsk.style.display='grid'}
+}
+function finishWizard(){
+ const parts=[];
+ if(wizardState.risk==='yes')parts.push('Hay riesgo inmediato y debemos proteger a la persona ahora.');
+ else if(wizardState.risk==='unknown')parts.push('No sabemos si existe riesgo inmediato.');
+ if(wizardState.nna==='yes')parts.push('Hay un NNA involucrado.');
+ if(wizardState.respondent==='trainer')parts.push('La persona denunciada es entrenador o integrante del staff.');
+ if(wizardState.respondent==='player')parts.push('La persona denunciada es jugador.');
+ if(wizardState.respondent==='parent')parts.push('La persona denunciada es apoderado o familiar.');
+ if(wizardState.respondent==='leader')parts.push('La persona denunciada es dirigente o voluntario.');
+ if(wizardState.crime==='yes')parts.push('Los hechos podrían constituir delito.');
+ else if(wizardState.crime==='no')parts.push('Los hechos no aparentan delito.');
+ else parts.push('No sabemos si los hechos podrían constituir delito.');
+ question.value=parts.join(' ');
+ wizard.innerHTML='<div class="notice"><b>Ruta preparada.</b><br>'+esc(question.value)+'</div><div class="actions"><button id="wizSearch" class="btn">Ver qué hacer ahora</button><button id="wizRestart" class="btn sec">Volver a empezar</button><button id="wizEdit" class="btn sec">Editar como texto</button></div>';
+ wizSearch.onclick=searchGuidance;wizRestart.onclick=startWizard;wizEdit.onclick=()=>{wizard.style.display='none';freeAsk.style.display='grid';question.focus()};
+ searchGuidance()
 }
 function scoreArticle(a,q){
  const nq=norm(q),qw=words(q);
