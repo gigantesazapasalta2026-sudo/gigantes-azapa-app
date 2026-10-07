@@ -9,7 +9,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 })();
 async function loadData(){
  const [{data:t,error:te},{data:r,error:re},{data:v,error:ve}]=await Promise.all([
-  sb.from('tasks').select('id,code,title,priority,status,progress,owner_name,notes').or('code.like.DS22-%,code.like.DISC-%').order('code'),
+  sb.from('tasks').select('id,code,title,priority,status,progress,owner_name,due_date,notes').or('code.like.DS22-%,code.like.DISC-%').order('code'),
   sb.from('control_item_requirements').select('id,entity_id,code,title,detail,requirement_type,required,sensitive,source,sort_order').eq('entity_type','task').order('sort_order'),
   sb.from('control_requirement_values').select('requirement_id,file_path,file_name,completed_at')
  ]);
@@ -62,10 +62,30 @@ function renderPendingUploads(){
  }).join('')
 }
 function statusClass(s){return s==='done'?'done':s==='blocked'?'blocked':'progress'}
-function statusLabel(s){return s==='done'?'COMPLETADA':s==='blocked'?'BLOQUEADA':s==='waiting'?'PENDIENTE':'EN PROCESO'}
+function statusLabel(s){return s==='done'?'COMPLETADA':s==='blocked'?'BLOQUEADA':s==='waiting'?'PENDIENTE':'EN PROCESO'}function taskStatusOptions(current){
+ const opts=[
+  ['waiting','PENDIENTE'],['in_progress','EN PROCESO'],['blocked','BLOQUEADA'],['done','COMPLETADA']
+ ];
+ return opts.map(([v,l])=>'<option value="'+v+'" '+(v===current?'selected':'')+'>'+l+'</option>').join('')
+}
+function editId(prefix,id){return prefix+'_'+String(id).replaceAll('-','_')}
+async function saveTaskManagement(id){
+ const t=tasks.find(x=>x.id===id);if(!t)return;
+ const owner=document.getElementById(editId('owner',id)).value.trim()||null;
+ const due=document.getElementById(editId('due',id)).value||null;
+ const status=document.getElementById(editId('status',id)).value;
+ const notes=document.getElementById(editId('notes',id)).value.trim()||null;
+ const payload={owner_name:owner,due_date:due,status,notes,updated_at:new Date().toISOString()};
+ const {error}=await sb.from('tasks').update(payload).eq('id',id);
+ if(error)return alert('No se pudo guardar: '+error.message);
+ const state=document.getElementById(editId('saved',id));if(state)state.textContent='✓ Guardado';
+ await loadData()
+}
+
 function renderTask(t){
  const rs=reqs.filter(x=>x.entity_id===t.id);
- return '<div class="task"><div class="row"><div><b>'+esc(t.code)+' · '+esc(t.title)+'</b><div class="meta">'+esc(t.owner_name||'Sin responsable')+' · '+esc(t.notes||'')+'</div></div><span class="badge '+statusClass(t.status)+'">'+statusLabel(t.status)+' · '+Number(t.progress||0)+'%</span></div>'+
+ const manage='<div class="taskEdit"><div><label>Persona a cargo</label><input id="'+editId('owner',t.id)+'" value="'+esc(t.owner_name||'')+'" placeholder="Ej.: Patricia Acuña / Secretaría / Nicole"></div><div><label>Fecha objetivo</label><input id="'+editId('due',t.id)+'" type="date" value="'+esc(t.due_date||'')+'"></div><div><label>Estado</label><select id="'+editId('status',t.id)+'">'+taskStatusOptions(t.status)+'</select></div><div class="wide"><label>Notas / gestión / información que falta</label><textarea id="'+editId('notes',t.id)+'" placeholder="Escribe aquí avances, acuerdos, a quién se pidió el documento, teléfono/correo si corresponde, próxima gestión, etc.">'+esc(t.notes||'')+'</textarea></div><div class="wide actions"><button class="btn" onclick="saveTaskManagement(\''+t.id+'\')">💾 Guardar avance</button><span class="saveState" id="'+editId('saved',t.id)+'"></span></div></div>';
+ return '<div class="task"><div class="row"><div><b>'+esc(t.code)+' · '+esc(t.title)+'</b><div class="meta">'+(t.owner_name?'Responsable: '+esc(t.owner_name):'Sin responsable')+(t.due_date?' · Fecha objetivo: '+new Date(t.due_date+'T12:00:00').toLocaleDateString('es-CL'):'')+'</div></div><span class="badge '+statusClass(t.status)+'">'+statusLabel(t.status)+' · '+Number(t.progress||0)+'%</span></div>'+manage+
  (rs.length?rs.map(r=>{const v=reqValue(r.id),done=r.requirement_type==='file'&&!!v?.file_path;return '<div class="req"><div class="reqHead"><div><b>'+esc(r.required?'REQUERIDO · ':'')+esc(r.title)+'</b><div class="meta">'+esc(r.detail||'')+(r.sensitive?' · 🔒 Documento sensible':'')+'</div></div>'+(r.requirement_type==='file'?'<span class="badge '+(done?'done':'progress')+'">'+(done?'CARGADO':'PENDIENTE')+'</span>':'')+'</div>'+(r.requirement_type==='file'?'<div class="reqActions">'+(done?'<button class="btn sec" onclick="openPendingFile(\''+r.id+'\')">Ver</button>':'')+'<button class="btn sec" onclick="scrollPending();setTimeout(()=>pickPendingFile(\''+r.id+'\'),250)">📎 '+(done?'Reemplazar':'Cargar archivo')+'</button></div>':'')+'</div>'}).join(''):'')+
  '<div class="actions">'+(t.code==='DS22-10'?'<a class="btn sec" href="proteccion.html">Subir respaldo de ratificación</a>':'')+(t.code==='DISC-01'?'<a class="btn sec" href="disciplina.html">Registrar integrantes</a>':'')+(t.code==='DISC-02'?'<a class="btn sec" href="disciplina.html">Abrir reglamento / documentos</a>':'')+(t.code==='DS22-08'?'<a class="btn sec" href="../ds22-comunidad.html">Ver / compartir guía DS22</a>':'')+(t.code==='DS22-12'?'<a class="btn sec" href="../proteccion.html">Revisar versión pública</a>':'')+'</div></div>'
 }
