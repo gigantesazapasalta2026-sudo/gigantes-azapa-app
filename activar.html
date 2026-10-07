@@ -7,6 +7,7 @@
 </main>
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
 const queryParams=new URLSearchParams(location.search);
+const prefilledEmail=(queryParams.get('email')||'').trim().toLowerCase();
 const hashParams=new URLSearchParams(location.hash.startsWith('#')?location.hash.slice(1):'');
 const recoveryMode=queryParams.get('recovery')==='1'||hashParams.get('type')==='recovery';
 const authError=hashParams.get('error_description')||queryParams.get('error_description')||'';
@@ -22,6 +23,7 @@ if(recoveryMode){pageTitle.textContent='Crear nueva contraseña';pageSub.textCon
 
 const loading=document.getElementById('loading'),request=document.getElementById('request'),passwordBox=document.getElementById('passwordBox');
 const withoutPass=document.getElementById('withoutPass');
+if(prefilledEmail){const input=document.getElementById('email');if(input)input.value=prefilledEmail;}
 const sendLinkBtn=document.getElementById('sendLink');
 const emailInput=document.getElementById('email');
 const requestMsgEl=document.getElementById('requestMsg');
