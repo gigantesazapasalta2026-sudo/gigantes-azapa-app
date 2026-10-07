@@ -1,6 +1,6 @@
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
 const params=new URLSearchParams(location.search),reportId=params.get('id');
-let report=null,user=null,partiesRows=[],measureRows=[],eventRows=[],referralRows=[],dispatchChannelRows=[],dispatchRows=[],reportDocRows=[];
+let report=null,user=null,partiesRows=[],measureRows=[],eventRows=[],referralRows=[],dispatchChannelRows=[],dispatchRows=[],reportDocRows=[],initialDocApplied=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const jsq=s=>String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');
 (async()=>{
@@ -27,7 +27,13 @@ async function refresh(){
  report=r.data;partiesRows=p.data||[];measureRows=m.data||[];eventRows=e.data||[];referralRows=rf.data||[];
  dispatchChannelRows=ch.data||[];dispatchRows=ds.data||[];reportDocRows=rd.data||[];
  if(!report.case_code)await initializeCase();
- render()
+ render();
+ if(window.caseAssistant)caseAssistant.href='asistente-casos.html?report='+encodeURIComponent(reportId);
+ if(!initialDocApplied&&params.get('doc')){
+   const wanted=params.get('doc');
+   if([...docType.options].some(o=>o.value===wanted)){docType.value=wanted;prepareSmartDocument()}
+   initialDocApplied=true;
+ }
 }
 async function initializeCase(){
  const year=new Date(report.created_at).getFullYear();
