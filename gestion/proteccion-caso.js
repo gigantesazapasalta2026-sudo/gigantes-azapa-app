@@ -2,6 +2,7 @@ const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHAB
 const params=new URLSearchParams(location.search),reportId=params.get('id');
 let report=null,user=null,partiesRows=[],measureRows=[],eventRows=[],referralRows=[],dispatchChannelRows=[],dispatchRows=[],reportDocRows=[];
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const jsq=s=>String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');
 (async()=>{
  const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next='+encodeURIComponent('proteccion-caso.html?id='+reportId);return}
  user=session.user;
