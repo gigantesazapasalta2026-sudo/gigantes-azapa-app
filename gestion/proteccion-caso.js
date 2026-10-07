@@ -121,8 +121,34 @@ referDiscipline.onclick=async()=>{
  if(!['protective_measure','disciplinary_review','both','other'].includes(purpose))return alert('Motivo no válido.');
  const summary=prompt('Resumen que recibirá la Comisión');if(!summary)return;
  const requested=prompt('Medida o decisión solicitada (opcional)')||null;
- const due=purpose==='protective_measure'||purpose==='both'?new Date(Date.now()+48*3600000):null;
- const ins=await sb.from('protection_discipline_referrals').insert({report_id:reportId,purpose,summary_for_commission:summary.trim(),requested_measure:requested,due_at:due?due.toISOString():null,sent_by:user.id}).select().single();
- if(ins.error)return alert(ins.error.message);
- await addEvent('discipline_referral_prepared','Derivación a Comisión preparada: '+summary.trim());await refresh()
+ const year=new Date().getFullYear();
+ const q=await sb.from('discipline_cases').select('case_code').like('case_code','DISC-'+year+'-%');
+ const seq=String((q.data||[]).length+1).padStart(3,'0'),code='DISC-'+year+'-'+seq;
+ const dc=await sb.from('discipline_cases').insert({
+   protection_report_id:reportId,
+   case_code:code,
+   title:'Derivación DS22 · '+categoryLabel(report.category),
+   category:report.category,
+   summary:summary.trim(),
+   due_at:(purpose==='protective_measure'||purpose==='both')?new Date(Date.now()+48*3600000).toISOString():null,
+   created_by:user.id
+ }).select('id,case_code').single();
+ if(dc.error)return alert('No se pudo crear el expediente disciplinario: '+dc.error.message);
+ const due=(purpose==='protective_measure'||purpose==='both')?new Date(Date.now()+48*3600000):null;
+ const rf=await sb.from('protection_discipline_referrals').insert({
+   report_id:reportId,
+   discipline_case_id:dc.data.id,
+   purpose,
+   summary_for_commission:summary.trim(),
+   requested_measure:requested,
+   due_at:due?due.toISOString():null,
+   status:'sent',
+   sent_at:new Date().toISOString(),
+   sent_by:user.id
+ }).select().single();
+ if(rf.error)return alert('El expediente se creó, pero no se pudo registrar la derivación: '+rf.error.message);
+ await sb.from('protection_reports').update({status:'action',discipline_referred_at:new Date().toISOString(),last_action_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',reportId);
+ await addEvent('discipline_referral_sent','Derivación enviada a Comisión como '+dc.data.case_code+'.');
+ alert('Derivación enviada correctamente: '+dc.data.case_code);
+ await refresh()
 };
