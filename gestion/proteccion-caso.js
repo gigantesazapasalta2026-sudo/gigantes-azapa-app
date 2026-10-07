@@ -103,6 +103,100 @@ function renderReferral(){
  const x=referralRows[0];
  disciplineState.innerHTML=x?'<b>'+esc(x.status.toUpperCase())+'</b> · '+esc(x.summary_for_commission)+(x.due_at?'<br>Plazo: '+new Date(x.due_at).toLocaleString('es-CL'):''):'Sin derivación registrada.'
 }
+function renderDispatch(){
+ dispatchChannel.innerHTML='<option value="">Selecciona un canal</option>'+dispatchChannelRows.map(x=>'<option value="'+esc(x.code)+'">'+esc(x.institution)+' · '+esc(x.purpose)+'</option>').join('');
+ dispatchDocument.innerHTML='<option value="">Sin documento archivado</option>'+reportDocRows.map(d=>'<option value="'+d.id+'">'+esc(d.doc_name)+' · '+esc(d.original_name||'PDF')+'</option>').join('');
+ if(!dispatchSubject.value)dispatchSubject.value='Expediente '+(report.case_code||report.id);
+ dispatchList.innerHTML=dispatchRows.length?dispatchRows.map(d=>{
+  const ch=dispatchChannelRows.find(x=>x.code===d.channel_code);
+  return '<div class="party"><b>'+esc(ch?.institution||d.channel_code)+'</b> <span class="badge">'+esc(d.status)+'</span><div class="meta">'+
+   'Preparado: '+new Date(d.prepared_at).toLocaleString('es-CL')+
+   (d.channel_opened_at?'<br>Canal abierto: '+new Date(d.channel_opened_at).toLocaleString('es-CL'):'')+
+   (d.sent_at?'<br>Marcado enviado: '+new Date(d.sent_at).toLocaleString('es-CL'):'')+
+   (d.acknowledged_at?'<br>Acuse: '+new Date(d.acknowledged_at).toLocaleString('es-CL'):'')+
+   (d.tracking_ref?'<br>Folio/RUC/Ref.: '+esc(d.tracking_ref):'')+
+   (d.receipt_name?'<br>Comprobante: '+esc(d.receipt_name):'')+
+   '</div><div class="actions">'+
+   (!d.sent_at?'<button class="btn sec" onclick="markDispatchSent(\''+d.id+'\')">Marcar enviado</button>':'')+
+   '<button class="btn sec" onclick="registerDispatchReceipt(\''+d.id+'\')">Registrar folio/comprobante</button>'+
+   (d.receipt_storage_path?'<button class="btn sec" onclick="openDispatchReceipt(\''+jsq(d.receipt_storage_path)+'\')">Abrir comprobante</button>':'')+
+   '<input id="receipt_'+d.id+'" type="file" hidden accept=".pdf,.jpg,.jpeg,.png,.webp" onchange="uploadDispatchReceipt(\''+d.id+'\',this)">'+
+   '</div></div>'
+ }).join(''):'<div class="meta">Aún no hay despachos preparados.</div>';
+}
+
+async function prepareDispatchRecord(){
+ const channel=dispatchChannel.value;if(!channel)return alert('Selecciona un canal.');
+ const subject=dispatchSubject.value.trim()||('Expediente '+(report.case_code||report.id));
+ const message=dispatchMessage.value.trim()||null;
+ const docId=dispatchDocument.value||null;
+ const ch=dispatchChannelRows.find(x=>x.code===channel);
+ const ins=await sb.from('protection_report_dispatches').insert({
+  report_id:reportId,channel_code:channel,status:'prepared',
+  recipient_name:ch?.institution||null,subject,message_body:message,
+  document_id:docId,sent_by:user.id,updated_at:new Date().toISOString()
+ }).select().single();
+ if(ins.error)return alert('No se pudo preparar el envío: '+ins.error.message);
+ await addEvent('dispatch_prepared','Envío preparado para '+(ch?.institution||channel)+'.');
+ await refresh();
+ return ins.data;
+}
+
+async function openOfficialDispatch(){
+ const channel=dispatchChannel.value;if(!channel)return alert('Selecciona un canal.');
+ const ch=dispatchChannelRows.find(x=>x.code===channel);if(!ch)return alert('Canal no encontrado.');
+ let row=dispatchRows.find(x=>x.channel_code===channel&&x.status==='prepared'&&!x.sent_at);
+ if(!row)row=await prepareDispatchRecord();
+ if(!row)return;
+ if(ch.official_url){
+  window.open(ch.official_url,'_blank','noopener');
+  const now=new Date().toISOString();
+  await sb.from('protection_report_dispatches').update({channel_opened_at:now,updated_at:now}).eq('id',row.id);
+  await addEvent('dispatch_channel_opened','Canal oficial abierto: '+ch.institution+'. Esto no acredita envío.');
+  await refresh()
+ }else if(ch.email){
+  location.href='mailto:'+encodeURIComponent(ch.email)+'?subject='+encodeURIComponent(row.subject||'')+'&body='+encodeURIComponent(row.message_body||'');
+ }else alert('Este canal no tiene URL ni correo verificado. Revisa las instrucciones del canal.')
+}
+
+async function markDispatchSent(id){
+ if(!confirm('¿Confirmas que el envío o presentación ya fue realizado? Esto aún no reemplaza el acuse/comprobante.'))return;
+ const now=new Date().toISOString();
+ const r=await sb.from('protection_report_dispatches').update({status:'sent',sent_at:now,sent_by:user.id,updated_at:now}).eq('id',id);
+ if(r.error)return alert(r.error.message);
+ await addEvent('dispatch_sent','Despacho marcado como enviado/presentado.');
+ await refresh()
+}
+
+function registerDispatchReceipt(id){
+ const row=dispatchRows.find(x=>x.id===id);
+ const ref=prompt('Ingresa RUC, folio, número de ingreso o referencia del comprobante',row?.tracking_ref||'');
+ if(ref===null)return;
+ document.getElementById('receipt_'+id)?.click();
+ window.__dispatchReceiptPending={id,ref:ref.trim()||null};
+}
+
+async function uploadDispatchReceipt(id,input){
+ const file=input.files?.[0];if(!file)return;
+ const ref=(window.__dispatchReceiptPending?.id===id)?window.__dispatchReceiptPending.ref:null;
+ const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=reportId+'/dispatch/'+id+'/'+Date.now()+'-'+safe;
+ const up=await sb.storage.from('protection-reports-private').upload(path,file,{upsert:false});
+ if(up.error)return alert('No se pudo subir el comprobante: '+up.error.message);
+ const now=new Date().toISOString();
+ const r=await sb.from('protection_report_dispatches').update({
+   status:'acknowledged',tracking_ref:ref,receipt_storage_path:path,receipt_name:file.name,
+   acknowledged_at:now,updated_at:now
+ }).eq('id',id);
+ if(r.error)return alert(r.error.message);
+ await addEvent('dispatch_acknowledged','Acuse/comprobante registrado'+(ref?' · Ref. '+ref:'')+'.');
+ window.__dispatchReceiptPending=null;await refresh()
+}
+
+async function openDispatchReceipt(path){
+ const r=await sb.storage.from('protection-reports-private').createSignedUrl(path,600);
+ if(r.error||!r.data?.signedUrl)return alert(r.error?.message||'No se pudo abrir el comprobante.');
+ window.open(r.data.signedUrl,'_blank')
+}
 function firstParty(role){return partiesRows.find(x=>x.party_role===role)}
 function fmtDate(v){return v?new Date(v).toLocaleString('es-CL'):'[PENDIENTE]'}
 function partyLine(p){return p?(p.full_name+(p.rut_passport?' · RUT/Doc: '+p.rut_passport:'')+(p.club_role?' · Rol: '+p.club_role:'')+(p.team_category?' · Categoría: '+p.team_category:'')):'[NO REGISTRADO]'}
@@ -214,3 +308,4 @@ referDiscipline.onclick=async()=>{
  await refresh()
 };
 prepareDoc.onclick=prepareSmartDocument;downloadDoc.onclick=downloadSmartDocument;archiveDoc.onclick=archiveSmartDocument;shareDoc.onclick=shareSmartDocument;
+prepareDispatch.onclick=prepareDispatchRecord;openOfficialChannel.onclick=openOfficialDispatch;
