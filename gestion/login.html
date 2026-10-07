@@ -6,7 +6,7 @@
 <body><main class="box"><div class="brand"><img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg" alt=""><div><h1>Gigantes de Azapa</h1><p>Acceso seguro · Mi Gigantes</p></div></div>
 <div id="loading" class="notice">Verificando sesión segura…</div>
 <section id="login" class="hide"><div class="notice"><b>Mi Gigantes</b><br>Acceso para jugadores adultos, apoderados, entrenadores y Directiva. Los niños ingresan desde la cuenta de su apoderado.</div>
-<a class="first-access" href="../activar.html">✨ Primera vez · Activar mi acceso<small>Si estás en la base del club y todavía no has creado tu contraseña, comienza aquí.</small></a>
+<a class="first-access" id="firstAccess" href="../activar.html">✨ Primera vez · Activar mi acceso<small>Si estás en la base del club y todavía no has creado tu contraseña, comienza aquí.</small></a>
 <div class="divider">YA TENGO ACCESO</div>
 <label>Correo electrónico</label><input id="email" type="email" autocomplete="email" placeholder="correo@ejemplo.cl">
 <label>Contraseña</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••">
@@ -22,7 +22,7 @@
 const requestedNext=new URLSearchParams(location.search).get('next')||'index.html';
 const nextPath=/^(?!\/\/)(?![a-z][a-z0-9+.-]*:)[a-zA-Z0-9_./?-]+$/.test(requestedNext)?requestedNext:'index.html';
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
-const loading=document.getElementById('loading'),login=document.getElementById('login'),msg=document.getElementById('msg'),repair=document.getElementById('repair');
+const loading=document.getElementById('loading'),login=document.getElementById('login'),msg=document.getElementById('msg'),repair=document.getElementById('repair'),firstAccess=document.getElementById('firstAccess');
 const switchUser=new URLSearchParams(location.search).get('switch')==='1';
 async function showLogin(){loading.classList.add('hide');login.classList.remove('hide')}
 function clearBrowserAuth(){
@@ -58,7 +58,23 @@ signin.onclick=async()=>{
   if(!user||verifyError){await sb.auth.signOut({scope:'local'}).catch(()=>{});msg.textContent='La sesión no pudo validarse. Intenta nuevamente.';return}
   {const u=new URL(nextPath,location.href);u.searchParams.set('_fresh',Date.now().toString());location.replace(u.href)}
 };
-magic.onclick=async()=>{msg.textContent='Enviando enlace…';const {error}=await sb.auth.signInWithOtp({email:email.value.trim(),options:{emailRedirectTo:new URL(nextPath,location.href).href,shouldCreateUser:false}});msg.textContent=error?'No fue posible enviar el enlace: '+error.message:'Revisa tu correo. Te enviamos un enlace seguro. Si todavía no activaste tu cuenta, utiliza la opción “Activar mi acceso”.'};
+firstAccess.onclick=(ev)=>{const e=email.value.trim().toLowerCase();if(e){ev.preventDefault();location.href='../activar.html?email='+encodeURIComponent(e)}};
+magic.onclick=async()=>{
+  const e=email.value.trim().toLowerCase();
+  if(!e){msg.textContent='Escribe tu correo electrónico.';email.focus();return}
+  msg.textContent='Enviando enlace…';
+  const {error}=await sb.auth.signInWithOtp({email:e,options:{emailRedirectTo:new URL(nextPath,location.href).href,shouldCreateUser:false}});
+  if(error){
+    if(error.message&&/Signups not allowed for otp/i.test(error.message)){
+      msg.textContent='Este correo todavía no tiene una cuenta activada. Te llevamos a la activación inicial…';
+      setTimeout(()=>location.href='../activar.html?email='+encodeURIComponent(e),650);
+      return;
+    }
+    msg.textContent='No fue posible enviar el enlace. Intenta nuevamente o usa “Primera vez · Activar mi acceso”.';
+    return;
+  }
+  msg.textContent='Revisa tu correo. Te enviamos un enlace seguro.';
+};
 repair.onclick=async()=>{
   repair.disabled=true;msg.textContent='Reparando sesión local…';
   try{await sb.auth.signOut({scope:'local'});}catch{}
