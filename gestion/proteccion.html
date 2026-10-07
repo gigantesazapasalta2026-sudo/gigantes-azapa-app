@@ -21,8 +21,8 @@
 <div class="panel help"><h2>Canal institucional</h2><p>Mientras se completa la designación formal de RI, las consultas institucionales pueden recibirse en <a href="mailto:soporte@gigantesdeazapa.cl">soporte@gigantesdeazapa.cl</a>. Los expedientes, antecedentes de menores y documentación sensible deben mantenerse en espacios privados.</p></div>
 </section></main><div id="reqModal" class="modal" onclick="if(event.target===this)closeReq()"><div class="dialog"><div class="dialogHead"><div><h2 id="reqTitle">Antecedentes</h2><div class="meta" id="reqSub"></div></div><button class="close" onclick="closeReq()">×</button></div><div class="dialogBody" id="reqBody"></div></div></div>
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
-const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let rows=[],assignRows=[],roleRows=[],reqs=[],reqVals=[],protectionReportRows=[],currentRole=null,currentUserId=null;
-(async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=proteccion.html';return}currentUserId=session.user.id;const {data:p}=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();currentRole=p?.role||null;if(!p||!p.active||!['superadmin','board','treasury','coach','commission'].includes(p.role)){loading.textContent='Este módulo requiere un rol interno autorizado.';return}loading.classList.add('hide');app.classList.remove('hide');if(['superadmin','board'].includes(currentRole))reportsPanel.classList.remove('hide');await refresh()})();
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let rows=[],assignRows=[],roleRows=[],reqs=[],reqVals=[],protectionReportRows=[],currentRole=null,currentUserId=null,currentUserEmail=null,protectionUnlocked=false;
+(async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=proteccion.html';return}currentUserId=session.user.id;currentUserEmail=session.user.email||null;const {data:p}=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();currentRole=p?.role||null;if(!p||!p.active||!['superadmin','board','treasury','coach','commission'].includes(p.role)){loading.textContent='Este módulo requiere un rol interno autorizado.';return}loading.classList.add('hide');app.classList.remove('hide');if(['superadmin','board'].includes(currentRole)){reportsPanel.classList.remove('hide');protectionReports.innerHTML='<div class="notice"><b>Acceso protegido.</b> Para leer denuncias debes volver a validar tu clave de acceso.<br><button class="btn" style="margin-top:8px" onclick="unlockProtectionReports()">Desbloquear denuncias</button></div>'}await refresh();if(location.hash==='#solicitudes-confidenciales'&&['superadmin','board'].includes(currentRole))setTimeout(()=>unlockProtectionReports(),300)})();
 async function refresh(){
  const {data:pr}=await sb.from('projects').select('id').eq('code','PROT2026').maybeSingle();if(!pr){tasks.textContent='Proyecto de protección no encontrado.';return}
  const [tr,cr,rr,rq,rv]=await Promise.all([
@@ -35,7 +35,7 @@ async function refresh(){
  if(tr.error){tasks.textContent=tr.error.message;return}
  if(cr.error){assignments.textContent=cr.error.message;return}
  rows=tr.data||[];assignRows=cr.data||[];roleRows=rr.data||[];reqs=rq.data||[];reqVals=rv.data||[];
- if(['superadmin','board'].includes(currentRole)){
+ if(protectionUnlocked&&['superadmin','board'].includes(currentRole)){
    const prr=await sb.from('protection_reports').select('*').order('created_at',{ascending:false});
    protectionReportRows=prr.data||[];
  }
@@ -48,6 +48,20 @@ function render(){
  riTitular.textContent=tit?.responsible_name||'PENDIENTE';riSuplente.textContent=sup?.responsible_name||'PENDIENTE';
  assignments.innerHTML=assignRows.map(x=>'<div class="assign"><div><div class="title">'+esc(x.title)+'</div><div class="meta">'+esc(x.code)+' · '+(x.status==='done'?'✓ Registrado':'Pendiente')+(x.assigned_email?'<br>'+esc(x.assigned_email):'')+'</div></div><input id="name_'+x.id+'" value="'+esc(x.assigned_name||'')+'" placeholder="Nombre completo del responsable"><div><button class="btn" onclick="saveResponsible(\''+x.id+'\')">Guardar y completar</button> '+(x.assigned_name?'<button class="btn secondary" onclick="clearResponsible(\''+x.id+'\')">Quitar</button>':'')+'</div></div>').join('')||'<div class="meta">No se encontraron los ítems DS22 de designación.</div>';
  tasks.innerHTML=rows.map(x=>{const yes=Number(x.progress)>=100,rp=reqProgress(x.id);return '<div class="task '+(yes?'done':'')+'"><input type="checkbox" '+(yes?'checked':'')+' onchange="toggleTask(\''+x.id+'\',this.checked,\''+jsq(x.title)+'\')"><div><div class="title">'+esc(x.title)+'</div><div class="meta">'+esc(x.code||'')+' · Responsable: '+esc(x.owner_name||'Por definir')+(x.notes?'<br>'+esc(x.notes):'')+'</div>'+(rp.total?'<button class="reqBtn '+(rp.done===rp.total?'done':'')+'" onclick="openReq(\''+x.id+'\',\''+jsq(x.title)+'\')">📎 '+rp.done+'/'+rp.total+' antecedentes</button>':'')+'<div class="progress"><span style="width:'+Math.max(0,Math.min(100,Number(x.progress||0)))+'%"></span></div></div><span class="badge '+(yes?'doneBadge':'')+'">'+esc(x.status||'')+'</span><span class="badge">'+esc(x.priority||'')+'</span></div>'}).join('')
+}
+async function unlockProtectionReports(){
+ if(!['superadmin','board'].includes(currentRole)){alert('No tienes permiso para leer denuncias confidenciales.');return}
+ const recent=Number(sessionStorage.getItem('gigantes-protection-reauth')||0);
+ if(Date.now()-recent>5*60*1000){
+   const password=prompt('Acceso protegido. Ingresa la contraseña de tu cuenta para leer las denuncias confidenciales.');
+   if(!password)return;
+   const {error}=await sb.auth.signInWithPassword({email:currentUserEmail,password});
+   if(error){alert('Clave incorrecta o no fue posible validar el acceso.');return}
+   sessionStorage.setItem('gigantes-protection-reauth',String(Date.now()));
+ }
+ protectionUnlocked=true;
+ await refresh();
+ reportsPanel.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function categoryLabel(v){return ({convivencia:'Convivencia / conflicto',maltrato_acoso:'Maltrato o acoso',discriminacion:'Discriminación',seguridad_nna:'Seguridad NNA',privacidad:'Privacidad',otro:'Otra situación'})[v]||v}
 function statusLabel(v){return ({new:'NUEVA',reviewing:'EN REVISIÓN',action:'PLAN DE ACCIÓN',closed:'CERRADA'})[v]||v}
