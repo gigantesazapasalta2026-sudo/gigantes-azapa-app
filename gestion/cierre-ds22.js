@@ -19,6 +19,15 @@ async function loadData(){
 function reqValue(id){return vals.find(v=>v.requirement_id===id)||null}
 function reqDone(r){const v=reqValue(r.id);return r.requirement_type==='file'&&!!v?.file_path}
 function taskForReq(r){return tasks.find(t=>t.id===r.entity_id)}
+function requirementByCode(taskId,code){return reqs.find(r=>r.entity_id===taskId&&r.code===code)||null}
+function ds22V11Action(t){
+ if(t.code!=='DS22-12')return '';
+ const r=requirementByCode(t.id,'REG_INT_V11');if(!r)return '';
+ const done=reqDone(r);
+ return done
+  ? '<button class="btn sec" onclick="openPendingFile(\''+r.id+'\')">👁 Ver Reglamento V1.1</button><button class="btn sec" onclick="scrollPending();setTimeout(()=>pickPendingFile(\''+r.id+'\'),250)">📎 Reemplazar PDF</button>'
+  : '<button class="btn" onclick="scrollPending();setTimeout(()=>pickPendingFile(\''+r.id+'\'),250)">📎 Subir Reglamento V1.1 PDF</button>';
+}
 function pendingFileRequirements(){return reqs.filter(r=>r.requirement_type==='file'&&r.required!==false&&!reqDone(r))}
 function scrollPending(){document.getElementById('pendingUploadsCard')?.scrollIntoView({behavior:'smooth',block:'start'})}
 function fileInputId(id){return 'pending_file_'+String(id).replaceAll('-','_')}
@@ -87,7 +96,7 @@ function renderTask(t){
  const manage='<div class="taskEdit"><div><label>Persona a cargo</label><input id="'+editId('owner',t.id)+'" value="'+esc(t.owner_name||'')+'" placeholder="Ej.: Patricia Acuña / Secretaría / Nicole"></div><div><label>Fecha objetivo</label><input id="'+editId('due',t.id)+'" type="date" value="'+esc(t.due_date||'')+'"></div><div><label>Estado</label><select id="'+editId('status',t.id)+'">'+taskStatusOptions(t.status)+'</select></div><div class="wide"><label>Notas / gestión / información que falta</label><textarea id="'+editId('notes',t.id)+'" placeholder="Escribe aquí avances, acuerdos, a quién se pidió el documento, teléfono/correo si corresponde, próxima gestión, etc.">'+esc(t.notes||'')+'</textarea></div><div class="wide actions"><button class="btn" onclick="saveTaskManagement(\''+t.id+'\')">💾 Guardar avance</button><span class="saveState" id="'+editId('saved',t.id)+'"></span></div></div>';
  return '<div class="task"><div class="row"><div><b>'+esc(t.code)+' · '+esc(t.title)+'</b><div class="meta">'+(t.owner_name?'Responsable: '+esc(t.owner_name):'Sin responsable')+(t.due_date?' · Fecha objetivo: '+new Date(t.due_date+'T12:00:00').toLocaleDateString('es-CL'):'')+'</div></div><span class="badge '+statusClass(t.status)+'">'+statusLabel(t.status)+' · '+Number(t.progress||0)+'%</span></div>'+manage+
  (rs.length?rs.map(r=>{const v=reqValue(r.id),done=r.requirement_type==='file'&&!!v?.file_path;return '<div class="req"><div class="reqHead"><div><b>'+esc(r.required?'REQUERIDO · ':'')+esc(r.title)+'</b><div class="meta">'+esc(r.detail||'')+(r.sensitive?' · 🔒 Documento sensible':'')+'</div></div>'+(r.requirement_type==='file'?'<span class="badge '+(done?'done':'progress')+'">'+(done?'CARGADO':'PENDIENTE')+'</span>':'')+'</div>'+(r.requirement_type==='file'?'<div class="reqActions">'+(done?'<button class="btn sec" onclick="openPendingFile(\''+r.id+'\')">Ver</button>':'')+'<button class="btn sec" onclick="scrollPending();setTimeout(()=>pickPendingFile(\''+r.id+'\'),250)">📎 '+(done?'Reemplazar':'Cargar archivo')+'</button></div>':'')+'</div>'}).join(''):'')+
- '<div class="actions">'+(t.code==='DS22-10'?'<a class="btn sec" href="proteccion.html">Subir respaldo de ratificación</a>':'')+(t.code==='DISC-01'?'<a class="btn sec" href="disciplina.html">Registrar integrantes</a>':'')+(t.code==='DISC-02'?'<a class="btn sec" href="disciplina.html">Abrir reglamento / documentos</a>':'')+(t.code==='DS22-08'?'<a class="btn sec" href="../ds22-comunidad.html">Ver / compartir guía DS22</a>':'')+(t.code==='DS22-12'?'<a class="btn sec" href="../proteccion.html">Revisar versión pública</a>':'')+'</div></div>'
+ '<div class="actions">'+(t.code==='DS22-10'?'<a class="btn sec" href="proteccion.html">Subir respaldo de ratificación</a>':'')+(t.code==='DISC-01'?'<a class="btn sec" href="disciplina.html">Registrar integrantes</a>':'')+(t.code==='DISC-02'?'<a class="btn sec" href="disciplina.html">Abrir reglamento / documentos</a>':'')+(t.code==='DS22-08'?'<a class="btn sec" href="../ds22-comunidad.html">Ver / compartir guía DS22</a>':'')+ds22V11Action(t)+'</div></div>'
 }
 function render(){
  const d=tasks.filter(t=>t.code.startsWith('DS22-')),x=tasks.filter(t=>t.code.startsWith('DISC-'));
