@@ -161,10 +161,14 @@ async function uploadDoc(type,file){
  if(type==='identity_card'){
    const ok=confirm('Protección de datos: la cédula se usará sólo para fines de rugby, competencias y viajes. El club no necesita el número de serie/documento. Antes de continuar, verifica que ese número esté cubierto o difuminado si aparece en la imagen. La copia digital no reemplaza la cédula física vigente.\n\n¿Deseas continuar?');
    if(!ok)return;
-   const v=prompt('Fecha de vencimiento de la cédula (AAAA-MM-DD):','');
+   const v=prompt('Fecha de vencimiento de la cédula (DD/MM/AAAA):','');
    if(v===null)return;
-   if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(v)){alert('Ingresa la fecha con formato AAAA-MM-DD.');return}
-   expires_at=v;
+   const m=v.trim().match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
+   if(!m){alert('Ingresa la fecha con formato chileno DD/MM/AAAA. Ejemplo: 25/11/2028.');return}
+   const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]);
+   const dt=new Date(year,month-1,day);
+   if(dt.getFullYear()!==year||dt.getMonth()!==month-1||dt.getDate()!==day){alert('La fecha ingresada no es válida. Usa DD/MM/AAAA.');return}
+   expires_at=String(year)+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
  }
  if(type==='insurance'){
    const v=prompt('Fecha de vencimiento del seguro, si aparece en el documento (AAAA-MM-DD). Puedes dejarla vacía si no corresponde.','');
