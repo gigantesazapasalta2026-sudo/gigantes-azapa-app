@@ -147,6 +147,7 @@ referDiscipline.onclick=async()=>{
    sent_by:user.id
  }).select().single();
  if(rf.error)return alert('El expediente se creó, pero no se pudo registrar la derivación: '+rf.error.message);
+ await sb.from('protection_measures').update({discipline_case_id:dc.data.id,updated_at:new Date().toISOString()}).eq('report_id',reportId).eq('status','requested');
  await sb.from('protection_reports').update({status:'action',discipline_referred_at:new Date().toISOString(),last_action_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',reportId);
  await addEvent('discipline_referral_sent','Derivación enviada a Comisión como '+dc.data.case_code+'.');
  alert('Derivación enviada correctamente: '+dc.data.case_code);
