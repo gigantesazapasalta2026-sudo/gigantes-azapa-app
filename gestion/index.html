@@ -409,12 +409,30 @@ render();
   window.GIGANTES_CAN_PROTECTION=canProtection;
   const protectionBtn=document.getElementById('protectionAlertBtn');
   const protectionCount=document.getElementById('protectionAlertCount');
-  if(protectionBtn&&['superadmin','board'].includes(profile.role)){
-    const {data:openReports,error:openReportsError}=await client.from('protection_reports').select('id,status').neq('status','closed');
-    if(!openReportsError&&(openReports||[]).length){
-      protectionBtn.classList.add('show','pulse');
-      protectionCount.textContent='('+(openReports||[]).length+')';
-      protectionBtn.href='proteccion.html#solicitudes-confidenciales';
+  if(protectionBtn&&canProtection){
+    const [{data:openReports,error:openReportsError},{data:pendingMeasures}]=await Promise.all([
+      client.from('protection_reports').select('id,case_code,status,risk_level,nna_involved,crime_assessment,reporter_contact_due_at,reporter_contacted_at,guardian_contact_due_at,guardian_contacted_at,respondent_contact_due_at,respondent_contacted_at').neq('status','closed'),
+      client.from('protection_measures').select('id,decision_due_at,status').eq('status','requested')
+    ]);
+    if(!openReportsError){
+      const now=Date.now(),soonWindow=6*60*60*1000;
+      const deadlines=[];
+      (openReports||[]).forEach(r=>{
+        if(r.reporter_contact_due_at&&!r.reporter_contacted_at)deadlines.push(new Date(r.reporter_contact_due_at).getTime());
+        if(r.nna_involved&&r.guardian_contact_due_at&&!r.guardian_contacted_at)deadlines.push(new Date(r.guardian_contact_due_at).getTime());
+        if(r.crime_assessment==='no_apparent_crime'&&r.respondent_contact_due_at&&!r.respondent_contacted_at)deadlines.push(new Date(r.respondent_contact_due_at).getTime());
+      });
+      (pendingMeasures||[]).forEach(m=>{if(m.decision_due_at)deadlines.push(new Date(m.decision_due_at).getTime())});
+      const overdue=deadlines.filter(t=>Number.isFinite(t)&&t<now).length;
+      const soon=deadlines.filter(t=>Number.isFinite(t)&&t>=now&&t-now<=soonWindow).length;
+      if((openReports||[]).length||overdue||soon){
+        protectionBtn.classList.add('show');
+        if(overdue){protectionBtn.classList.add('pulse');protectionBtn.firstChild.nodeValue='🚨 DS22 · '+overdue+' vencido'+(overdue===1?'':'s')+' ';}
+        else if(soon){protectionBtn.classList.add('pulse');protectionBtn.firstChild.nodeValue='⏱ DS22 · '+soon+' por vencer ';}
+        else protectionBtn.firstChild.nodeValue='🛡️ DS22 · '+(openReports||[]).length+' caso'+((openReports||[]).length===1?'':'s')+' ';
+        protectionCount.textContent='';
+        protectionBtn.href='proteccion.html#solicitudes-confidenciales';
+      }
     }
   }
   render();
