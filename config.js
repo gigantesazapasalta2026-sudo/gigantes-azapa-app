@@ -38,3 +38,7 @@ window.GIGANTES_AUTH_STORAGE={
 
 // Member validation shortcut.
 (()=>{const own=document.currentScript;if(!own?.src)return;const center=new URL('gestion/index.html',own.src);if(location.origin!==center.origin||location.pathname!==center.pathname)return;const add=()=>{const menu=document.querySelector('.more-panel');if(!menu||menu.querySelector('a[href="validacion.html"]'))return;const a=document.createElement('a');a.href='validacion.html';a.textContent='✅ Centro de Validación';const before=menu.querySelector('a[href="familias.html"]');before?menu.insertBefore(a,before):menu.appendChild(a)};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add,{once:true});else add();})();
+
+
+// Public photo hero: reuse real club album photos on internal public pages.
+(()=>{const own=document.currentScript;if(!own?.src)return;const root=new URL('./',own.src);const add=()=>{if(!document.querySelector('link[data-gigantes-hero]')){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL('club-hero.css?v=20261007-1',root).href;l.dataset.gigantesHero='1';document.head.appendChild(l)}if(!document.querySelector('script[data-gigantes-hero]')){const s=document.createElement('script');s.src=new URL('club-hero.js?v=20261007-1',root).href;s.defer=true;s.dataset.gigantesHero='1';document.head.appendChild(s)}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add,{once:true});else add();})();
