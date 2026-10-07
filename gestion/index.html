@@ -391,9 +391,19 @@ render();
   if(!profile.active){location.replace('login.html?reason=inactive');return}
   const staffRoles=['superadmin','board','treasury','coach','commission'];
   if(!staffRoles.includes(profile.role)){location.replace('../mi_jugador.html');return}
-  window.GIGANTES_DB=client; window.GIGANTES_PROFILE=profile;
+  window.GIGANTES_DB=client; window.GIGANTES_PROFILE=profile; window.GIGANTES_SESSION=session;
   const {data:fundPerm}=await client.from('user_permissions').select('active').eq('user_id',session.user.id).eq('permission_code','fundraising.manage').maybeSingle();
   window.GIGANTES_CAN_FUNDRAISE=['superadmin','board','treasury'].includes(profile.role)||fundPerm?.active===true;
+  const protectionBtn=document.getElementById('protectionAlertBtn');
+  const protectionCount=document.getElementById('protectionAlertCount');
+  if(protectionBtn&&['superadmin','board'].includes(profile.role)){
+    const {data:openReports,error:openReportsError}=await client.from('protection_reports').select('id,status').neq('status','closed');
+    if(!openReportsError&&(openReports||[]).length){
+      protectionBtn.classList.add('show','pulse');
+      protectionCount.textContent='('+(openReports||[]).length+')';
+      protectionBtn.href='proteccion.html#solicitudes-confidenciales';
+    }
+  }
   render();
   loadLiveData().then(()=>render()).catch(err=>{console.error('Carga parcial Control Center',err);});
   const actions=document.querySelector('.actions');
