@@ -390,13 +390,23 @@ render();
     return;
   }
   if(!profile.active){location.replace('login.html?reason=inactive');return}
+  const [{data:fundPerm},{data:disciplinePerm},{data:protectionPerm}]=await Promise.all([
+    client.from('user_permissions').select('active').eq('user_id',session.user.id).eq('permission_code','fundraising.manage').maybeSingle(),
+    client.from('user_permissions').select('active').eq('user_id',session.user.id).eq('permission_code','discipline.manage').maybeSingle(),
+    client.from('user_permissions').select('active').eq('user_id',session.user.id).eq('permission_code','protection.reports.manage').maybeSingle()
+  ]);
   const staffRoles=['superadmin','board','treasury','coach','commission'];
-  if(!staffRoles.includes(profile.role)){location.replace('../mi_jugador.html');return}
+  const canDiscipline=profile.role==='superadmin'||disciplinePerm?.active===true;
+  const canProtection=profile.role==='superadmin'||protectionPerm?.active===true;
+  if(!staffRoles.includes(profile.role)){
+    if(canProtection){location.replace('proteccion.html');return}
+    if(canDiscipline){location.replace('disciplina.html');return}
+    location.replace('../mi_jugador.html');return
+  }
   window.GIGANTES_DB=client; window.GIGANTES_PROFILE=profile; window.GIGANTES_SESSION=session;
-  const {data:fundPerm}=await client.from('user_permissions').select('active').eq('user_id',session.user.id).eq('permission_code','fundraising.manage').maybeSingle();
   window.GIGANTES_CAN_FUNDRAISE=['superadmin','board','treasury'].includes(profile.role)||fundPerm?.active===true;
-  const {data:disciplinePerm}=await client.from('user_permissions').select('active').eq('user_id',session.user.id).eq('permission_code','discipline.manage').maybeSingle();
-  window.GIGANTES_CAN_DISCIPLINE=profile.role==='superadmin'||disciplinePerm?.active===true;
+  window.GIGANTES_CAN_DISCIPLINE=canDiscipline;
+  window.GIGANTES_CAN_PROTECTION=canProtection;
   const protectionBtn=document.getElementById('protectionAlertBtn');
   const protectionCount=document.getElementById('protectionAlertCount');
   if(protectionBtn&&['superadmin','board'].includes(profile.role)){
