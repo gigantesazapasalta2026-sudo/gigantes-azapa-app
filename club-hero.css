@@ -1,9 +1,75 @@
-/* Hero fotografico comun · Gigantes de Azapa */
-.hero.gigantes-photo-hero{position:relative!important;overflow:hidden!important;isolation:isolate;background:#0b0f14!important}
-.hero.gigantes-photo-hero .gigantes-hero-bg{position:absolute;inset:0;z-index:0;background-position:center 58%;background-size:cover;background-repeat:no-repeat;opacity:0;transform:scale(1.025);transition:opacity 1.25s ease,transform 6.5s ease;pointer-events:none}
-.hero.gigantes-photo-hero .gigantes-hero-bg.is-active{opacity:1;transform:scale(1)}
-.hero.gigantes-photo-hero .gigantes-hero-shade{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(5,8,12,.54) 0%,rgba(5,8,12,.36) 48%,rgba(5,8,12,.18) 100%),linear-gradient(180deg,rgba(5,8,12,.06),rgba(5,8,12,.25))}
-.hero.gigantes-photo-hero>*:not(.gigantes-hero-bg):not(.gigantes-hero-shade){position:relative;z-index:2}
-.hero.gigantes-photo-hero h1,.hero.gigantes-photo-hero h2,.hero.gigantes-photo-hero p,.hero.gigantes-photo-hero .k,.hero.gigantes-photo-hero .kicker,.hero.gigantes-photo-hero .eyebrow{text-shadow:0 2px 18px rgba(0,0,0,.62)}
-@media(max-width:760px){.hero.gigantes-photo-hero .gigantes-hero-bg{background-position:center 52%}.hero.gigantes-photo-hero .gigantes-hero-shade{background:linear-gradient(90deg,rgba(5,8,12,.58),rgba(5,8,12,.34)),linear-gradient(180deg,rgba(5,8,12,.08),rgba(5,8,12,.30))}}
-@media(prefers-reduced-motion:reduce){.hero.gigantes-photo-hero .gigantes-hero-bg{transition:none;transform:none}}
+/* Hero fotografico comun · Gigantes de Azapa
+   Foto clara + caja oscura solamente detras del contenido. */
+.hero.gigantes-photo-hero{
+  position:relative!important;
+  overflow:hidden!important;
+  isolation:isolate;
+  background:#0b0f14!important
+}
+.hero.gigantes-photo-hero .gigantes-hero-bg{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  background-position:center 58%;
+  background-size:cover;
+  background-repeat:no-repeat;
+  opacity:0;
+  transform:scale(1.025);
+  transition:opacity 1.25s ease,transform 6.5s ease;
+  pointer-events:none
+}
+.hero.gigantes-photo-hero .gigantes-hero-bg.is-active{
+  opacity:1;
+  transform:scale(1)
+}
+/* Ya no oscurecemos toda la fotografia. */
+.hero.gigantes-photo-hero .gigantes-hero-shade{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,8,12,.02),rgba(5,8,12,.07))
+}
+.hero.gigantes-photo-hero>*:not(.gigantes-hero-bg):not(.gigantes-hero-shade){
+  position:relative;
+  z-index:2
+}
+/* Caja legible solo tras el titulo, bajada y acciones del hero. */
+.hero.gigantes-photo-hero>.in,
+.hero.gigantes-photo-hero>.wrap,
+.hero.gigantes-photo-hero>.heroInner,
+.hero.gigantes-photo-hero>.hero-inner,
+.hero.gigantes-photo-hero>.container{
+  background:rgba(5,8,12,.60);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:18px;
+  padding:20px 22px;
+  box-shadow:0 12px 34px rgba(0,0,0,.20);
+  backdrop-filter:blur(1px);
+  -webkit-backdrop-filter:blur(1px)
+}
+.hero.gigantes-photo-hero h1,
+.hero.gigantes-photo-hero h2,
+.hero.gigantes-photo-hero p,
+.hero.gigantes-photo-hero .k,
+.hero.gigantes-photo-hero .kicker,
+.hero.gigantes-photo-hero .eyebrow,
+.hero.gigantes-photo-hero .tag{
+  color:#fff!important;
+  text-shadow:0 2px 14px rgba(0,0,0,.68)
+}
+@media(max-width:760px){
+  .hero.gigantes-photo-hero .gigantes-hero-bg{background-position:center 52%}
+  .hero.gigantes-photo-hero>.in,
+  .hero.gigantes-photo-hero>.wrap,
+  .hero.gigantes-photo-hero>.heroInner,
+  .hero.gigantes-photo-hero>.hero-inner,
+  .hero.gigantes-photo-hero>.container{
+    background:rgba(5,8,12,.64);
+    border-radius:14px;
+    padding:16px
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .hero.gigantes-photo-hero .gigantes-hero-bg{transition:none;transform:none}
+}
