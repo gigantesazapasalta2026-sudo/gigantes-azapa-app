@@ -1,6 +1,6 @@
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
 const params=new URLSearchParams(location.search),reportId=params.get('id');
-let report=null,user=null,partiesRows=[],measureRows=[],eventRows=[],referralRows=[];
+let report=null,user=null,partiesRows=[],measureRows=[],eventRows=[],referralRows=[],dispatchChannelRows=[],dispatchRows=[],reportDocRows=[];
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 (async()=>{
  const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next='+encodeURIComponent('proteccion-caso.html?id='+reportId);return}
@@ -12,15 +12,19 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
  await refresh();loading.classList.add('hide');app.classList.remove('hide')
 })();
 async function refresh(){
- const [r,p,m,e,rf]=await Promise.all([
+ const [r,p,m,e,rf,ch,ds,rd]=await Promise.all([
   sb.from('protection_reports').select('*').eq('id',reportId).single(),
   sb.from('protection_report_parties').select('*').eq('report_id',reportId).eq('active',true).order('created_at'),
   sb.from('protection_measures').select('*').eq('report_id',reportId).order('created_at',{ascending:false}),
   sb.from('protection_report_events').select('*').eq('report_id',reportId).order('event_at',{ascending:false}),
-  sb.from('protection_discipline_referrals').select('*').eq('report_id',reportId).order('created_at',{ascending:false})
+  sb.from('protection_discipline_referrals').select('*').eq('report_id',reportId).order('created_at',{ascending:false}),
+  sb.from('protection_dispatch_channels').select('*').order('institution'),
+  sb.from('protection_report_dispatches').select('*').eq('report_id',reportId).order('prepared_at',{ascending:false}),
+  sb.from('protection_report_documents').select('*').eq('report_id',reportId).order('uploaded_at',{ascending:false})
  ]);
  if(r.error){loading.textContent='No se pudo abrir el expediente: '+r.error.message;return}
  report=r.data;partiesRows=p.data||[];measureRows=m.data||[];eventRows=e.data||[];referralRows=rf.data||[];
+ dispatchChannelRows=ch.data||[];dispatchRows=ds.data||[];reportDocRows=rd.data||[];
  if(!report.case_code)await initializeCase();
  render()
 }
@@ -59,7 +63,7 @@ function render(){
  reporterDeadline.textContent=deadlineText(report.reporter_contact_due_at,report.reporter_contacted_at);
  guardianDeadline.textContent=report.nna_involved?deadlineText(report.guardian_contact_due_at,report.guardian_contacted_at):'No aplica';
  respondentDeadline.textContent=report.crime_assessment==='no_apparent_crime'?deadlineText(report.respondent_contact_due_at,report.respondent_contacted_at):'Según evaluación';
- renderParties();renderMeasures();renderTimeline();renderReferral()
+ renderParties();renderMeasures();renderTimeline();renderReferral();renderDispatch()
 }
 function categoryLabel(v){return ({convivencia:'Convivencia',maltrato_acoso:'Maltrato o acoso',discriminacion:'Discriminación',seguridad_nna:'Seguridad NNA',privacidad:'Privacidad',otro:'Otra situación'})[v]||v}
 function statusLabel(v){return ({new:'Nueva',reviewing:'En revisión',action:'Plan de acción',closed:'Cerrada'})[v]||v}
