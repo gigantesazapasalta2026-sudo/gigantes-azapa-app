@@ -1,0 +1,54 @@
+/* Hero fotografico comun · Gigantes de Azapa */
+.hero.gigantes-photo-hero{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  background:#0b0f14!important;
+}
+.hero.gigantes-photo-hero .gigantes-hero-bg{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  background-position:center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  opacity:0;
+  transform:scale(1.035);
+  transition:opacity 1.35s ease,transform 7s ease;
+  pointer-events:none;
+}
+.hero.gigantes-photo-hero .gigantes-hero-bg.is-active{
+  opacity:1;
+  transform:scale(1);
+}
+.hero.gigantes-photo-hero .gigantes-hero-shade{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(5,8,12,.72) 0%,rgba(5,8,12,.54) 45%,rgba(5,8,12,.30) 100%),
+    linear-gradient(180deg,rgba(5,8,12,.18),rgba(5,8,12,.48));
+}
+.hero.gigantes-photo-hero>*:not(.gigantes-hero-bg):not(.gigantes-hero-shade){
+  position:relative;
+  z-index:2;
+}
+.hero.gigantes-photo-hero h1,
+.hero.gigantes-photo-hero h2,
+.hero.gigantes-photo-hero p,
+.hero.gigantes-photo-hero .k,
+.hero.gigantes-photo-hero .kicker,
+.hero.gigantes-photo-hero .eyebrow{
+  text-shadow:0 2px 18px rgba(0,0,0,.52);
+}
+@media(max-width:760px){
+  .hero.gigantes-photo-hero .gigantes-hero-shade{
+    background:
+      linear-gradient(90deg,rgba(5,8,12,.72),rgba(5,8,12,.54)),
+      linear-gradient(180deg,rgba(5,8,12,.22),rgba(5,8,12,.52));
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .hero.gigantes-photo-hero .gigantes-hero-bg{transition:none;transform:none}
+}
