@@ -1,6 +1,26 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0f14"><title>Proyecto · Gigantes de Azapa</title><style>
 :root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f6f8;color:#111827}.hero{background:linear-gradient(135deg,#0b0f14,#352014);color:#fff;padding:64px 20px 34px}.in,main{max-width:1050px;margin:auto}.hero h1{margin:0 0 8px;font-size:clamp(2rem,6vw,4rem)}.hero p{color:#d1d5db;max-width:760px}.hero-logo{max-width:220px;max-height:180px;object-fit:contain;background:#fff;border-radius:18px;padding:10px;margin:0 0 18px;display:none}.meta{font-size:13px;color:#f8b58d}.back{display:inline-block;margin-top:14px;color:#fff;text-decoration:none;font-weight:800}main{padding:20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px}.card h2{font-size:17px;margin:0 0 10px}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.k{background:#fff;border:1px solid var(--l);border-radius:12px;padding:14px}.k b{display:block;font-size:20px}.k span{font-size:11px;color:var(--m)}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}.gallery div{background:#fff;border:1px solid var(--l);border-radius:12px;padding:10px}.detailGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}.detailCard{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px}.detailCard h2{font-size:17px;margin:0 0 10px}.detailCard ul{margin:0;padding-left:20px;line-height:1.55}.detailCard li{margin:7px 0}.progressbar{height:9px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:7px}.progressbar span{display:block;height:100%;background:linear-gradient(90deg,#f36b21,#f6a16f)}.milestone{padding:12px 0;border-top:1px solid #eee}.milestone:first-child{border-top:0}.goalItem{padding:11px 0;border-top:1px solid #eee;line-height:1.5}.goalItem:first-child{border-top:0}.goalType{font-size:10px;color:#c2410c;font-weight:900;text-transform:uppercase;letter-spacing:.04em}.msHead{display:flex;gap:10px;align-items:flex-start}.msCheck{margin-top:2px;width:19px;height:19px;accent-color:#f36b21;cursor:pointer}.msBody{flex:1}.msMeta{font-size:11px;color:var(--m);margin-top:4px}.msDone b{text-decoration:line-through;color:#6b7280}.msDone .progressbar span{background:#16a34a}.staffHint{font-size:11px;color:#166534;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 10px;margin-bottom:7px}.tribute{background:linear-gradient(135deg,#17110d,#3b1f13 55%,#111827);color:#fff;border-radius:18px;padding:26px;margin-top:14px;border:1px solid #5c2b16;box-shadow:0 14px 32px #00000018}.tribute .eyebrow{color:#f6a16f;font-weight:900;text-transform:uppercase;letter-spacing:.12em;font-size:11px}.tribute h2{font-size:clamp(1.6rem,4vw,2.5rem);margin:8px 0 6px}.tribute h3{font-size:1.05rem;color:#f8b58d;margin:0 0 14px}.tribute p{color:#f3f4f6;line-height:1.75;font-size:15px}.tribute blockquote{margin:18px 0 0;padding:14px 18px;border-left:4px solid #f36b21;background:#ffffff0d;border-radius:8px;font-weight:900;font-size:1.05rem;line-height:1.5}.support{background:linear-gradient(135deg,#111827,#352014);color:#fff;border-radius:16px;padding:20px;margin-top:14px}.support p{color:#d1d5db}.support a{display:inline-flex;background:#f36b21;color:#fff;text-decoration:none;border-radius:9px;padding:10px 12px;font-weight:900}.links{display:flex;gap:10px;flex-wrap:wrap}.docbtn{display:inline-flex;text-decoration:none;background:#111;color:#fff;border-radius:9px;padding:10px 12px;font-weight:900}.docbtn:hover{background:#f36b21}.empty{color:var(--m);font-size:13px}
 
+/* Gira Santiago 2026: agenda pública compacta para móvil */
+.scl-itinerary{grid-column:1/-1;padding:0;overflow:hidden}
+.scl-itinerary h2{padding:16px 16px 0;margin:0;font-size:20px}
+.scl-days{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:10px}
+.scl-day{padding:16px;border-top:1px solid var(--l);border-right:1px solid var(--l)}
+.scl-day:last-child{border-right:0}
+.scl-day .date{display:inline-block;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
+.scl-day h3{margin:0 0 8px;font-size:17px}
+.scl-line{margin:5px 0;line-height:1.45}
+.scl-time{font-weight:900}
+.scl-note{margin:0;padding:12px 16px;background:#fff7ed;border-top:1px solid #fed7aa;color:#7c2d12;font-size:12px;line-height:1.45}
+.scl-simple p{line-height:1.6;margin:0;color:#374151}
+.scl-simple ul{margin:0;padding-left:20px}
+@media(max-width:700px){
+ .scl-days{grid-template-columns:1fr}
+ .scl-day{border-right:0}
+ .scl-itinerary h2{font-size:19px}
+ .scl-day{padding:15px 16px}
+}
+
 /* Copa FUFY: cabecera memorial con mayor protagonismo visual */
 .hero.fufy-hero{padding:42px 20px 34px;background:radial-gradient(circle at 18% 35%,#5b2b14 0,#2a160f 22%,#0b0f14 62%),linear-gradient(135deg,#0b0f14,#352014)}
 .hero.fufy-hero .in{display:grid;grid-template-columns:minmax(260px,340px) 1fr;grid-template-areas:"photo status" "photo title" "photo objective" "photo meta" "photo back";column-gap:34px;align-items:start}
@@ -51,20 +71,34 @@ if(media&&media.length)gallery.innerHTML=media.map(x=>{const u=sb.storage.from('
 
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function renderTribute(d){if(!d?.tribute_text)return;tributeTitle.textContent=d.tribute_title||'Una copa que nace desde el corazón';tributeName.textContent=d.tribute_name||'Álvaro “Fufy” Villanueva';tributeText.textContent=d.tribute_text;tributeClosing.textContent=d.tribute_closing||'';tributeSection.style.display='block'}function renderDetails(d,projectCode){
- const labels={tribute_title:'',tribute_name:'',tribute_text:'',tribute_closing:'',headline:'Resumen',summary:'Qué estamos haciendo',format:'Formato deportivo',day_plan:'Programa del día',club_status:'Clubes y delegaciones',operations:'Avances operativos',sponsor_value:'Valor para auspiciadores',sports:'Encuentro con Stade Français',itinerary:'Programa general',progress:'Dónde estamos hoy',fundraising:'Recaudación y apoyo',needs:'Lo próximo que debemos cerrar',target_period:'Período objetivo',category_targets:'Metas por categoría',formats:'Formatos previstos',status_note:'Estado de confirmación',targets:'Metas del proyecto',funding:'Financiamiento / presupuesto de trabajo',invite_map:'Invitaciones objetivo',program_base:'Base oficial del programa recibido',program_methodology:'Metodología formativa',school_receives:'Qué recibe cada colegio',impact_measurement:'Cómo se mide el impacto',arica_proposal:'Propuesta para Arica',learning_path:'Ruta de aprendizaje vinculada',sponsor_opportunities:'Cómo pueden apoyar los aliados',federation_context:'Vínculo con Chile Rugby',vision_2030:'Proyección 2030',source_note:'Fuente y estado de coordinación',milestones:'Ruta de hitos',why_it_matters:'Por qué hacemos esta gira',family_experience:'La experiencia de las familias',learning_experience:'Lo que aprenden nuestros niños y jóvenes',future_horizons:'Horizontes que se abren',legacy:'Qué queremos que deje esta gira',tentative_itinerary_title:'Itinerario tentativo',tentative_itinerary:'Programa tentativo de la gira',flight_coordination:'Coordinación de vuelos y transfers',lodging_strategy:'Estrategia de alojamiento',saturday_activity_plan:'Actividad grupal del sábado',sunday_option:'Domingo · opción deportiva por confirmar',delegation_update_date:'Última actualización de delegación',delegation_status:'Estado de la nómina',player_count_confirmed:'Jugadores confirmados',fixture_availability:'Disponibilidad para fixture Stade Français',companion_tracking:'Acompañantes y alojamiento',roster_privacy_note:'Privacidad de la nómina',fixture_summary:'Disponibilidad actual para fixture',delegation_snapshot:'Delegación conocida',fixture_roster_update:'Actualización del fixture',delegation_summary:'Resumen de delegación',delegation_logistics_status:'Conteo operativo para alojamiento y transporte',family_updates:'Grupos familiares',fixture_notes:'Notas para Stade Français',fixture_pending:'Definiciones pendientes antes del fixture'};
+ const labels={tribute_title:'',tribute_name:'',tribute_text:'',tribute_closing:'',headline:'Resumen',summary:'Qué estamos haciendo',format:'Formato deportivo',day_plan:'Programa del día',club_status:'Clubes y delegaciones',operations:'Avances operativos',sponsor_value:'Valor para auspiciadores',sports:'Encuentro deportivo',itinerary:'Programa general',progress:'Dónde estamos hoy',fundraising:'Recaudación y apoyo',needs:'Lo próximo que debemos cerrar',target_period:'Período objetivo',category_targets:'Metas por categoría',formats:'Formatos previstos',status_note:'Estado de confirmación',targets:'Metas del proyecto',funding:'Financiamiento / presupuesto de trabajo',invite_map:'Invitaciones objetivo',program_base:'Base oficial del programa recibido',program_methodology:'Metodología formativa',school_receives:'Qué recibe cada colegio',impact_measurement:'Cómo se mide el impacto',arica_proposal:'Propuesta para Arica',learning_path:'Ruta de aprendizaje vinculada',sponsor_opportunities:'Cómo pueden apoyar los aliados',federation_context:'Vínculo con Chile Rugby',vision_2030:'Proyección 2030',source_note:'Fuente y estado de coordinación',milestones:'Ruta de hitos',why_it_matters:'Por qué hacemos esta gira',family_experience:'La experiencia de las familias',learning_experience:'Lo que aprenden nuestros niños y jóvenes',future_horizons:'Horizontes que se abren',legacy:'Qué queremos que deje esta gira',tentative_itinerary_title:'Itinerario tentativo',tentative_itinerary:'Programa tentativo de la gira',flight_coordination:'Coordinación de vuelos y transfers',lodging_strategy:'Estrategia de alojamiento',saturday_activity_plan:'Actividad grupal del sábado',sunday_option:'Domingo · opción deportiva por confirmar',delegation_update_date:'Última actualización de delegación',delegation_status:'Estado de la nómina',player_count_confirmed:'Jugadores confirmados',fixture_availability:'Disponibilidad para fixture Stade Français',companion_tracking:'Acompañantes y alojamiento',roster_privacy_note:'Privacidad de la nómina',fixture_summary:'Disponibilidad actual para fixture',delegation_snapshot:'Delegación conocida',fixture_roster_update:'Actualización del fixture',delegation_summary:'Resumen de delegación',delegation_logistics_status:'Conteo operativo para alojamiento y transporte',family_updates:'Grupos familiares',fixture_notes:'Notas para Stade Français',fixture_pending:'Definiciones pendientes antes del fixture'};
  const code=String(projectCode||'').toUpperCase();
- const hiddenBase=new Set(['headline','summary','tribute_title','tribute_name','tribute_text','tribute_closing','delegation_private_note']);
- let entries=Object.entries(d||{}).filter(([k])=>!hiddenBase.has(k));
 
- // La página pública de la Gira Santiago debe ser breve, clara y sin datos operativos internos.
+ // Gira Santiago: una sola agenda, sin repetir los mismos horarios en varias tarjetas.
  if(code==='SCL2026'){
-   const order=['sports','itinerary','progress','needs','why_it_matters','legacy'];
-   const limits={sports:4,itinerary:3,progress:4,needs:4};
-   entries=order.filter(k=>d?.[k]).map(k=>{
-     const v=d[k];
-     return [k,Array.isArray(v)&&limits[k]?v.slice(0,limits[k]):v];
-   });
+   const pending=[
+     'Confirmar hora definitiva de inicio de la jornada del domingo.',
+     'Confirmar horarios de almuerzos y actividades complementarias.'
+   ];
+   const why=d?.why_it_matters||'La gira busca ampliar las experiencias deportivas y personales de nuestros jugadores, fortaleciendo el aprendizaje, la convivencia y la identidad de club.';
+   details.innerHTML=
+     '<article class="detailCard scl-itinerary">'+
+       '<h2>🏉 Itinerario de partidos · Gira Santiago 2026</h2>'+
+       '<div class="scl-days">'+
+         '<section class="scl-day"><span class="date">Viernes 6 de noviembre</span><h3>📍 Stade Français</h3><p class="scl-line"><span class="scl-time">🕕 18:00–19:30 hrs.</span></p><p class="scl-line">🏉 Entrenamiento con staff de Stade Français.</p></section>'+
+         '<section class="scl-day"><span class="date">Sábado 7 de noviembre</span><h3>📍 Stade Français</h3><p class="scl-line"><span class="scl-time">🕚 11:00–12:30 hrs.</span></p><p class="scl-line">🏉 Gigantes de Azapa vs Stade Français.</p><p class="scl-line"><span class="scl-time">🍽 13:00–14:30 hrs. aprox.</span><br>Tercer tiempo.</p></section>'+
+         '<section class="scl-day"><span class="date">Domingo 8 de noviembre</span><h3>📍 Country Club</h3><p class="scl-line"><span class="scl-time">🕘 09:00 o 10:00 hrs. aprox.</span></p><p class="scl-line">🏉 Gigantes de Azapa vs Country Club &amp; Old Locks.</p><p class="scl-line">⏰ Jornada deportiva hasta aprox. las 12:00 hrs.</p><p class="scl-line"><span class="scl-time">🍽 12:30–13:30 / 14:00 hrs. aprox.</span><br>Tercer tiempo.</p></section>'+
+       '</div>'+
+       '<p class="scl-note"><b>Por confirmar:</b> horario definitivo del domingo, almuerzos y actividades complementarias.</p>'+
+     '</article>'+
+     '<article class="detailCard scl-simple"><h2>⏳ Lo pendiente por confirmar</h2><ul>'+pending.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></article>'+
+     '<article class="detailCard scl-simple"><h2>🖤 Por qué hacemos esta gira</h2><p>'+esc(why)+'</p></article>';
+   detailsSection.style.display='block';
+   return;
  }
+
+ const hiddenBase=new Set(['headline','summary','tribute_title','tribute_name','tribute_text','tribute_closing','delegation_private_note']);
+ const entries=Object.entries(d||{}).filter(([k])=>!hiddenBase.has(k));
  const cards=[];
  for(const [k,v] of entries){
    if(Array.isArray(v)&&v.length)cards.push('<article class="detailCard"><h2>'+esc(labels[k]||humanLabel(k))+'</h2><ul>'+v.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></article>');
