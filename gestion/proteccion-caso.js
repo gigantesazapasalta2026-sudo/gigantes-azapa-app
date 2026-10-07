@@ -99,6 +99,36 @@ function renderReferral(){
  const x=referralRows[0];
  disciplineState.innerHTML=x?'<b>'+esc(x.status.toUpperCase())+'</b> · '+esc(x.summary_for_commission)+(x.due_at?'<br>Plazo: '+new Date(x.due_at).toLocaleString('es-CL'):''):'Sin derivación registrada.'
 }
+function firstParty(role){return partiesRows.find(x=>x.party_role===role)}
+function fmtDate(v){return v?new Date(v).toLocaleString('es-CL'):'[PENDIENTE]'}
+function partyLine(p){return p?(p.full_name+(p.rut_passport?' · RUT/Doc: '+p.rut_passport:'')+(p.club_role?' · Rol: '+p.club_role:'')+(p.team_category?' · Categoría: '+p.team_category:'')):'[NO REGISTRADO]'}
+function buildSmartDocument(type){
+ const affected=firstParty('affected'),respondent=firstParty('respondent'),guardian=firstParty('guardian');
+ const base='CLUB DEPORTIVO SOCIAL Y CULTURAL GIGANTES DE AZAPA\nExpediente: '+(report.case_code||report.id)+'\nFecha de emisión: '+new Date().toLocaleString('es-CL')+'\n\n';
+ const templates={
+  reception:base+'ACTA DE RECEPCIÓN DE REPORTE\n\nFecha y hora de recepción: '+fmtDate(report.created_at)+'\nCategoría: '+categoryLabel(report.category)+'\nNivel de riesgo: '+String(report.risk_level||'unassessed').toUpperCase()+'\nNNA involucrado: '+(report.nna_involved?'Sí':'No')+'\nPersona afectada: '+partyLine(affected)+'\n\nRelato recibido:\n'+report.narrative+'\n\nObservaciones de recepción:\n[EDITAR]\n\nResponsable que registra: '+(report.assigned_to_name||'[PENDIENTE]'),
+  reporter_contact:base+'REGISTRO DE CONTACTO CON DENUNCIANTE\n\nFecha límite: '+fmtDate(report.reporter_contact_due_at)+'\nFecha de contacto: '+fmtDate(report.reporter_contacted_at)+'\nDenunciante: '+(report.reporter_name||'[ANÓNIMO / NO INFORMADO]')+'\nContacto disponible: '+(report.reporter_contact||'[NO INFORMADO]')+'\n\nResumen del contacto:\n[EDITAR]\n\nInformación o antecedentes adicionales entregados:\n[EDITAR]',
+  guardian_contact:base+'REGISTRO DE COMUNICACIÓN A RESPONSABLE DE NNA\n\nNNA involucrado: '+(report.nna_involved?'Sí':'No')+'\nPersona afectada: '+partyLine(affected)+'\nResponsable legal / cuidador: '+partyLine(guardian)+'\nFecha límite: '+fmtDate(report.guardian_contact_due_at)+'\nFecha de contacto: '+fmtDate(report.guardian_contacted_at)+'\n\nInformación comunicada:\n[EDITAR]\n\nMedidas de resguardo informadas:\n[EDITAR]',
+  assessment:base+'FICHA DE EVALUACIÓN INICIAL DS22\n\nNivel de riesgo: '+String(report.risk_level||'unassessed').toUpperCase()+'\nRiesgo inmediato informado: '+(report.immediate_risk?'Sí':'No')+'\nNNA involucrado: '+(report.nna_involved?'Sí':'No')+'\nEvaluación sobre posible delito: '+(report.crime_assessment==='possible_crime'?'POSIBLE DELITO':report.crime_assessment==='no_apparent_crime'?'NO APARENTA DELITO':'PENDIENTE')+'\nFecha evaluación: '+fmtDate(report.crime_assessed_at)+'\n\nFundamentos de la evaluación:\n[EDITAR]\n\nAcciones inmediatas definidas:\n[EDITAR]',
+  authority_referral:base+'CONSTANCIA DE DENUNCIA / DERIVACIÓN A AUTORIDAD\n\nPersona afectada: '+partyLine(affected)+'\nPersona denunciada: '+partyLine(respondent)+'\nEvaluación: '+(report.crime_assessment==='possible_crime'?'Los antecedentes podrían revestir caracteres de delito.':'[REVISAR]')+'\n\nAutoridad / canal utilizado:\n[EDITAR]\n\nFecha y hora de presentación:\n[EDITAR]\n\nRUC / folio / comprobante:\n[EDITAR]\n\nAntecedentes remitidos:\n[EDITAR]',
+  board_report:base+'INFORME RESERVADO AL DIRECTORIO\n\nSe informa, con carácter reservado, la existencia del expediente indicado.\n\nPersona afectada: '+partyLine(affected)+'\nPersona denunciada: '+partyLine(respondent)+'\nRiesgo: '+String(report.risk_level||'unassessed').toUpperCase()+'\nEvaluación inicial: '+String(report.crime_assessment||'undetermined')+'\n\nMedidas adoptadas o solicitadas:\n'+(measureRows.length?measureRows.map(m=>'- '+measureLabel(m.measure_type)+' · '+m.status+' · '+m.rationale).join('\n'):'[SIN MEDIDAS REGISTRADAS]')+'\n\nAcciones pendientes:\n[EDITAR]',
+  discipline_referral:base+'OFICIO DE DERIVACIÓN A COMISIÓN DE DISCIPLINA\n\nPor medio del presente, Protección / DS22 remite antecedentes del expediente indicado para conocimiento y actuación de la Comisión de Disciplina, dentro del ámbito de sus competencias.\n\nPersona denunciada: '+partyLine(respondent)+'\nMotivo de derivación:\n'+(referralRows[0]?.summary_for_commission||'[EDITAR]')+'\n\nMedida o decisión solicitada:\n'+(referralRows[0]?.requested_measure||'[EDITAR]')+'\n\nPlazo requerido: '+fmtDate(referralRows[0]?.due_at)+'\n\nAntecedentes remitidos:\n[EDITAR]',
+  protective_measure:base+'SOLICITUD DE MEDIDA DE PROTECCIÓN\n\nPersona protegida: '+partyLine(affected)+'\nPersona respecto de la cual se solicita la medida: '+partyLine(respondent)+'\n\nMedidas registradas:\n'+(measureRows.length?measureRows.map(m=>'- '+measureLabel(m.measure_type)+': '+m.rationale+(m.scope?' · Alcance: '+m.scope:'')).join('\n'):'[NO HAY MEDIDA REGISTRADA]')+'\n\nFundamento de necesidad y proporcionalidad:\n[EDITAR]\n\nSe deja constancia de que la medida solicitada es preventiva y no constituye por sí misma una determinación de responsabilidad ni una sanción.',
+  respondent_contact:base+'REGISTRO DE CONTACTO CON PERSONA DENUNCIADA\n\nPersona denunciada: '+partyLine(respondent)+'\nFecha límite de contacto: '+fmtDate(report.respondent_contact_due_at)+'\nFecha de contacto: '+fmtDate(report.respondent_contacted_at)+'\n\nInformación comunicada sobre el procedimiento:\n[EDITAR]\n\nVersión / descargos entregados:\n[EDITAR]\n\nDocumentos acompañados:\n[EDITAR]\n\nSe deja constancia de que el tratamiento del caso respeta la reserva y el debido proceso.',
+  closure:base+'ACTA DE CIERRE DE EXPEDIENTE DS22\n\nEstado final: '+statusLabel(report.status)+'\nPersona afectada: '+partyLine(affected)+'\nPersona denunciada: '+partyLine(respondent)+'\n\nActuaciones realizadas:\n'+(eventRows.length?eventRows.slice().reverse().map(e=>'- '+new Date(e.event_at).toLocaleString('es-CL')+' · '+e.summary).join('\n'):'[SIN BITÁCORA]')+'\n\nMedidas / derivaciones finalizadas:\n[EDITAR]\n\nMotivo y fundamento del cierre:\n[EDITAR]\n\nPendientes posteriores al cierre, si existen:\n[EDITAR]'
+ };
+ return templates[type]||base+'DOCUMENTO DS22\n\n[EDITAR]';
+}
+function smartDocName(type){return ({reception:'Acta_Recepcion',reporter_contact:'Contacto_Denunciante',guardian_contact:'Comunicacion_Responsable_NNA',assessment:'Evaluacion_Inicial',authority_referral:'Constancia_Derivacion_Autoridad',board_report:'Informe_Reservado_Directorio',discipline_referral:'Oficio_Comision_Disciplina',protective_measure:'Solicitud_Medida_Proteccion',respondent_contact:'Contacto_Persona_Denunciada',closure:'Acta_Cierre'})[type]||'Documento_DS22'}
+function prepareSmartDocument(){docBody.value=buildSmartDocument(docType.value)}
+function downloadSmartDocument(){
+ if(!docBody.value.trim())prepareSmartDocument();
+ const {jsPDF}=window.jspdf,d=new jsPDF(),lines=d.splitTextToSize(docBody.value,178);
+ let y=16;d.setFontSize(10);
+ for(const line of lines){if(y>278){d.addPage();y=16}d.text(line,16,y);y+=5.2}
+ d.save(smartDocName(docType.value)+'_'+(report.case_code||report.id)+'.pdf');
+ addEvent('smart_document_generated','Documento generado: '+smartDocName(docType.value));
+}
 async function addEvent(type,summary,metadata={}){
  return sb.from('protection_report_events').insert({report_id:reportId,event_type:type,summary,actor_user_id:user.id,metadata})
 }
@@ -153,3 +183,4 @@ referDiscipline.onclick=async()=>{
  alert('Derivación enviada correctamente: '+dc.data.case_code);
  await refresh()
 };
+prepareDoc.onclick=prepareSmartDocument;downloadDoc.onclick=downloadSmartDocument;
