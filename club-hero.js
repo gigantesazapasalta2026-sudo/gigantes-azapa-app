@@ -1,5 +1,7 @@
 /* Hero fotografico rotativo · Gigantes de Azapa */
 (()=>{
+  const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+  if(page==='index.html'||page==='') return;
   const ARCHIVE='https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/';
   const photos=[
     'app-2026/comunidad-familias-arica.jpg',
