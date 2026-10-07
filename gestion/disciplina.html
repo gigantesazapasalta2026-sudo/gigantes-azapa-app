@@ -20,7 +20,7 @@
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
-let user=null,profile=null,casesRows=[],memberRows=[],eventRows=[],stepRows=[],docRows=[],catalogRows=[],resolutionRows=[];
+let user=null,profile=null,casesRows=[],memberRows=[],eventRows=[],stepRows=[],docRows=[],catalogRows=[],resolutionRows=[],referralRows=[],protectionMeasureRows=[];
 const STEPS=[
 ['01_COMPETENCIA','Revisar competencia y origen','Confirmar si corresponde a la Comisión, si existe expediente DS22 relacionado y qué norma debe aplicarse.'],
 ['02_IMPEDIMENTOS','Revisar impedimentos o conflictos','Dejar constancia si algún integrante debe abstenerse o ser reemplazado.'],
@@ -37,15 +37,17 @@ const STEPS=[
 ];
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 (async()=>{const s=await sb.auth.getSession();if(!s.data?.session){location.href='login.html?next=disciplina.html';return}user=s.data.session.user;const pr=await sb.from('profiles').select('role,active,display_name').eq('user_id',user.id).maybeSingle();profile=pr.data;if(!profile?.active){loading.textContent='Tu cuenta no está activa.';return}const pe=await sb.from('user_permissions').select('active').eq('user_id',user.id).eq('permission_code','discipline.manage').maybeSingle();if(profile.role!=='superadmin'&&pe.data?.active!==true){loading.textContent='Tu cuenta no tiene acceso a la Comisión de Disciplina.';return}loading.classList.add('hide');app.classList.remove('hide');await refresh()})();
-async function refresh(){const [c,m,e,s,d,cat,r]=await Promise.all([
+async function refresh(){const [c,m,e,s,d,cat,r,rf,pm]=await Promise.all([
 sb.from('discipline_cases').select('*').order('opened_at',{ascending:false}),
 sb.from('discipline_commission_members').select('*').order('position'),
 sb.from('discipline_case_events').select('*').order('event_at',{ascending:false}),
 sb.from('discipline_case_steps').select('*').order('step_code'),
 sb.from('discipline_case_documents').select('*').order('uploaded_at',{ascending:false}),
 sb.from('discipline_document_catalog').select('*').order('sort_order'),
-sb.from('discipline_public_resolutions').select('*').order('decision_date',{ascending:false})
-]);casesRows=c.data||[];memberRows=m.data||[];eventRows=e.data||[];stepRows=s.data||[];docRows=d.data||[];catalogRows=cat.data||[];resolutionRows=r.data||[];render()}
+sb.from('discipline_public_resolutions').select('*').order('decision_date',{ascending:false}),
+sb.from('protection_discipline_referrals').select('*').order('created_at',{ascending:false}),
+sb.from('protection_measures').select('*').order('created_at',{ascending:false})
+]);casesRows=c.data||[];memberRows=m.data||[];eventRows=e.data||[];stepRows=s.data||[];docRows=d.data||[];catalogRows=cat.data||[];resolutionRows=r.data||[];referralRows=rf.data||[];protectionMeasureRows=pm.data||[];render()}
 function render(){kOpen.textContent=casesRows.filter(x=>!['resolved','closed'].includes(x.status)).length;kDecision.textContent=casesRows.filter(x=>x.status==='decision_pending').length;kResolved.textContent=casesRows.filter(x=>['resolved','closed'].includes(x.status)).length;kMembers.textContent=memberRows.filter(x=>x.status==='active').length+'/3';renderMembers();renderCases();renderDocs();renderResolutions()}
 function renderMembers(){members.innerHTML=[1,2,3].map(pos=>{const m=memberRows.find(x=>x.position===pos);return '<div class="member"><b>#'+pos+'</b><div><strong>'+esc(m?.member_name||'Por acreditar')+'</strong><div class="meta">'+esc(m?.member_email||'Sin correo registrado')+(m?.appointment_source?'<br>'+esc(m.appointment_source):'')+'</div></div><div>'+(m?.status==='active'?'<span class="badge ok">ACTIVO</span>':'<span class="badge warn">PENDIENTE</span>')+'</div></div>'}).join('')}
 function statusLabel(s){return ({received:'RECIBIDO',reviewing:'EN REVISIÓN',hearing:'DESCARGOS / SESIÓN',decision_pending:'POR RESOLVER',resolved:'RESUELTO',appealed:'IMPUGNADO',closed:'CERRADO'})[s]||s}
