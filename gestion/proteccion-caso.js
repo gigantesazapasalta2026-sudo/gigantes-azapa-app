@@ -155,6 +155,20 @@ async function openOfficialDispatch(){
   await sb.from('protection_report_dispatches').update({channel_opened_at:now,updated_at:now}).eq('id',row.id);
   await addEvent('dispatch_channel_opened','Canal oficial abierto: '+ch.institution+'. Esto no acredita envío.');
   await refresh()
+ }else if(ch.channel_type==='internal_app'){
+  const now=new Date().toISOString();
+  if(ch.code==='DISCIPLINA_INTERNA'){
+    const linked=referralRows.find(x=>x.discipline_case_id&&['sent','received','decided','closed'].includes(x.status));
+    if(linked){
+      await sb.from('protection_report_dispatches').update({status:'acknowledged',channel_opened_at:now,sent_at:linked.sent_at||now,acknowledged_at:linked.received_at||now,updated_at:now}).eq('id',row.id);
+      await addEvent('internal_dispatch_confirmed','Derivación interna a Comisión acreditada por expediente disciplinario vinculado.');
+      window.open('disciplina.html','_blank');await refresh();return
+    }
+    alert('Primero debes usar “Preparar derivación” en la sección Trabajo con Comisión de Disciplina.');return
+  }
+  await sb.from('protection_report_dispatches').update({channel_opened_at:now,updated_at:now}).eq('id',row.id);
+  await addEvent('internal_channel_opened','Canal interno abierto: '+ch.institution+'. La entrega aún debe confirmarse.');
+  window.open('index.html','_blank');await refresh()
  }else if(ch.email){
   location.href='mailto:'+encodeURIComponent(ch.email)+'?subject='+encodeURIComponent(row.subject||'')+'&body='+encodeURIComponent(row.message_body||'');
  }else alert('Este canal no tiene URL ni correo verificado. Revisa las instrucciones del canal.')
@@ -219,7 +233,20 @@ function buildSmartDocument(type){
  return templates[type]||base+'DOCUMENTO DS22\n\n[EDITAR]';
 }
 function smartDocName(type){return ({reception:'Acta_Recepcion',reporter_contact:'Contacto_Denunciante',guardian_contact:'Comunicacion_Responsable_NNA',assessment:'Evaluacion_Inicial',authority_referral:'Constancia_Derivacion_Autoridad',board_report:'Informe_Reservado_Directorio',discipline_referral:'Oficio_Comision_Disciplina',protective_measure:'Solicitud_Medida_Proteccion',respondent_contact:'Contacto_Persona_Denunciada',closure:'Acta_Cierre'})[type]||'Documento_DS22'}
-function prepareSmartDocument(){docBody.value=buildSmartDocument(docType.value)}
+function prepareSmartDocument(){docBody.value=buildSmartDocument(docType.value);suggestDispatchForDocument()}
+function suggestDispatchForDocument(){
+ const map={authority_referral:'FISCALIA_ONLINE',board_report:'DIRECTORIO_RESERVADO',discipline_referral:'DISCIPLINA_INTERNA'};
+ const channel=map[docType.value]||'';
+ if(channel&&dispatchChannelRows.some(x=>x.code===channel))dispatchChannel.value=channel;
+ dispatchSubject.value=smartDocName(docType.value)+' · '+(report.case_code||report.id);
+ const affected=firstParty('affected'),respondent=firstParty('respondent');
+ const summaries={
+  authority_referral:'Se acompaña antecedente asociado al expediente '+(report.case_code||report.id)+'. Registrar posteriormente RUC, folio o comprobante oficial.',
+  board_report:'Informe reservado para conocimiento institucional del Directorio. Mantener acceso restringido.',
+  discipline_referral:'Derivación interna desde Protección / DS22 a Comisión de Disciplina, vinculada al expediente '+(report.case_code||report.id)+'.'
+ };
+ dispatchMessage.value=summaries[docType.value]||('Documento asociado al expediente '+(report.case_code||report.id)+'.');
+}
 function smartDocumentPdfBlob(){
  if(!docBody.value.trim())prepareSmartDocument();
  const {jsPDF}=window.jspdf,d=new jsPDF(),lines=d.splitTextToSize(docBody.value,178);
@@ -241,6 +268,9 @@ async function archiveSmartDocument(){
  if(ins.error)return alert('El PDF se subió, pero no pudo registrarse: '+ins.error.message);
  await addEvent('smart_document_archived','Documento archivado: '+name);
  alert('Documento guardado dentro del expediente.');
+ await refresh();
+ const latest=reportDocRows.find(d=>d.original_name===name);
+ if(latest)dispatchDocument.value=latest.id;
 }
 async function shareSmartDocument(){
  const blob=smartDocumentPdfBlob(),name=smartDocName(docType.value)+'_'+(report.case_code||report.id)+'.pdf',file=new File([blob],name,{type:'application/pdf'});
@@ -308,5 +338,5 @@ referDiscipline.onclick=async()=>{
  alert('Derivación enviada correctamente: '+dc.data.case_code);
  await refresh()
 };
-prepareDoc.onclick=prepareSmartDocument;downloadDoc.onclick=downloadSmartDocument;archiveDoc.onclick=archiveSmartDocument;shareDoc.onclick=shareSmartDocument;
+prepareDoc.onclick=prepareSmartDocument;downloadDoc.onclick=downloadSmartDocument;archiveDoc.onclick=archiveSmartDocument;shareDoc.onclick=shareSmartDocument;docType.onchange=()=>{prepareSmartDocument()};
 prepareDispatch.onclick=prepareDispatchRecord;openOfficialChannel.onclick=openOfficialDispatch;
