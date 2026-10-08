@@ -22,7 +22,9 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 .modal{position:fixed;inset:0;background:#0009;display:none;align-items:flex-start;justify-content:center;padding:6vh 14px;overflow:auto;z-index:1000}.modal.open{display:flex}.dialog{width:min(760px,100%);background:#fff;border-radius:16px;padding:18px;box-shadow:0 22px 60px #0006}.dialog h3{margin:0 0 5px}.dialog .sub{font-size:11px;color:var(--m);margin-bottom:14px}.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.hide{display:none!important}
 .area-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.area-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid #e5e7eb;border-radius:12px;text-decoration:none;color:#111827;background:#fff}.area-icon{font-size:24px}.area-card strong{display:block;font-size:13px;margin-bottom:4px}.area-card small{display:block;color:var(--m);line-height:1.35}.area-card .go{margin-left:auto;color:#fff;background:#111827;border-radius:8px;padding:7px 9px;font-size:10px;font-weight:900;white-space:nowrap}
 .alertline{padding:10px 12px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;font-size:11px;margin-bottom:10px}.statusline{font-size:11px;color:#475569}.money{font-variant-numeric:tabular-nums}
-@media(max-width:900px){.kpis{grid-template-columns:repeat(4,1fr)}}@media(max-width:700px){.topin{align-items:flex-start;flex-wrap:wrap}.actions{margin-left:0}.kpis{grid-template-columns:1fr 1fr}.grid2,.formgrid,.area-grid{grid-template-columns:1fr}.formgrid .full{grid-column:auto}.toolbar{align-items:stretch}.toolbar .left,.toolbar .right{width:100%}.search{max-width:none}}
+.command-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:12px}.command-card{border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#fff}.command-card b{display:block;font-size:22px}.command-card span{font-size:9px;font-weight:900;color:#667085;text-transform:uppercase}.command-card.bad{border-color:#fecaca;background:#fff7f7}.command-card.warn{border-color:#fed7aa;background:#fffaf3}.command-card.ok{border-color:#bbf7d0;background:#f7fff9}
+.area-progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.progress-card{border:1px solid #e5e7eb;border-radius:12px;padding:12px}.bar{height:7px;border-radius:999px;background:#e5e7eb;overflow:hidden;margin-top:8px}.bar>i{display:block;height:100%;background:#111827;border-radius:999px}.stack{display:grid;gap:8px}.stack-item{border:1px solid #e5e7eb;border-radius:10px;padding:10px;background:#fff}.stack-item strong{font-size:12px}.stack-item small{display:block;color:#667085;margin-top:4px;line-height:1.35}.split{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}.restricted{padding:14px;border:1px dashed #cbd5e1;border-radius:12px;background:#f8fafc;color:#475569;font-size:11px}.mini-actions{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(4,1fr)}.command-grid{grid-template-columns:repeat(2,1fr)}.area-progress{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}}@media(max-width:700px){.topin{align-items:flex-start;flex-wrap:wrap}.actions{margin-left:0}.kpis{grid-template-columns:1fr 1fr}.grid2,.formgrid,.area-grid,.area-progress,.command-grid{grid-template-columns:1fr}.formgrid .full{grid-column:auto}.toolbar{align-items:stretch}.toolbar .left,.toolbar .right{width:100%}.search{max-width:none}}
 </style>
 <link rel="stylesheet" href="ux.css?v=20261005">
 </head>
@@ -49,19 +51,38 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <div class="card"><span>Auspicio confirmado</span><b id="kSponsorMoney" class="money">$0</b></div>
 </div>
 
-<div class="panel"><h2>Proyecto</h2><p id="projectMeta">Cargando…</p><div class="statusline">Todo cambio operativo se administra desde aquí. “Quitar” conserva historial: el registro se oculta/desactiva, no se destruye.</div></div>
+<div class="panel"><h2>Proyecto</h2><p id="projectMeta">Cargando…</p><div class="statusline"><strong>Regla de gobierno:</strong> Control Center FUFY es la fuente operativa. Drive conserva documentos/evidencias; Gmail aporta trazabilidad; Tesorería Classic + Adulta conserva el libro financiero real.</div></div>
 
 <div class="navtabs" id="navtabs">
-<button class="tabbtn active" data-tab="tasksTab">✅ Tareas</button>
+<button class="tabbtn active" data-tab="directionTab">🧭 Dirección</button>
+<button class="tabbtn" data-tab="tasksTab">✅ Tareas</button>
 <button class="tabbtn" data-tab="teamsTab">🏉 Equipos</button>
 <button class="tabbtn" data-tab="requestsTab">📨 Gestiones externas</button>
 <button class="tabbtn" data-tab="sponsorsTab">🤝 Auspicios</button>
 <button class="tabbtn" data-tab="decisionsTab">🧭 Decisiones</button>
 <button class="tabbtn" data-tab="respTab">👥 Responsables</button>
+<button class="tabbtn" data-tab="financeTab">💰 Finanzas</button>
+<button class="tabbtn" data-tab="fundraisingTab">🌭 Recaudación</button>
 <button class="tabbtn" data-tab="docsTab">📚 Documentos</button>
 </div>
 
-<section id="tasksTab" class="tab active panel">
+<section id="directionTab" class="tab active panel">
+<div class="toolbar"><div><h2>Tablero de Dirección</h2><p>Qué exige atención ahora, quién lo tiene y qué tan preparada está cada área.</p></div><div class="mini-actions"><button id="refreshAll" class="btn ghost">↻ Actualizar</button><a class="btn ghost" href="../fufy.html">Página pública</a></div></div>
+<div class="command-grid">
+<div class="command-card bad"><span>Vencidas</span><b id="dOverdue">0</b></div>
+<div class="command-card warn"><span>Para hoy</span><b id="dToday">0</b></div>
+<div class="command-card"><span>Próximos 7 días</span><b id="dNext7">0</b></div>
+<div class="command-card ok"><span>Sin responsable</span><b id="dNoOwner">0</b></div>
+</div>
+<div class="split">
+<div><h3 style="margin:0 0 8px">Prioridades y próximas acciones</h3><div id="priorityList" class="stack"></div></div>
+<div><h3 style="margin:0 0 8px">Gestiones externas</h3><div id="externalList" class="stack"></div></div>
+</div>
+<h3 style="margin:16px 0 8px">Avance por área</h3><div id="areaProgress" class="area-progress"></div>
+<h3 style="margin:16px 0 8px">Hitos de dirección</h3><div id="milestoneList" class="stack"></div>
+</section>
+
+<section id="tasksTab" class="tab panel">
 <div class="toolbar"><div class="left"><div><h2>Tareas operativas</h2><p id="taskSummary"></p></div></div><div class="right"><input id="taskSearch" class="search" placeholder="Buscar tarea, responsable o código"><label class="muted"><input id="taskShowInactive" class="check" type="checkbox"> ver ocultas</label><button id="addTask" class="btn">+ Tarea</button></div></div>
 <div class="tablewrap"><table><thead><tr><th>Código / tarea</th><th>Responsable</th><th>Prioridad</th><th>Fecha</th><th>Estado</th><th>Avance</th><th>Acciones</th></tr></thead><tbody id="tasksBody"></tbody></table></div>
 </section>
@@ -91,6 +112,19 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <div class="tablewrap"><table><thead><tr><th>Área</th><th>Responsabilidad</th><th>Responsable</th><th>Contacto</th><th>Acciones</th></tr></thead><tbody id="respBody"></tbody></table></div>
 </section>
 
+<section id="financeTab" class="tab panel">
+<div class="toolbar"><div><h2>Finanzas FUFY</h2><p>Vista del proyecto sobre la Tesorería Classic + Adulta. No se duplica una caja paralela.</p></div><div class="mini-actions"><a class="btn" href="tesoreria-v2.html">Abrir Tesorería completa</a></div></div>
+<div id="financeSummary" class="command-grid"></div>
+<div id="financeAccess" class="restricted"></div>
+<div id="financeTransactions" class="tablewrap" style="margin-top:12px"></div>
+</section>
+
+<section id="fundraisingTab" class="tab panel">
+<div class="toolbar"><div><h2>Recaudación FUFY</h2><p>Actividades de venta o recaudación vinculadas a esta Copa.</p></div><div class="mini-actions"><a class="btn" href="recaudacion.html">Administrar recaudación</a></div></div>
+<div id="fundraisingSummary" class="command-grid"></div>
+<div id="fundraisingList" class="stack"></div>
+</section>
+
 <section id="docsTab" class="tab panel">
 <h2>Documentación y carpetas FUFY</h2><p>Entrada directa a la documentación de trabajo. La gestión de datos operativos permanece en las pestañas anteriores.</p>
 <div class="area-grid">
@@ -116,7 +150,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 const PROJECT_ID='8aa8f430-d58e-4cdd-977b-4ea134b36d55';
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
 let profile=null, access=null, currentUser=null, canEdit=false, canEditResponsibilities=false;
-let taskRows=[],teamRows=[],requestRows=[],sponsorRows=[],decisionRows=[],responsibilityRows=[],linkedDocs=[];
+let taskRows=[],teamRows=[],requestRows=[],sponsorRows=[],decisionRows=[],responsibilityRows=[],linkedDocs=[],milestoneRows=[],eventRows=[],announcementRows=[],financeRows=[],obligationRows=[],fundraisingRows=[];
 let editing={type:null,row:null};
 
 const $=id=>document.getElementById(id);
@@ -148,7 +182,7 @@ async function init(){
  const [p,a,projectRes]=await Promise.all([
    sb.from('profiles').select('display_name,role,active,email').eq('user_id',user.id).maybeSingle(),
    sb.from('project_user_access').select('access_role').eq('user_id',user.id).eq('project_id',PROJECT_ID).maybeSingle(),
-   sb.from('projects').select('name,status,event_date,owner_name').eq('id',PROJECT_ID).maybeSingle()
+   sb.from('projects').select('name,status,event_date,owner_name,location,objective,fundraising_target,budget_target').eq('id',PROJECT_ID).maybeSingle()
  ]);
  profile=p.data;access=a.data;
  const elevated=profile?.active&&['superadmin','board'].includes(profile?.role);
@@ -158,7 +192,7 @@ async function init(){
  canEditResponsibilities=!!elevated;
  $('who').innerHTML='Sesión: <strong>'+esc(profile?.display_name||user.email)+'</strong> · permiso FUFY: <strong>'+esc(elevated?'administración club':access.access_role)+'</strong>'+(canEdit?' · edición habilitada':' · solo lectura');
  const project=projectRes.data;
- $('projectMeta').textContent=(project?.name||'Copa FUFY 2026')+' · '+(project?.status||'activo')+(project?.event_date?' · evento '+fmtDate(project.event_date):'');
+ $('projectMeta').textContent=(project?.name||'Copa FUFY 2026')+' · '+(project?.status||'activo')+(project?.event_date?' · evento '+fmtDate(project.event_date):'')+(project?.location?' · '+project.location:'');
  if(!canEdit) document.querySelectorAll('#addTask,#addTeam,#addRequest,#addSponsor,#addDecision').forEach(x=>x.classList.add('hide'));
  if(!canEditResponsibilities) {$('addResp').classList.add('hide');$('respHelp').textContent='Responsabilidades estructuradas. Solo Directiva/Superadmin puede modificarlas.'}
  await loadAll();
@@ -166,23 +200,31 @@ async function init(){
 }
 
 async function loadAll(){
- const [tasks,teams,requests,sponsors,decisions,resps,docs]=await Promise.all([
+ const [tasks,teams,requests,sponsors,decisions,resps,docs,milestones,events,announcements,finance,obligations,fundraising]=await Promise.all([
    sb.from('tasks').select('*').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}).order('code'),
    sb.from('project_teams').select('*').eq('project_id',PROJECT_ID).order('sort_order').order('name'),
-   sb.from('project_external_requests').select('*').eq('project_id',PROJECT_ID).order('created_at',{ascending:false}),
+   sb.from('project_external_requests').select('*').eq('project_id',PROJECT_ID).order('next_action_date',{ascending:true,nullsFirst:false}).order('created_at',{ascending:false}),
    sb.from('sponsor_prospects').select('*').eq('project_id',PROJECT_ID).order('created_at',{ascending:false}),
    sb.from('project_decisions').select('*').eq('project_id',PROJECT_ID).order('decided_on',{ascending:false}).order('created_at',{ascending:false}),
    sb.from('project_responsibilities').select('*').eq('project_id',PROJECT_ID).order('sort_order').order('title'),
-   sb.from('control_document_links').select('document_id,relationship').eq('entity_type','project').eq('entity_id',PROJECT_ID)
+   sb.from('control_document_links').select('document_id,relationship').eq('entity_type','project').eq('entity_id',PROJECT_ID),
+   sb.from('project_milestones').select('*').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}),
+   sb.from('events').select('*').eq('project_id',PROJECT_ID).order('starts_at'),
+   sb.from('announcements').select('*').eq('project_id',PROJECT_ID).order('published_at',{ascending:false}),
+   sb.from('treasury_transactions').select('*').eq('project_id',PROJECT_ID).order('transaction_date',{ascending:false}).order('created_at',{ascending:false}),
+   sb.from('treasury_obligations').select('*').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}),
+   sb.from('fundraising_activities').select('*').eq('project_id',PROJECT_ID).order('event_date',{ascending:false,nullsFirst:false})
  ]);
- const errs=[tasks.error,teams.error,requests.error,sponsors.error,decisions.error,resps.error,docs.error].filter(Boolean);
+ const errs=[tasks.error,teams.error,requests.error,sponsors.error,decisions.error,resps.error,docs.error,milestones.error,events.error,announcements.error].filter(Boolean);
  if(errs.length) console.warn('Carga parcial FUFY',errs);
  taskRows=tasks.data||[];teamRows=teams.data||[];requestRows=requests.data||[];sponsorRows=sponsors.data||[];decisionRows=decisions.data||[];responsibilityRows=resps.data||[];
+ milestoneRows=milestones.data||[];eventRows=events.data||[];announcementRows=announcements.data||[];
+ financeRows=finance.error?[]:(finance.data||[]);obligationRows=obligations.error?[]:(obligations.data||[]);fundraisingRows=fundraising.error?[]:(fundraising.data||[]);
  linkedDocs=[];
  if((docs.data||[]).length){const ids=docs.data.map(x=>x.document_id);const dr=await sb.from('control_document_catalog').select('id,title,current_version,source_status').in('id',ids).is('deleted_at',null).order('title');linkedDocs=dr.data||[]}
- renderAll();
+ renderAll(finance.error,obligations.error,fundraising.error);
 }
-function renderAll(){renderKpis();renderTasks();renderTeams();renderRequests();renderSponsors();renderDecisions();renderResponsibilities();renderDocs();bindRowButtons()}
+function renderAll(financeError=null,obligationError=null,fundraisingError=null){renderKpis();renderDirection();renderTasks();renderTeams();renderRequests();renderSponsors();renderDecisions();renderResponsibilities();renderFinance(financeError,obligationError);renderFundraising(fundraisingError);renderDocs();bindRowButtons()}
 function renderKpis(){
  const activeTasks=taskRows.filter(x=>x.active!==false);
  $('kTasks').textContent=activeTasks.length;
@@ -195,6 +237,38 @@ function renderKpis(){
  const sponsors=sponsorRows.filter(x=>x.active!==false&&x.status==='confirmed');
  $('kSponsorsOk').textContent=sponsors.length;
  $('kSponsorMoney').textContent=fmtMoney(sponsors.reduce((a,x)=>a+Number(x.committed_amount||0),0));
+}
+function dayKey(v){return v?String(v).slice(0,10):null}
+function todayKey(){return new Date().toLocaleDateString('sv-SE',{timeZone:'America/Santiago'})}
+function addDaysKey(n){const d=new Date();d.setDate(d.getDate()+n);return d.toLocaleDateString('sv-SE',{timeZone:'America/Santiago'})}
+function areaName(code){return ({A:'Auspicios / RRII',C:'Comunicaciones / Producción',D:'Delegaciones / Tercer tiempo',E:'Equipos / Competencia',F:'Finanzas / Recaudación',L:'Logística'}[code]||code)}
+function renderDirection(){
+ const active=taskRows.filter(x=>x.active!==false),today=todayKey(),next7=addDaysKey(7);
+ const overdue=active.filter(x=>x.status!=='done'&&x.due_date&&x.due_date<today);
+ const dueToday=active.filter(x=>x.status!=='done'&&x.due_date===today);
+ const soon=active.filter(x=>x.status!=='done'&&x.due_date>today&&x.due_date<=next7);
+ const noOwner=active.filter(x=>!x.owner_name||!x.owner_name.trim());
+ $('dOverdue').textContent=overdue.length;$('dToday').textContent=dueToday.length;$('dNext7').textContent=soon.length;$('dNoOwner').textContent=noOwner.length;
+ const priorities=[...overdue,...dueToday,...soon].slice(0,10);
+ $('priorityList').innerHTML=priorities.length?priorities.map(r=>'<div class="stack-item"><strong>'+esc(r.code||'')+' · '+esc(r.title)+'</strong><small>'+esc(r.owner_name||'Sin responsable')+' · '+fmtDate(r.due_date)+' · '+statusLabel(r.status)+' · '+Number(r.progress||0)+'%</small></div>').join(''):'<div class="stack-item"><strong>Sin urgencias registradas</strong><small>Revisa igualmente los hitos y gestiones externas.</small></div>';
+ const ext=requestRows.filter(x=>x.active!==false&&!['closed','declined'].includes(x.status)).sort((a,b)=>String(a.next_action_date||'9999').localeCompare(String(b.next_action_date||'9999'))).slice(0,8);
+ $('externalList').innerHTML=ext.length?ext.map(r=>'<div class="stack-item"><strong>'+esc(r.organization)+'</strong><small>'+esc(r.subject)+' · '+statusLabel(r.status)+' · próxima: '+fmtDate(r.next_action_date)+'</small></div>').join(''):'<div class="stack-item"><strong>Sin gestiones abiertas</strong></div>';
+ const groups={};
+ active.forEach(r=>{const m=String(r.code||'').match(/^FUFY-([A-Z])/);if(!m)return;const k=m[1];(groups[k]??=[]).push(r)});
+ $('areaProgress').innerHTML=Object.keys(groups).sort().map(k=>{const rows=groups[k],avg=Math.round(rows.reduce((s,x)=>s+Number(x.progress||0),0)/rows.length),done=rows.filter(x=>x.status==='done').length;return '<div class="progress-card"><strong>'+esc(areaName(k))+'</strong><div class="muted">'+done+'/'+rows.length+' completadas · '+avg+'% promedio</div><div class="bar"><i style="width:'+avg+'%"></i></div></div>'}).join('');
+ $('milestoneList').innerHTML=milestoneRows.length?milestoneRows.map(r=>'<div class="stack-item"><strong>'+esc(r.title)+'</strong><small>'+statusLabel(r.status)+' · '+Number(r.progress||0)+'% · '+fmtDate(r.due_date)+' · '+esc(r.owner_name||'Sin responsable')+'</small></div>').join(''):'<div class="stack-item"><strong>Sin hitos registrados</strong></div>';
+}
+function renderFinance(financeError,obligationError){
+ const canSee=!financeError;
+ $('financeAccess').innerHTML=canSee?'Mostrando exclusivamente movimientos vinculados al proyecto FUFY. La contabilidad maestra permanece en Tesorería Classic + Adulta.':'Tu rol no tiene acceso a los movimientos de Tesorería. Esto es intencional: los datos financieros están restringidos a las personas autorizadas.';
+ const rows=financeRows.filter(x=>!x.voided_at),income=rows.filter(x=>x.transaction_type==='income').reduce((s,x)=>s+Number(x.amount||0),0),expense=rows.filter(x=>x.transaction_type==='expense').reduce((s,x)=>s+Number(x.amount||0),0),pending=obligationRows.filter(x=>!['paid','closed','cancelled'].includes(x.status)).reduce((s,x)=>s+Number(x.amount||0),0);
+ $('financeSummary').innerHTML='<div class="command-card ok"><span>Ingresos registrados</span><b>'+fmtMoney(income)+'</b></div><div class="command-card warn"><span>Gastos registrados</span><b>'+fmtMoney(expense)+'</b></div><div class="command-card"><span>Saldo registrado</span><b>'+fmtMoney(income-expense)+'</b></div><div class="command-card bad"><span>Obligaciones pendientes</span><b>'+fmtMoney(pending)+'</b></div>';
+ $('financeTransactions').innerHTML=!canSee?'':(rows.length?'<table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Monto</th><th>Documento</th></tr></thead><tbody>'+rows.slice(0,100).map(r=>'<tr><td>'+fmtDate(r.transaction_date)+'</td><td>'+esc(r.transaction_type)+'</td><td>'+esc(r.category)+'</td><td>'+esc(r.description)+'</td><td><strong>'+fmtMoney(r.amount)+'</strong></td><td>'+esc(r.document_number||'—')+'</td></tr>').join('')+'</tbody></table>':'<div class="restricted">Todavía no hay movimientos financieros FUFY registrados con project_id. Esto debe corregirse desde Tesorería al ingresar cada aporte o gasto.</div>');
+}
+function renderFundraising(err){
+ const rows=fundraisingRows||[],gross=rows.reduce((s,x)=>s+Number(x.gross_amount||0),0),expenses=rows.reduce((s,x)=>s+Number(x.expenses_amount||0),0);
+ $('fundraisingSummary').innerHTML='<div class="command-card"><span>Actividades FUFY</span><b>'+rows.length+'</b></div><div class="command-card ok"><span>Ingreso bruto</span><b>'+fmtMoney(gross)+'</b></div><div class="command-card warn"><span>Gastos</span><b>'+fmtMoney(expenses)+'</b></div><div class="command-card"><span>Neto</span><b>'+fmtMoney(gross-expenses)+'</b></div>';
+ $('fundraisingList').innerHTML=err?'<div class="restricted">Tu rol no puede acceder a Recaudación.</div>':(rows.length?rows.map(r=>'<div class="stack-item"><strong>'+esc(r.title)+'</strong><small>'+fmtDate(r.event_date)+' · '+esc(r.status)+' · bruto '+fmtMoney(r.gross_amount||0)+' · gastos '+fmtMoney(r.expenses_amount||0)+'</small></div>').join(''):'<div class="restricted">No hay actividades de recaudación vinculadas todavía a FUFY. Las próximas deben crearse desde Recaudación seleccionando Copa FUFY 2026 como proyecto.</div>');
 }
 function renderTasks(){
  const q=$('taskSearch').value.trim(),show=$('taskShowInactive').checked;
@@ -328,6 +402,7 @@ async function toggleActive(type,id,active){
 }
 function closeModal(){$('modal').classList.remove('open');editing={type:null,row:null}}
 
+$('refreshAll').onclick=loadAll;
 $('editForm').addEventListener('submit',saveEditor);$('cancelModal').onclick=closeModal;$('modal').onclick=e=>{if(e.target===$('modal'))closeModal()};
 $('addTask').onclick=()=>openEditor('task');$('addTeam').onclick=()=>openEditor('team');$('addRequest').onclick=()=>openEditor('request');$('addSponsor').onclick=()=>openEditor('sponsor');$('addDecision').onclick=()=>openEditor('decision');$('addResp').onclick=()=>openEditor('responsibility');
 [['taskSearch',renderTasks],['taskShowInactive',renderTasks],['teamSearch',renderTeams],['teamShowInactive',renderTeams],['requestSearch',renderRequests],['requestShowInactive',renderRequests],['sponsorSearch',renderSponsors],['sponsorShowInactive',renderSponsors],['decisionShowInactive',renderDecisions],['respShowInactive',renderResponsibilities]].forEach(([id,fn])=>$(id).addEventListener(id.includes('Search')?'input':'change',()=>{fn();bindRowButtons()}));
