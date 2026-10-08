@@ -79,6 +79,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <div><h3 style="margin:0 0 8px">Gestiones externas</h3><div id="externalList" class="stack"></div></div>
 </div>
 <h3 style="margin:16px 0 8px">Avance por área</h3><div id="areaProgress" class="area-progress"></div>
+<h3 style="margin:16px 0 8px">Metas de la Copa</h3><div id="goalProgress" class="area-progress"></div>
 <h3 style="margin:16px 0 8px">Hitos de dirección</h3><div id="milestoneList" class="stack"></div>
 </section>
 
@@ -150,7 +151,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 const PROJECT_ID='8aa8f430-d58e-4cdd-977b-4ea134b36d55';
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
 let profile=null, access=null, currentUser=null, canEdit=false, canEditResponsibilities=false;
-let taskRows=[],teamRows=[],requestRows=[],sponsorRows=[],decisionRows=[],responsibilityRows=[],linkedDocs=[],milestoneRows=[],eventRows=[],announcementRows=[],financeRows=[],obligationRows=[],fundraisingRows=[];
+let taskRows=[],teamRows=[],requestRows=[],sponsorRows=[],decisionRows=[],responsibilityRows=[],linkedDocs=[],milestoneRows=[],eventRows=[],announcementRows=[],financeRows=[],obligationRows=[],fundraisingRows=[],goalRows=[];
 let editing={type:null,row:null};
 
 const $=id=>document.getElementById(id);
@@ -200,7 +201,7 @@ async function init(){
 }
 
 async function loadAll(){
- const [tasks,teams,requests,sponsors,decisions,resps,docs,milestones,events,announcements,finance,obligations,fundraising]=await Promise.all([
+ const [tasks,teams,requests,sponsors,decisions,resps,docs,milestones,events,announcements,finance,obligations,fundraising,goals]=await Promise.all([
    sb.from('tasks').select('*').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}).order('code'),
    sb.from('project_teams').select('*').eq('project_id',PROJECT_ID).order('sort_order').order('name'),
    sb.from('project_external_requests').select('*').eq('project_id',PROJECT_ID).order('next_action_date',{ascending:true,nullsFirst:false}).order('created_at',{ascending:false}),
@@ -213,13 +214,14 @@ async function loadAll(){
    sb.from('announcements').select('*').eq('project_id',PROJECT_ID).order('published_at',{ascending:false}),
    sb.from('treasury_transactions').select('*').eq('project_id',PROJECT_ID).order('transaction_date',{ascending:false}).order('created_at',{ascending:false}),
    sb.from('treasury_obligations').select('*').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}),
-   sb.from('fundraising_activities').select('*').eq('project_id',PROJECT_ID).order('event_date',{ascending:false,nullsFirst:false})
+   sb.from('fundraising_activities').select('*').eq('project_id',PROJECT_ID).order('event_date',{ascending:false,nullsFirst:false}),
+   sb.from('project_goals').select('*').eq('project_id',PROJECT_ID).order('goal_type').order('title')
  ]);
  const errs=[tasks.error,teams.error,requests.error,sponsors.error,decisions.error,resps.error,docs.error,milestones.error,events.error,announcements.error].filter(Boolean);
  if(errs.length) console.warn('Carga parcial FUFY',errs);
  taskRows=tasks.data||[];teamRows=teams.data||[];requestRows=requests.data||[];sponsorRows=sponsors.data||[];decisionRows=decisions.data||[];responsibilityRows=resps.data||[];
  milestoneRows=milestones.data||[];eventRows=events.data||[];announcementRows=announcements.data||[];
- financeRows=finance.error?[]:(finance.data||[]);obligationRows=obligations.error?[]:(obligations.data||[]);fundraisingRows=fundraising.error?[]:(fundraising.data||[]);
+ financeRows=finance.error?[]:(finance.data||[]);obligationRows=obligations.error?[]:(obligations.data||[]);fundraisingRows=fundraising.error?[]:(fundraising.data||[]);goalRows=goals.error?[]:(goals.data||[]);
  linkedDocs=[];
  if((docs.data||[]).length){const ids=docs.data.map(x=>x.document_id);const dr=await sb.from('control_document_catalog').select('id,title,current_version,source_status').in('id',ids).is('deleted_at',null).order('title');linkedDocs=dr.data||[]}
  renderAll(finance.error,obligations.error,fundraising.error);
@@ -256,6 +258,7 @@ function renderDirection(){
  const groups={};
  active.forEach(r=>{const m=String(r.code||'').match(/^FUFY-([A-Z])/);if(!m)return;const k=m[1];(groups[k]??=[]).push(r)});
  $('areaProgress').innerHTML=Object.keys(groups).sort().map(k=>{const rows=groups[k],avg=Math.round(rows.reduce((s,x)=>s+Number(x.progress||0),0)/rows.length),done=rows.filter(x=>x.status==='done').length;return '<div class="progress-card"><strong>'+esc(areaName(k))+'</strong><div class="muted">'+done+'/'+rows.length+' completadas · '+avg+'% promedio</div><div class="bar"><i style="width:'+avg+'%"></i></div></div>'}).join('');
+ $('goalProgress').innerHTML=goalRows.length?goalRows.map(g=>{const target=Number(g.target_value||0),current=Number(g.current_value||0),pct=target>0?Math.min(100,Math.round((current/target)*100)):0;const val=g.unit==='CLP'?fmtMoney(current)+' / '+fmtMoney(target):current+' / '+target+' '+esc(g.unit||'');return '<div class="progress-card"><strong>'+esc(g.title)+'</strong><div class="muted">'+val+' · '+pct+'%</div><div class="bar"><i style="width:'+pct+'%"></i></div></div>'}).join(''):'<div class="progress-card"><strong>Sin metas cuantificadas</strong></div>';
  $('milestoneList').innerHTML=milestoneRows.length?milestoneRows.map(r=>'<div class="stack-item"><strong>'+esc(r.title)+'</strong><small>'+statusLabel(r.status)+' · '+Number(r.progress||0)+'% · '+fmtDate(r.due_date)+' · '+esc(r.owner_name||'Sin responsable')+'</small></div>').join(''):'<div class="stack-item"><strong>Sin hitos registrados</strong></div>';
 }
 function renderFinance(financeError,obligationError){
