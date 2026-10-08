@@ -11,7 +11,7 @@
 *{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:#111827}
 .top{background:linear-gradient(135deg,#0b0f14,#342015);color:#fff;padding:18px}.topin{max-width:1240px;margin:auto;display:flex;gap:12px;align-items:center}
 .logo{width:58px;height:58px;border-radius:12px;background:#fff;object-fit:contain;padding:4px}.top h1{margin:0;font-size:22px}.top p{margin:4px 0 0;color:#d1d5db;font-size:12px}
-.actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:9px;padding:9px 11px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:var(--o);color:#fff}.btn.alt{background:#fff;color:#111827}.btn.dark{background:#111827}.btn.ghost{background:#f3f4f6;color:#111827}.btn.danger{background:#fee2e2;color:#991b1b}.btn.small{padding:7px 9px;font-size:11px}
+.actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:9px;padding:9px 11px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:var(--o);color:#fff}.btn.alt{background:#fff;color:#111827}.btn.dark{background:#111827}.btn.ghost{background:#f3f4f6;color:#111827}.btn.danger{background:#fee2e2;color:#991b1b}.btn.small{padding:7px 9px;font-size:11px}.btn[disabled],.btn.disabled{background:#e5e7eb!important;color:#94a3b8!important;border-color:#e5e7eb!important;cursor:not-allowed;pointer-events:none;box-shadow:none}.content-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#ffffff33;font-size:9px;margin-left:6px}.btn.ghost .content-count{background:#e2e8f0;color:#334155}.btn[disabled] .content-count{background:#f8fafc;color:#94a3b8}
 main{max-width:1240px;margin:auto;padding:18px}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:13px;margin-bottom:14px;color:#9a3412;font-size:12px;line-height:1.45}
 .kpis{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px;margin-bottom:14px}.card,.panel{background:#fff;border:1px solid var(--l);border-radius:14px}.card{padding:14px}.card span{font-size:9px;color:var(--m);font-weight:900;text-transform:uppercase}.card b{display:block;font-size:23px;margin-top:5px}.panel{padding:16px;margin-bottom:14px}.panel h2{margin:0 0 6px;font-size:17px}.panel p{margin:0 0 12px;color:var(--m);font-size:12px}
 .navtabs{display:none}.tabbtn{display:none}
@@ -32,13 +32,13 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <body>
 <header class="top"><div class="topin">
 <img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/Logo_Oficial_Copa_FUFY_2026.png" alt="Copa FUFY">
-<div><h1>Control Copa FUFY 2026</h1><p>Centro único de administración · Dirección Copa FUFY · <strong>versión áreas 08/10</strong></p></div>
+<div><h1>Control Copa FUFY 2026</h1><p>Centro único de administración · Dirección Copa FUFY · <strong>versión áreas 08/10 · botones activos</strong></p></div>
 <div class="actions"><a class="btn alt" href="../fufy.html">Ver página pública</a><a class="btn alt" href="index.html">Control Center</a><button id="logout" class="btn dark">Salir</button></div>
 </div></header>
 <main>
 <div id="loading" class="notice">Validando acceso y cargando Copa FUFY…</div>
 <section id="app" class="hide">
-<div id="who" class="notice"></div><div class="notice" style="background:#ecfdf5;border-color:#bbf7d0;color:#166534"><strong>✓ Nueva administración por áreas activa</strong> · Si ves este mensaje, estás usando la versión reorganizada del 8 de octubre.</div>
+<div id="who" class="notice"></div><div class="notice" style="background:#ecfdf5;border-color:#bbf7d0;color:#166534"><strong>✓ Nueva administración por áreas activa</strong> · Los botones ahora se habilitan solo cuando existe contenido real.</div>
 <div id="urgent" class="alertline"><strong>Prioridad actual:</strong> Arica Classic informó el 07/10 que no presentará plantel. La Copa queda con 5 equipos disponibles y se debe cerrar un sexto equipo.</div>
 
 <div class="kpis">
@@ -83,6 +83,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 
 <section id="directionTab" class="tab active panel">
 <div class="toolbar"><div><h2>Tablero de Dirección</h2><p>Qué exige atención ahora, quién lo tiene y qué tan preparada está cada área.</p></div><div class="mini-actions"><button id="refreshAll" class="btn ghost">↻ Actualizar</button><a class="btn ghost" href="../fufy.html">Página pública</a></div></div>
+<div id="directionActions" class="area-actions"></div>
 <div class="command-grid">
 <div class="command-card bad"><span>Vencidas</span><b id="dOverdue">0</b></div>
 <div class="command-card warn"><span>Para hoy</span><b id="dToday">0</b></div>
@@ -153,14 +154,14 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 </section>
 
 <section id="financeTab" class="tab panel">
-<div class="toolbar"><div><h2>Finanzas FUFY</h2><p>Vista del proyecto sobre la Tesorería Classic + Adulta. No se duplica una caja paralela.</p></div><div class="mini-actions"><a class="btn" href="tesoreria-v2.html">Abrir Tesorería completa</a></div></div>
+<div class="toolbar"><div><h2>Finanzas FUFY</h2><p>Vista del proyecto sobre la Tesorería Classic + Adulta. No se duplica una caja paralela.</p></div><div class="mini-actions"><a class="btn" href="tesoreria-v2.html">+ Cargar movimiento en Tesorería</a></div></div>
 <div id="financeSummary" class="command-grid"></div>
 <div id="financeAccess" class="restricted"></div>
 <div id="financeTransactions" class="tablewrap" style="margin-top:12px"></div>
 </section>
 
 <section id="fundraisingTab" class="tab panel">
-<div class="toolbar"><div><h2>Recaudación FUFY</h2><p>Actividades de venta o recaudación vinculadas a esta Copa.</p></div><div class="mini-actions"><a class="btn" href="recaudacion.html">Administrar recaudación</a></div></div>
+<div class="toolbar"><div><h2>Recaudación FUFY</h2><p>Actividades de venta o recaudación vinculadas a esta Copa.</p></div><div class="mini-actions"><a class="btn" href="recaudacion.html">+ Crear actividad de recaudación</a></div></div>
 <div id="fundraisingSummary" class="command-grid"></div>
 <div id="fundraisingList" class="stack"></div>
 </section>
@@ -323,13 +324,17 @@ function renderAreaDetail(code){
  const resps=responsibilityRows.filter(x=>x.active!==false&&meta.resp.includes(x.code));
  $('areaDetailOwner').innerHTML='<strong>Responsables del área</strong><span>'+(resps.length?resps.map(r=>esc(r.responsible_name||'POR DESIGNAR')+' — '+esc(r.title)).join('<br>'):'Sin responsable estructurado')+'</span>';
  const actions=[];
- actions.push('<button class="btn" data-area-tool="tasks">✅ Tareas del área</button>');
- actions.push('<button class="btn ghost" data-area-tool="checks">☑️ Checklists</button>');
- if(code==='E')actions.push('<button class="btn ghost" data-area-tool="teams">🏉 Administrar equipos</button>');
- if(['E','L','A'].includes(code))actions.push('<button class="btn ghost" data-area-tool="requests">📨 Gestiones externas</button>');
- if(code==='A')actions.push('<button class="btn ghost" data-area-tool="sponsors">🤝 Auspicios</button>');
- if(code==='F'){actions.push('<button class="btn ghost" data-area-tool="finance">💰 Finanzas</button>');actions.push('<button class="btn ghost" data-area-tool="fundraising">🌭 Recaudación</button>')}
- if(code==='C')actions.push('<button class="btn ghost" data-area-tool="docs">📚 Material y documentos</button>');
+ const addAction=(tool,label,count,primary=false)=>{
+   const n=Number(count||0),disabled=n<=0;
+   actions.push('<button class="btn '+(primary?'':'ghost')+(disabled?' disabled':'')+'" data-area-tool="'+tool+'" '+(disabled?'disabled aria-disabled="true"':'')+'>'+label+' <span class="content-count">'+(disabled?'0':n)+'</span>'+(disabled?' · Sin contenido':'')+'</button>');
+ };
+ addAction('tasks','✅ Tareas del área',tasks.length,true);
+ addAction('checks','☑️ Checklists',checks.length);
+ if(code==='E')addAction('teams','🏉 Administrar equipos',teamRows.filter(x=>x.active!==false).length);
+ if(['E','L','A'].includes(code))addAction('requests','📨 Gestiones externas',ext.length);
+ if(code==='A')addAction('sponsors','🤝 Auspicios',sponsorRows.filter(x=>x.active!==false).length);
+ if(code==='F'){addAction('finance','💰 Movimientos FUFY',financeRows.filter(x=>!x.voided_at).length+obligationRows.filter(x=>!['paid','closed','cancelled'].includes(x.status)).length);addAction('fundraising','🌭 Recaudación FUFY',fundraisingRows.length)}
+ if(code==='C')addAction('docs','📚 Material y documentos',linkedDocs.length);
  $('areaDetailActions').innerHTML=actions.join('');
  const today=todayKey();
  const ordered=[...tasks.filter(x=>x.status!=='done')].sort((a,b)=>(a.due_date||'9999').localeCompare(b.due_date||'9999'));
@@ -338,8 +343,21 @@ function renderAreaDetail(code){
  $('areaDetailExternal').innerHTML=ext.length?ext.map(r=>'<div class="stack-item"><strong>'+esc(r.organization)+'</strong><small>'+esc(r.subject)+' · '+statusLabel(r.status)+' · próxima '+fmtDate(r.next_action_date)+'</small></div>').join(''):'<div class="restricted">No hay gestiones externas propias de esta área.</div>';
  document.querySelectorAll('[data-area-tool]').forEach(b=>b.onclick=()=>openAreaTool(code,b.dataset.areaTool));
 }
+function toolContentCount(code,tool){
+ const meta=ADMIN_AREAS[code];
+ if(tool==='tasks')return areaTaskRows(code).length;
+ if(tool==='checks')return areaCheckRows(code).length;
+ if(tool==='teams')return teamRows.filter(x=>x.active!==false).length;
+ if(tool==='requests')return areaExternalRows(code).length;
+ if(tool==='sponsors')return sponsorRows.filter(x=>x.active!==false).length;
+ if(tool==='finance')return financeRows.filter(x=>!x.voided_at).length+obligationRows.filter(x=>!['paid','closed','cancelled'].includes(x.status)).length;
+ if(tool==='fundraising')return fundraisingRows.length;
+ if(tool==='docs')return linkedDocs.length;
+ return 0;
+}
 function openAreaTool(code,tool){
  currentAdminArea=code;
+ if(toolContentCount(code,tool)<=0)return;
  const map={teams:'teamsTab',requests:'requestsTab',sponsors:'sponsorsTab',finance:'financeTab',fundraising:'fundraisingTab',docs:'docsTab',checks:'checkTab',tasks:'tasksTab'};
  if(tool==='tasks'){$('taskAreaFilter').value=code;renderTasks()}
  if(tool==='checks'){
@@ -354,6 +372,16 @@ function addDaysKey(n){const d=new Date();d.setDate(d.getDate()+n);return d.toLo
 function areaName(code){return ({A:'Auspicios / RRII',C:'Comunicaciones / Producción',D:'Delegaciones / Tercer tiempo',E:'Equipos / Competencia',F:'Finanzas / Recaudación',L:'Logística'}[code]||code)}
 function renderDirection(){
  const active=taskRows.filter(x=>x.active!==false),today=todayKey(),next7=addDaysKey(7);
+ const dirActions=[
+   ['tasksTab','✅ Tareas',active.length,'tasks'],
+   ['checkTab','☑️ Checklists',checkRows.length,'checks'],
+   ['decisionsTab','🧭 Decisiones',decisionRows.filter(x=>x.active!==false).length,'decisions'],
+   ['respTab','👥 Responsables',responsibilityRows.filter(x=>x.active!==false).length,'responsibilities'],
+   ['eventModeTab','📟 Modo 24/10',Array.isArray(currentProject?.public_details?.day_plan)?currentProject.public_details.day_plan.length:0,'event'],
+   ['docsTab','📚 Documentos',linkedDocs.length,'docs']
+ ];
+ $('directionActions').innerHTML=dirActions.map(([tab,label,count,key])=>'<button class="btn ghost '+(count?'':'disabled')+'" data-direct-tab="'+tab+'" data-direct-key="'+key+'" '+(count?'':'disabled aria-disabled="true"')+'>'+label+' <span class="content-count">'+Number(count||0)+'</span>'+(count?'':' · Sin contenido')+'</button>').join('');
+ document.querySelectorAll('[data-direct-tab]').forEach(b=>b.onclick=()=>{if(b.disabled)return;currentAdminArea='DIR';if(b.dataset.directKey==='tasks'){$('taskAreaFilter').value='';renderTasks()}if(b.dataset.directKey==='checks'){$('checkFilter').value='';renderChecklists()}showTab(b.dataset.directTab,'Dirección General')});
  const overdue=active.filter(x=>x.status!=='done'&&x.due_date&&x.due_date<today);
  const dueToday=active.filter(x=>x.status!=='done'&&x.due_date===today);
  const soon=active.filter(x=>x.status!=='done'&&x.due_date>today&&x.due_date<=next7);
