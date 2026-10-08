@@ -61,6 +61,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <button class="tabbtn" data-tab="sponsorsTab">🤝 Auspicios</button>
 <button class="tabbtn" data-tab="decisionsTab">🧭 Decisiones</button>
 <button class="tabbtn" data-tab="respTab">👥 Responsables</button>
+<button class="tabbtn" data-tab="checkTab">☑️ Checklists</button>
 <button class="tabbtn" data-tab="financeTab">💰 Finanzas</button>
 <button class="tabbtn" data-tab="fundraisingTab">🌭 Recaudación</button>
 <button class="tabbtn" data-tab="docsTab">📚 Documentos</button>
@@ -113,6 +114,12 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <div class="tablewrap"><table><thead><tr><th>Área</th><th>Responsabilidad</th><th>Responsable</th><th>Contacto</th><th>Acciones</th></tr></thead><tbody id="respBody"></tbody></table></div>
 </section>
 
+<section id="checkTab" class="tab panel">
+<div class="toolbar"><div><h2>Checklists por comisión</h2><p>Cierre operativo previo al 24/10, con responsable, fecha, estado y evidencia.</p></div><div class="right"><select id="checkFilter"><option value="">Todas las comisiones</option></select></div></div>
+<div id="checkHealth" class="command-grid"></div>
+<div id="checkGroups" class="stack"></div>
+</section>
+
 <section id="financeTab" class="tab panel">
 <div class="toolbar"><div><h2>Finanzas FUFY</h2><p>Vista del proyecto sobre la Tesorería Classic + Adulta. No se duplica una caja paralela.</p></div><div class="mini-actions"><a class="btn" href="tesoreria-v2.html">Abrir Tesorería completa</a></div></div>
 <div id="financeSummary" class="command-grid"></div>
@@ -151,7 +158,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 const PROJECT_ID='8aa8f430-d58e-4cdd-977b-4ea134b36d55';
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
 let profile=null, access=null, currentUser=null, canEdit=false, canEditResponsibilities=false;
-let taskRows=[],teamRows=[],requestRows=[],sponsorRows=[],decisionRows=[],responsibilityRows=[],linkedDocs=[],milestoneRows=[],eventRows=[],announcementRows=[],financeRows=[],obligationRows=[],fundraisingRows=[],goalRows=[];
+let taskRows=[],teamRows=[],requestRows=[],sponsorRows=[],decisionRows=[],responsibilityRows=[],linkedDocs=[],milestoneRows=[],eventRows=[],announcementRows=[],financeRows=[],obligationRows=[],fundraisingRows=[],goalRows=[],checkRows=[];
 let editing={type:null,row:null};
 
 const $=id=>document.getElementById(id);
@@ -201,7 +208,7 @@ async function init(){
 }
 
 async function loadAll(){
- const [tasks,teams,requests,sponsors,decisions,resps,docs,milestones,events,announcements,finance,obligations,fundraising,goals]=await Promise.all([
+ const [tasks,teams,requests,sponsors,decisions,resps,docs,milestones,events,announcements,finance,obligations,fundraising,goals,checks]=await Promise.all([
    sb.from('tasks').select('*').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}).order('code'),
    sb.from('project_teams').select('*').eq('project_id',PROJECT_ID).order('sort_order').order('name'),
    sb.from('project_external_requests').select('*').eq('project_id',PROJECT_ID).order('next_action_date',{ascending:true,nullsFirst:false}).order('created_at',{ascending:false}),
@@ -215,18 +222,19 @@ async function loadAll(){
    sb.from('treasury_transactions').select('*').eq('project_id',PROJECT_ID).order('transaction_date',{ascending:false}).order('created_at',{ascending:false}),
    sb.from('treasury_obligations').select('*').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}),
    sb.from('fundraising_activities').select('*').eq('project_id',PROJECT_ID).order('event_date',{ascending:false,nullsFirst:false}),
-   sb.from('project_goals').select('*').eq('project_id',PROJECT_ID).order('goal_type').order('title')
+   sb.from('project_goals').select('*').eq('project_id',PROJECT_ID).order('goal_type').order('title'),
+   sb.from('responsibility_checklist_items').select('*,project_responsibilities!inner(project_id,code,area,title,responsible_name)').eq('project_responsibilities.project_id',PROJECT_ID).order('sort_order')
  ]);
  const errs=[tasks.error,teams.error,requests.error,sponsors.error,decisions.error,resps.error,docs.error,milestones.error,events.error,announcements.error].filter(Boolean);
  if(errs.length) console.warn('Carga parcial FUFY',errs);
  taskRows=tasks.data||[];teamRows=teams.data||[];requestRows=requests.data||[];sponsorRows=sponsors.data||[];decisionRows=decisions.data||[];responsibilityRows=resps.data||[];
  milestoneRows=milestones.data||[];eventRows=events.data||[];announcementRows=announcements.data||[];
- financeRows=finance.error?[]:(finance.data||[]);obligationRows=obligations.error?[]:(obligations.data||[]);fundraisingRows=fundraising.error?[]:(fundraising.data||[]);goalRows=goals.error?[]:(goals.data||[]);
+ financeRows=finance.error?[]:(finance.data||[]);obligationRows=obligations.error?[]:(obligations.data||[]);fundraisingRows=fundraising.error?[]:(fundraising.data||[]);goalRows=goals.error?[]:(goals.data||[]);checkRows=checks.error?[]:(checks.data||[]);
  linkedDocs=[];
  if((docs.data||[]).length){const ids=docs.data.map(x=>x.document_id);const dr=await sb.from('control_document_catalog').select('id,title,current_version,source_status').in('id',ids).is('deleted_at',null).order('title');linkedDocs=dr.data||[]}
  renderAll(finance.error,obligations.error,fundraising.error);
 }
-function renderAll(financeError=null,obligationError=null,fundraisingError=null){renderKpis();renderDirection();renderTasks();renderTeams();renderRequests();renderSponsors();renderDecisions();renderResponsibilities();renderFinance(financeError,obligationError);renderFundraising(fundraisingError);renderDocs();bindRowButtons()}
+function renderAll(financeError=null,obligationError=null,fundraisingError=null){renderKpis();renderDirection();renderTasks();renderTeams();renderRequests();renderSponsors();renderDecisions();renderResponsibilities();renderChecklists();renderFinance(financeError,obligationError);renderFundraising(fundraisingError);renderDocs();bindRowButtons()}
 function renderKpis(){
  const activeTasks=taskRows.filter(x=>x.active!==false);
  $('kTasks').textContent=activeTasks.length;
@@ -260,6 +268,25 @@ function renderDirection(){
  $('areaProgress').innerHTML=Object.keys(groups).sort().map(k=>{const rows=groups[k],avg=Math.round(rows.reduce((s,x)=>s+Number(x.progress||0),0)/rows.length),done=rows.filter(x=>x.status==='done').length;return '<div class="progress-card"><strong>'+esc(areaName(k))+'</strong><div class="muted">'+done+'/'+rows.length+' completadas · '+avg+'% promedio</div><div class="bar"><i style="width:'+avg+'%"></i></div></div>'}).join('');
  $('goalProgress').innerHTML=goalRows.length?goalRows.map(g=>{const target=Number(g.target_value||0),current=Number(g.current_value||0),pct=target>0?Math.min(100,Math.round((current/target)*100)):0;const val=g.unit==='CLP'?fmtMoney(current)+' / '+fmtMoney(target):current+' / '+target+' '+esc(g.unit||'');return '<div class="progress-card"><strong>'+esc(g.title)+'</strong><div class="muted">'+val+' · '+pct+'%</div><div class="bar"><i style="width:'+pct+'%"></i></div></div>'}).join(''):'<div class="progress-card"><strong>Sin metas cuantificadas</strong></div>';
  $('milestoneList').innerHTML=milestoneRows.length?milestoneRows.map(r=>'<div class="stack-item"><strong>'+esc(r.title)+'</strong><small>'+statusLabel(r.status)+' · '+Number(r.progress||0)+'% · '+fmtDate(r.due_date)+' · '+esc(r.owner_name||'Sin responsable')+'</small></div>').join(''):'<div class="stack-item"><strong>Sin hitos registrados</strong></div>';
+}
+function renderChecklists(){
+ const filter=$('checkFilter').value;
+ const groups={};
+ checkRows.forEach(x=>{const r=x.project_responsibilities||{},k=r.code||'SIN';if(filter&&k!==filter)return;(groups[k]??={meta:r,rows:[]}).rows.push(x)});
+ const all=checkRows;
+ const total=all.length,done=all.filter(x=>x.status==='done').length,blocked=all.filter(x=>x.status==='blocked').length,today=todayKey(),overdue=all.filter(x=>x.status!=='done'&&x.due_date&&x.due_date<today).length;
+ $('checkHealth').innerHTML='<div class="command-card"><span>Ítems</span><b>'+total+'</b></div><div class="command-card ok"><span>Completados</span><b>'+done+'</b></div><div class="command-card bad"><span>Bloqueados</span><b>'+blocked+'</b></div><div class="command-card warn"><span>Vencidos</span><b>'+overdue+'</b></div>';
+ const opts=[...new Map(checkRows.map(x=>[x.project_responsibilities?.code,x.project_responsibilities])).values()].filter(Boolean);
+ if($('checkFilter').options.length<=1)$('checkFilter').innerHTML='<option value="">Todas las comisiones</option>'+opts.map(r=>'<option value="'+esc(r.code)+'">'+esc(r.title)+'</option>').join('');
+ $('checkGroups').innerHTML=Object.values(groups).map(g=>'<div class="panel" style="margin:0"><h3 style="margin:0 0 4px">'+esc(g.meta.title)+'</h3><p>'+esc(g.meta.responsible_name||'Sin responsable')+'</p><div class="tablewrap"><table><thead><tr><th>Control</th><th>Fecha</th><th>Estado</th><th>Evidencia</th><th>Acción</th></tr></thead><tbody>'+g.rows.map(x=>'<tr><td><strong>'+esc(x.code)+' · '+esc(x.title)+'</strong><div class="muted">'+esc(x.detail||'')+'</div></td><td>'+fmtDate(x.due_date)+'</td><td>'+badge(x.status)+'</td><td>'+(x.evidence_required?'Sí':'No')+(x.evidence_note?'<div class="muted">'+esc(x.evidence_note)+'</div>':'')+'</td><td>'+(canEdit?'<select class="check-status" data-check="'+x.id+'">'+optionList([['pending','Pendiente'],['in_progress','En curso'],['waiting','En espera'],['blocked','Bloqueado'],['done','Completado']],x.status)+'</select>':'Solo lectura')+'</td></tr>').join('')+'</tbody></table></div></div>').join('')||'<div class="restricted">No hay checklist para este filtro.</div>';
+ document.querySelectorAll('.check-status').forEach(s=>s.onchange=()=>updateChecklistStatus(s.dataset.check,s.value));
+}
+async function updateChecklistStatus(id,status){
+ const payload={status,updated_at:new Date().toISOString()};
+ if(status==='done')payload.completed_at=new Date().toISOString();else payload.completed_at=null;
+ const {error}=await sb.from('responsibility_checklist_items').update(payload).eq('id',id);
+ if(error){alert('No se pudo actualizar checklist: '+error.message);return}
+ await loadAll();
 }
 function renderFinance(financeError,obligationError){
  const canSee=!financeError;
@@ -406,6 +433,7 @@ async function toggleActive(type,id,active){
 function closeModal(){$('modal').classList.remove('open');editing={type:null,row:null}}
 
 $('refreshAll').onclick=loadAll;
+$('checkFilter').onchange=renderChecklists;
 $('editForm').addEventListener('submit',saveEditor);$('cancelModal').onclick=closeModal;$('modal').onclick=e=>{if(e.target===$('modal'))closeModal()};
 $('addTask').onclick=()=>openEditor('task');$('addTeam').onclick=()=>openEditor('team');$('addRequest').onclick=()=>openEditor('request');$('addSponsor').onclick=()=>openEditor('sponsor');$('addDecision').onclick=()=>openEditor('decision');$('addResp').onclick=()=>openEditor('responsibility');
 [['taskSearch',renderTasks],['taskShowInactive',renderTasks],['teamSearch',renderTeams],['teamShowInactive',renderTeams],['requestSearch',renderRequests],['requestShowInactive',renderRequests],['sponsorSearch',renderSponsors],['sponsorShowInactive',renderSponsors],['decisionShowInactive',renderDecisions],['respShowInactive',renderResponsibilities]].forEach(([id,fn])=>$(id).addEventListener(id.includes('Search')?'input':'change',()=>{fn();bindRowButtons()}));
