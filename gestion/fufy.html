@@ -1,100 +1,339 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b0f14"><meta name="robots" content="noindex,nofollow">
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0f14">
+<meta name="robots" content="noindex,nofollow">
 <title>Control Copa FUFY 2026 · Gigantes de Azapa</title>
 <style>
-:root{--o:#f36b21;--d:#0b0f14;--m:#667085;--l:#e5e7eb;--bg:#f4f6f8;--ok:#15803d;--warn:#b45309}
+:root{--o:#f36b21;--d:#0b0f14;--m:#667085;--l:#e5e7eb;--bg:#f4f6f8;--ok:#15803d;--warn:#b45309;--bad:#b42318;--blue:#1d4ed8}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:#111827}
-.top{background:linear-gradient(135deg,#0b0f14,#342015);color:#fff;padding:18px}.topin{max-width:1100px;margin:auto;display:flex;gap:12px;align-items:center}
+.top{background:linear-gradient(135deg,#0b0f14,#342015);color:#fff;padding:18px}.topin{max-width:1240px;margin:auto;display:flex;gap:12px;align-items:center}
 .logo{width:58px;height:58px;border-radius:12px;background:#fff;object-fit:contain;padding:4px}.top h1{margin:0;font-size:22px}.top p{margin:4px 0 0;color:#d1d5db;font-size:12px}
-.actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:9px;padding:9px 11px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:var(--o);color:#fff}.btn.alt{background:#fff;color:#111827}.btn.dark{background:#111827}
-main{max-width:1100px;margin:auto;padding:18px}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:13px;margin-bottom:14px;color:#9a3412;font-size:12px;line-height:1.45}
-.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}.card,.panel{background:#fff;border:1px solid var(--l);border-radius:14px}.card{padding:15px}.card span{font-size:10px;color:var(--m);font-weight:900;text-transform:uppercase}.card b{display:block;font-size:25px;margin-top:6px}.panel{padding:16px;margin-bottom:14px}.panel h2{margin:0 0 6px;font-size:17px}.panel p{margin:0 0 12px;color:var(--m);font-size:12px}
-.task{display:grid;grid-template-columns:minmax(0,1fr) 130px 120px;gap:10px;align-items:center;border-top:1px solid #eef0f2;padding:12px 0}.task:first-child{border-top:0}.task strong{display:block;font-size:13px}.task small{display:block;color:var(--m);margin-top:4px}.badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900;background:#f3f4f6}.badge.done{background:#dcfce7;color:#166534}.badge.waiting{background:#fef3c7;color:#92400e}.badge.in_progress{background:#dbeafe;color:#1d4ed8}
-select{width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;background:#fff}.muted{color:var(--m);font-size:11px}.hide{display:none}.area-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.area-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid #e5e7eb;border-radius:12px;text-decoration:none;color:#111827;background:#fff;transition:.15s ease}.area-card:hover{border-color:#f36b21;box-shadow:0 4px 14px #0000000d;transform:translateY(-1px)}.area-icon{font-size:24px;line-height:1}.area-card strong{display:block;font-size:13px;margin-bottom:4px}.area-card small{display:block;color:var(--m);line-height:1.35}.area-card .go{margin-left:auto;color:#fff;background:#111827;border-radius:8px;padding:7px 9px;font-size:10px;font-weight:900;white-space:nowrap}.quickdocs{display:flex;gap:6px;flex-wrap:wrap;margin:-2px 0 4px 36px}.quickdocs a{font-size:10px;font-weight:900;text-decoration:none;border:1px solid #bfdbfe;border-radius:8px;padding:7px 9px;background:#eff6ff;color:#1d4ed8}.quickdocs a.lib{border-color:#86efac;background:#f0fdf4;color:#166534}.area-note{margin-top:12px;padding:10px;border-radius:9px;background:#f8fafc;color:#475569;font-size:11px}
-@media(max-width:760px){.topin{align-items:flex-start;flex-wrap:wrap}.actions{margin-left:0}.kpis{grid-template-columns:1fr 1fr}.task{grid-template-columns:1fr}.task select{max-width:none}.area-grid{grid-template-columns:1fr}}
-</style><link rel="stylesheet" href="ux.css?v=20261005"></head>
+.actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:9px;padding:9px 11px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;background:var(--o);color:#fff}.btn.alt{background:#fff;color:#111827}.btn.dark{background:#111827}.btn.ghost{background:#f3f4f6;color:#111827}.btn.danger{background:#fee2e2;color:#991b1b}.btn.small{padding:7px 9px;font-size:11px}
+main{max-width:1240px;margin:auto;padding:18px}.notice{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:13px;margin-bottom:14px;color:#9a3412;font-size:12px;line-height:1.45}
+.kpis{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px;margin-bottom:14px}.card,.panel{background:#fff;border:1px solid var(--l);border-radius:14px}.card{padding:14px}.card span{font-size:9px;color:var(--m);font-weight:900;text-transform:uppercase}.card b{display:block;font-size:23px;margin-top:5px}.panel{padding:16px;margin-bottom:14px}.panel h2{margin:0 0 6px;font-size:17px}.panel p{margin:0 0 12px;color:var(--m);font-size:12px}
+.navtabs{display:flex;gap:7px;overflow:auto;padding:3px 0 12px}.tabbtn{border:1px solid #d1d5db;background:#fff;color:#111827;border-radius:999px;padding:9px 12px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap}.tabbtn.active{background:#111827;color:#fff;border-color:#111827}
+.tab{display:none}.tab.active{display:block}.toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}.toolbar .left,.toolbar .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-radius:9px;background:#fff;font:inherit}textarea{min-height:85px;resize:vertical}.search{max-width:320px}.check{width:auto}
+.tablewrap{overflow:auto;border:1px solid #e5e7eb;border-radius:12px}table{width:100%;border-collapse:collapse;min-width:920px;background:#fff}th,td{padding:10px;border-bottom:1px solid #eef0f2;text-align:left;font-size:11px;vertical-align:top}th{position:sticky;top:0;background:#f8fafc;color:#475569;text-transform:uppercase;font-size:9px;letter-spacing:.03em;z-index:1}td strong{font-size:12px}.muted{color:var(--m);font-size:10px;line-height:1.35}.rowactions{display:flex;gap:5px;flex-wrap:wrap}.badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:900;background:#f3f4f6}.badge.done,.badge.confirmed,.badge.organizer,.badge.closed{background:#dcfce7;color:#166534}.badge.waiting,.badge.pending,.badge.reserve,.badge.roster_pending,.badge.acknowledged{background:#fef3c7;color:#92400e}.badge.in_progress,.badge.sent,.badge.contacted,.badge.proposal_sent,.badge.follow_up{background:#dbeafe;color:#1d4ed8}.badge.withdrawn,.badge.declined{background:#fee2e2;color:#991b1b}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.formgrid .full{grid-column:1/-1}.field label{display:block;font-size:9px;font-weight:900;color:#475569;text-transform:uppercase;margin:0 0 4px}
+.modal{position:fixed;inset:0;background:#0009;display:none;align-items:flex-start;justify-content:center;padding:6vh 14px;overflow:auto;z-index:1000}.modal.open{display:flex}.dialog{width:min(760px,100%);background:#fff;border-radius:16px;padding:18px;box-shadow:0 22px 60px #0006}.dialog h3{margin:0 0 5px}.dialog .sub{font-size:11px;color:var(--m);margin-bottom:14px}.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.hide{display:none!important}
+.area-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.area-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid #e5e7eb;border-radius:12px;text-decoration:none;color:#111827;background:#fff}.area-icon{font-size:24px}.area-card strong{display:block;font-size:13px;margin-bottom:4px}.area-card small{display:block;color:var(--m);line-height:1.35}.area-card .go{margin-left:auto;color:#fff;background:#111827;border-radius:8px;padding:7px 9px;font-size:10px;font-weight:900;white-space:nowrap}
+.alertline{padding:10px 12px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;font-size:11px;margin-bottom:10px}.statusline{font-size:11px;color:#475569}.money{font-variant-numeric:tabular-nums}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(4,1fr)}}@media(max-width:700px){.topin{align-items:flex-start;flex-wrap:wrap}.actions{margin-left:0}.kpis{grid-template-columns:1fr 1fr}.grid2,.formgrid,.area-grid{grid-template-columns:1fr}.formgrid .full{grid-column:auto}.toolbar{align-items:stretch}.toolbar .left,.toolbar .right{width:100%}.search{max-width:none}}
+</style>
+<link rel="stylesheet" href="ux.css?v=20261005">
+</head>
 <body>
 <header class="top"><div class="topin">
 <img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/Logo_Oficial_Copa_FUFY_2026.png" alt="Copa FUFY">
-<div><h1>Control Copa FUFY 2026</h1><p>Área privada · Dirección Copa FUFY</p></div>
-<div class="actions"><a class="btn alt" href="../fufy.html">Ver página pública</a><a class="btn alt" href="../mi_jugador.html">Mi Gigantes / familia</a><button id="logout" class="btn dark">Salir</button></div>
+<div><h1>Control Copa FUFY 2026</h1><p>Centro único de administración · Dirección Copa FUFY</p></div>
+<div class="actions"><a class="btn alt" href="../fufy.html">Ver página pública</a><a class="btn alt" href="index.html">Control Center</a><button id="logout" class="btn dark">Salir</button></div>
 </div></header>
 <main>
-<div id="loading" class="notice">Validando acceso al proyecto Copa FUFY…</div>
+<div id="loading" class="notice">Validando acceso y cargando Copa FUFY…</div>
 <section id="app" class="hide">
 <div id="who" class="notice"></div>
+<div id="urgent" class="alertline"><strong>Prioridad actual:</strong> Arica Classic informó el 07/10 que no presentará plantel. La Copa queda con 5 equipos disponibles y se debe cerrar un sexto equipo.</div>
+
 <div class="kpis">
 <div class="card"><span>Tareas</span><b id="kTasks">0</b></div>
 <div class="card"><span>Completadas</span><b id="kDone">0</b></div>
 <div class="card"><span>En curso</span><b id="kProgress">0</b></div>
-<div class="card"><span>Pendientes</span><b id="kWaiting">0</b></div><div class="card"><span>Prospectos sponsor</span><b id="kSponsors">0</b></div><div class="card"><span>Sponsors confirmados</span><b id="kSponsorsOk">0</b></div>
+<div class="card"><span>Pendientes</span><b id="kWaiting">0</b></div>
+<div class="card"><span>Equipos disponibles</span><b id="kTeams">0</b></div>
+<div class="card"><span>Cupo faltante</span><b id="kSlots">0</b></div>
+<div class="card"><span>Sponsors confirmados</span><b id="kSponsorsOk">0</b></div>
+<div class="card"><span>Auspicio confirmado</span><b id="kSponsorMoney" class="money">$0</b></div>
 </div>
-<div class="panel"><h2>Proyecto</h2><p id="projectMeta">Cargando…</p><div class="muted">Tu permiso está limitado a Copa FUFY 2026. No habilita Tesorería general, administración de usuarios ni otros proyectos del club.</div></div>
-<div class="panel"><h2>Áreas de trabajo FUFY</h2><p>Entrada directa a la documentación y operación de cada área. Los permisos FUFY no abren el resto de la Carpeta Maestra.</p><div class="area-grid">
-<a class="area-card" href="drive.html?v=20261003g&folder=1ZOKCJ4xoz-dslJAg23043q8vLN8110fu"><span class="area-icon">🧭</span><span><strong>Dirección y control</strong><small>Manual de dirección, tablero maestro, checklist, auditorías y matriz de responsables.</small></span><span class="go">Abrir carpeta</span></a><div class="quickdocs"><a class="lib" href="biblioteca.html?source=1OSfPuS0Eh6YhmBYVxSB-0J5RxclntELg">Ver Manual en Biblioteca</a><a class="lib" href="biblioteca.html?source=1qXOnn5zfcLmVh42o422bniIYaWWEfqqj">Ver Checklist en Biblioteca</a></div>
-<a class="area-card" href="drive.html?v=20261003g&folder=1qYMJe8sKeecGckqHHMjgqRNVRltfTNsa"><span class="area-icon">📘</span><span><strong>Bases y reglamentos</strong><small>Bases oficiales, reglamento de juego y versiones vigentes.</small></span><span class="go">Abrir carpeta</span></a><div class="quickdocs"><a target="_blank" rel="noopener" href="biblioteca.html?source=1Typz6pHhBliS-BbiaM4xigkoajf0z6xP">Bases v1.2 PDF · Drive</a><a target="_blank" rel="noopener" href="biblioteca.html?source=18wnyrEbEQG4uQRHZ3WaAWaQ4444J2eJz">Reglamento v1.2 PDF · Drive</a></div>
-<a class="area-card" href="drive.html?v=20261003g&folder=1i5fVRGc2G2ZkKXv5d8WrGIJudwKQSCYm"><span class="area-icon">🏉</span><span><strong>Equipos e invitaciones</strong><small>Clubes invitados, confirmaciones, contactos y coordinación deportiva.</small></span><span class="go">Abrir carpeta</span></a><div class="quickdocs"><a target="_blank" rel="noopener" href="biblioteca.html?source=1Xgz2D97WANlWHHbHB4Vc4IW-erdAF9HZ">Listado invitaciones · Drive</a></div>
-<a class="area-card" href="drive.html?v=20261003g&folder=1YUzddyJlzgu9jPaENBtX4UGUP-X_9MkY"><span class="area-icon">🏛️</span><span><strong>Institucional</strong><small>Municipalidad, estadio, albergue, ambulancia y solicitudes oficiales.</small></span><span class="go">Abrir carpeta</span></a><div class="quickdocs"><a target="_blank" rel="noopener" href="biblioteca.html?source=1iwqs25Fxv2p_4_3ebvUBJw9bUyLuwl9A">Solicitud ambulancia · Drive</a></div>
-<a class="area-card" href="drive.html?v=20261003g&folder=11H9xMPCHXHVTMbV1SXJi14qJ07LEyjdv"><span class="area-icon">🤝</span><span><strong>Auspicios y recursos</strong><small>Prospectos, cartas, dossier comercial, aportes y seguimiento de colaboradores.</small></span><span class="go">Abrir carpeta</span></a><div class="quickdocs"><a class="lib" href="biblioteca.html?source=16uUyB9wq1SONA3OD1i2DKFR6owPy6g6o">Dossier institucional · Biblioteca</a><a target="_blank" rel="noopener" href="biblioteca.html?source=1fm_K74iiMjawSxNEqrnIzKSsaZUm1TTt">Dossier auspicios V2 · Drive</a></div>
-<a class="area-card" href="drive.html?v=20261003g&folder=1xon2xy4PoPw0tqLop4uWylPiYkyLhzMO"><span class="area-icon">🦺</span><span><strong>Operación y logística</strong><small>Cancha, montaje, acreditación, inventario, radios, zonas y protocolos operativos.</small></span><span class="go">Abrir carpeta</span></a><div class="quickdocs"><a target="_blank" rel="noopener" href="biblioteca.html?source=1q7VfP0bUooqNHTQhWnMyP7UH4r0k3AFP">Plano funcional · Drive</a></div>
-<a class="area-card" href="drive.html?v=20261003g&folder=1UDe_gdyxJsgdTo59KugGk9IOz7FNuMtC"><span class="area-icon">🍽️</span><span><strong>Alimentación y tercer tiempo</strong><small>Recepción de delegaciones, alimentación, venta, hidratación y tercer tiempo.</small></span><span class="go">Abrir carpeta</span></a><div class="quickdocs"><a href="drive.html?v=20261003g&folder=1UDe_gdyxJsgdTo59KugGk9IOz7FNuMtC">Abrir documentos del área</a></div>
-<a class="area-card" href="drive.html?v=20261003g&folder=1bmUPzQo2mA-r0fg2NO4yXxhzV_68UpAD"><span class="area-icon">📣</span><span><strong>Comunicaciones</strong><small>Producción, protocolo comunicacional, contenido, gráficas y coordinación audiovisual.</small></span><span class="go">Abrir carpeta</span></a><div class="quickdocs"><a target="_blank" rel="noopener" href="biblioteca.html?source=1jg3xLph__bEhgdtpcCEebV8127HFXED7">Itinerario oficial · Drive</a><a target="_blank" rel="noopener" href="biblioteca.html?source=1iGL3-NkjazpPwB-5krIj0cxUFcyrPENM">Programa infantil · Drive</a></div>
-<a class="area-card" href="drive.html?v=20261003g&folder=16Sl7tC-15m_ftnQtwPbmYPpnjHXY9g1f"><span class="area-icon">💰</span><span><strong>Presupuesto y finanzas</strong><small>Presupuesto FUFY y documentos de control financiero del proyecto.</small></span><span class="go">Abrir carpeta</span></a><div class="quickdocs"><a target="_blank" rel="noopener" href="biblioteca.html?source=1Ho62UpLn0Cgrwd1HTxRuXqlQe3yAhbj0">Presupuesto 2026 · Drive</a></div>
-<a class="area-card" href="drive.html?v=20261003g&folder=1AsTa5ujN1j5oa6lKGRGpOBLLFQ2_bbaL"><span class="area-icon">🗄️</span><span><strong>Archivo histórico</strong><small>Antecedentes, versiones obsoletas y documentación que no debe usarse operativamente.</small></span><span class="go">Abrir carpeta</span></a>
-</div><div class="area-note">Los archivos marcados como Biblioteca se abren en PDF dentro del Control Center y permiten descargar su original. Los demás se mantienen indexados hasta incorporarlos a la Biblioteca.</div></div>
-<div class="panel"><h2>Tareas operativas FUFY</h2><p>Puedes revisar y actualizar el estado de las tareas de este proyecto.</p><div id="tasks"></div></div><div class="panel"><h2>Responsables y comisiones</h2><p>Responsabilidades estructuradas del proyecto.</p><div id="responsibilities"></div></div><div class="panel"><h2>Herramientas FUFY</h2><p>Gestión complementaria del campeonato.</p><div class="actions" style="margin-left:0"><a class="btn" href="biblioteca.html">📚 Biblioteca</a><a class="btn" href="sponsors.html">🤝 Sponsors</a><a class="btn" href="recaudacion.html">💰 Recaudación</a><a class="btn" href="eventos.html">📅 Eventos</a></div><div id="fufyDocs" class="muted" style="margin-top:12px"></div></div>
+
+<div class="panel"><h2>Proyecto</h2><p id="projectMeta">Cargando…</p><div class="statusline">Todo cambio operativo se administra desde aquí. “Quitar” conserva historial: el registro se oculta/desactiva, no se destruye.</div></div>
+
+<div class="navtabs" id="navtabs">
+<button class="tabbtn active" data-tab="tasksTab">✅ Tareas</button>
+<button class="tabbtn" data-tab="teamsTab">🏉 Equipos</button>
+<button class="tabbtn" data-tab="requestsTab">📨 Gestiones externas</button>
+<button class="tabbtn" data-tab="sponsorsTab">🤝 Auspicios</button>
+<button class="tabbtn" data-tab="decisionsTab">🧭 Decisiones</button>
+<button class="tabbtn" data-tab="respTab">👥 Responsables</button>
+<button class="tabbtn" data-tab="docsTab">📚 Documentos</button>
+</div>
+
+<section id="tasksTab" class="tab active panel">
+<div class="toolbar"><div class="left"><div><h2>Tareas operativas</h2><p id="taskSummary"></p></div></div><div class="right"><input id="taskSearch" class="search" placeholder="Buscar tarea, responsable o código"><label class="muted"><input id="taskShowInactive" class="check" type="checkbox"> ver ocultas</label><button id="addTask" class="btn">+ Tarea</button></div></div>
+<div class="tablewrap"><table><thead><tr><th>Código / tarea</th><th>Responsable</th><th>Prioridad</th><th>Fecha</th><th>Estado</th><th>Avance</th><th>Acciones</th></tr></thead><tbody id="tasksBody"></tbody></table></div>
+</section>
+
+<section id="teamsTab" class="tab panel">
+<div class="toolbar"><div><h2>Equipos y cupos</h2><p>Participantes, reservas, retirados y contactos.</p></div><div class="right"><input id="teamSearch" class="search" placeholder="Buscar equipo"><label class="muted"><input id="teamShowInactive" class="check" type="checkbox"> ver ocultos</label><button id="addTeam" class="btn">+ Equipo</button></div></div>
+<div class="tablewrap"><table><thead><tr><th>Equipo</th><th>Estado</th><th>Contacto</th><th>Nómina</th><th>Notas</th><th>Acciones</th></tr></thead><tbody id="teamsBody"></tbody></table></div>
+</section>
+
+<section id="requestsTab" class="tab panel">
+<div class="toolbar"><div><h2>Gestiones externas</h2><p>Municipalidad, estadio, albergue, salud, Chile Rugby y otras solicitudes.</p></div><div class="right"><input id="requestSearch" class="search" placeholder="Buscar organización o asunto"><label class="muted"><input id="requestShowInactive" class="check" type="checkbox"> ver ocultas</label><button id="addRequest" class="btn">+ Gestión</button></div></div>
+<div class="tablewrap"><table><thead><tr><th>Área / organización</th><th>Asunto</th><th>Estado</th><th>Contacto</th><th>Próxima acción</th><th>Acciones</th></tr></thead><tbody id="requestsBody"></tbody></table></div>
+</section>
+
+<section id="sponsorsTab" class="tab panel">
+<div class="toolbar"><div><h2>Auspicios y colaboradores</h2><p>Seguimiento directo de prospectos, aportes comprometidos y próximas acciones.</p></div><div class="right"><input id="sponsorSearch" class="search" placeholder="Buscar empresa"><label class="muted"><input id="sponsorShowInactive" class="check" type="checkbox"> ver ocultos</label><button id="addSponsor" class="btn">+ Auspiciador</button><a class="btn ghost" href="sponsors.html">Vista completa</a></div></div>
+<div class="tablewrap"><table><thead><tr><th>Organización</th><th>Estado</th><th>Aporte</th><th>Gestor</th><th>Próxima acción</th><th>Acciones</th></tr></thead><tbody id="sponsorsBody"></tbody></table></div>
+</section>
+
+<section id="decisionsTab" class="tab panel">
+<div class="toolbar"><div><h2>Decisiones y acuerdos</h2><p>Bitácora oficial para no perder cambios de criterio, responsables ni compromisos.</p></div><div class="right"><label class="muted"><input id="decisionShowInactive" class="check" type="checkbox"> ver ocultas</label><button id="addDecision" class="btn">+ Decisión</button></div></div>
+<div class="tablewrap"><table><thead><tr><th>Fecha / área</th><th>Tema</th><th>Decisión</th><th>Responsable</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="decisionsBody"></tbody></table></div>
+</section>
+
+<section id="respTab" class="tab panel">
+<div class="toolbar"><div><h2>Responsables y comisiones</h2><p id="respHelp">Responsabilidades estructuradas del proyecto.</p></div><div class="right"><label class="muted"><input id="respShowInactive" class="check" type="checkbox"> ver ocultas</label><button id="addResp" class="btn">+ Responsable</button></div></div>
+<div class="tablewrap"><table><thead><tr><th>Área</th><th>Responsabilidad</th><th>Responsable</th><th>Contacto</th><th>Acciones</th></tr></thead><tbody id="respBody"></tbody></table></div>
+</section>
+
+<section id="docsTab" class="tab panel">
+<h2>Documentación y carpetas FUFY</h2><p>Entrada directa a la documentación de trabajo. La gestión de datos operativos permanece en las pestañas anteriores.</p>
+<div class="area-grid">
+<a class="area-card" href="drive.html?v=20261003g&folder=1ZOKCJ4xoz-dslJAg23043q8vLN8110fu"><span class="area-icon">🧭</span><span><strong>Dirección y control</strong><small>Manual, tablero maestro, checklist, auditorías y matriz de responsables.</small></span><span class="go">Abrir</span></a>
+<a class="area-card" href="drive.html?v=20261003g&folder=1qYMJe8sKeecGckqHHMjgqRNVRltfTNsa"><span class="area-icon">📘</span><span><strong>Bases y reglamentos</strong><small>Bases oficiales, reglamento de juego y versiones vigentes.</small></span><span class="go">Abrir</span></a>
+<a class="area-card" href="drive.html?v=20261003g&folder=1i5fVRGc2G2ZkKXv5d8WrGIJudwKQSCYm"><span class="area-icon">🏉</span><span><strong>Equipos e invitaciones</strong><small>Cartas, confirmaciones y antecedentes deportivos.</small></span><span class="go">Abrir</span></a>
+<a class="area-card" href="drive.html?v=20261003g&folder=1YUzddyJlzgu9jPaENBtX4UGUP-X_9MkY"><span class="area-icon">🏛️</span><span><strong>Institucional</strong><small>Municipalidad, estadio, albergue, ambulancia y solicitudes.</small></span><span class="go">Abrir</span></a>
+<a class="area-card" href="drive.html?v=20261003g&folder=11H9xMPCHXHVTMbV1SXJi14qJ07LEyjdv"><span class="area-icon">🤝</span><span><strong>Auspicios y recursos</strong><small>Cartas, dossier, aportes y colaboradores.</small></span><span class="go">Abrir</span></a>
+<a class="area-card" href="drive.html?v=20261003g&folder=1xon2xy4PoPw0tqLop4uWylPiYkyLhzMO"><span class="area-icon">🦺</span><span><strong>Operación y logística</strong><small>Cancha, montaje, inventario, zonas y protocolos.</small></span><span class="go">Abrir</span></a>
+<a class="area-card" href="drive.html?v=20261003g&folder=1UDe_gdyxJsgdTo59KugGk9IOz7FNuMtC"><span class="area-icon">🍽️</span><span><strong>Alimentación y tercer tiempo</strong><small>Delegaciones, hidratación, ventas y tercer tiempo.</small></span><span class="go">Abrir</span></a>
+<a class="area-card" href="drive.html?v=20261003g&folder=1bmUPzQo2mA-r0fg2NO4yXxhzV_68UpAD"><span class="area-icon">📣</span><span><strong>Comunicaciones</strong><small>Producción, protocolo, contenido, gráficas y audiovisual.</small></span><span class="go">Abrir</span></a>
+</div>
+<div id="fufyDocs" class="muted" style="margin-top:14px"></div>
+</section>
 </section>
 </main>
-<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+
+<div id="modal" class="modal" role="dialog" aria-modal="true"><div class="dialog"><h3 id="modalTitle"></h3><div id="modalSub" class="sub"></div><form id="editForm"><div id="formFields" class="formgrid"></div><div class="dialog-actions"><button type="button" id="cancelModal" class="btn ghost">Cancelar</button><button type="submit" id="saveModal" class="btn">Guardar</button></div></form></div></div>
+
+<script src="../config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
 const PROJECT_ID='8aa8f430-d58e-4cdd-977b-4ea134b36d55';
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
-let taskRows=[];
-function badge(s){const v=String(s||'pending');return '<span class="badge '+v+'">'+v.replaceAll('_',' ')+'</span>'}
+let profile=null, access=null, currentUser=null, canEdit=false, canEditResponsibilities=false;
+let taskRows=[],teamRows=[],requestRows=[],sponsorRows=[],decisionRows=[],responsibilityRows=[],linkedDocs=[];
+let editing={type:null,row:null};
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmtDate=v=>v?new Date(v+'T12:00:00').toLocaleDateString('es-CL'):'—';
+const fmtMoney=v=>new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(Number(v||0));
+const statusLabel=s=>({
+waiting:'Pendiente',pending:'Pendiente',in_progress:'En curso',done:'Completada',
+invited:'Invitado',interested:'Interesado',confirmed:'Confirmado',roster_pending:'Nómina pendiente',reserve:'Reserva',declined:'Declinó',withdrawn:'Retirado',organizer:'Organizador',
+draft:'Borrador',sent:'Enviada',acknowledged:'Recepcionada',redirected:'Derivada',closed:'Cerrada',reference:'Referencia',
+identified:'Identificado',contacted:'Contactado',proposal_sent:'Propuesta enviada',follow_up:'Seguimiento',open:'Abierta'
+}[s]||s||'—');
+const badge=s=>'<span class="badge '+esc(s)+'">'+esc(statusLabel(s))+'</span>';
+const blank=v=>(v??'')==='';
+
+function rowActions(type,row,allowEdit=true){
+  if(!allowEdit) return '<span class="muted">Solo lectura</span>';
+  const hidden=row.active===false;
+  return '<div class="rowactions"><button class="btn small ghost" data-edit="'+type+'" data-id="'+row.id+'">Editar</button><button class="btn small '+(hidden?'':'danger')+'" data-toggle="'+type+'" data-id="'+row.id+'" data-active="'+(hidden?'1':'0')+'">'+(hidden?'Reactivar':'Ocultar')+'</button></div>';
+}
+function priorityLabel(v){return ({critical:'CRÍTICA',high:'ALTA',medium:'MEDIA',low:'BAJA'}[v]||v||'—')}
+function activeFilter(rows,show){return rows.filter(r=>show||r.active!==false)}
+function contains(row,q,fields){if(!q)return true;q=q.toLowerCase();return fields.some(f=>String(row[f]||'').toLowerCase().includes(q))}
+
 async function init(){
-  const {data:{user},error:userErr}=await sb.auth.getUser();
-  if(!user||userErr){location.replace('login.html?next=fufy.html');return}
-  const [{data:profile},{data:access},{data:project},{data:tasks,error:taskErr},{data:responsibilityRows},{data:docRows},{data:sponsorRows}]=await Promise.all([
-    sb.from('profiles').select('display_name,role,active').eq('user_id',user.id).maybeSingle(),
-    sb.from('project_user_access').select('access_role').eq('user_id',user.id).eq('project_id',PROJECT_ID).maybeSingle(),
-    sb.from('projects').select('name,status,event_date,owner_name').eq('id',PROJECT_ID).maybeSingle(),
-    sb.from('tasks').select('id,title,status,due_date,owner_name,priority,progress').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}),
-    sb.from('project_responsibilities').select('id,code,area,title,responsible_name,responsible_email,description,active').eq('project_id',PROJECT_ID).eq('active',true).order('sort_order'),
-    sb.from('control_document_links').select('document_id,relationship').eq('entity_type','project').eq('entity_id',PROJECT_ID),
-    sb.from('sponsor_prospects').select('id,status').eq('project_id',PROJECT_ID)
-  ]);
-  const elevated=profile?.active&&['superadmin','board'].includes(profile?.role);
-  const projectManager=profile?.active&&access&&['viewer','editor','manager','treasury'].includes(access.access_role);
-  if(!elevated&&!projectManager){loading.textContent='Tu cuenta no tiene permiso para administrar Copa FUFY 2026.';return}
-  taskRows=tasks||[];
-  who.textContent='Sesión: '+(profile?.display_name||user.email)+' · permiso FUFY: '+(elevated?'administración club':access.access_role);
-  projectMeta.textContent=(project?.name||'Copa FUFY 2026')+' · '+(project?.status||'activo')+(project?.event_date?' · '+project.event_date:'');
-  let linkedDocs=[];if((docRows||[]).length){const ids=docRows.map(x=>x.document_id);const dr=await sb.from('control_document_catalog').select('id,title,category,current_version,source_status').in('id',ids).is('deleted_at',null).order('title');linkedDocs=dr.data||[]}renderTasks();renderResponsibilities(responsibilityRows||[]);renderDocs(linkedDocs);kSponsors.textContent=(sponsorRows||[]).length;kSponsorsOk.textContent=(sponsorRows||[]).filter(x=>x.status==='confirmed').length;
-  loading.classList.add('hide');app.classList.remove('hide');
+ const {data:{user},error:userErr}=await sb.auth.getUser();
+ if(!user||userErr){location.replace('login.html?next=fufy.html');return}
+ currentUser=user;
+ const [p,a,projectRes]=await Promise.all([
+   sb.from('profiles').select('display_name,role,active,email').eq('user_id',user.id).maybeSingle(),
+   sb.from('project_user_access').select('access_role').eq('user_id',user.id).eq('project_id',PROJECT_ID).maybeSingle(),
+   sb.from('projects').select('name,status,event_date,owner_name').eq('id',PROJECT_ID).maybeSingle()
+ ]);
+ profile=p.data;access=a.data;
+ const elevated=profile?.active&&['superadmin','board'].includes(profile?.role);
+ const projectMember=profile?.active&&access&&['viewer','editor','manager','treasury'].includes(access.access_role);
+ if(!elevated&&!projectMember){$('loading').textContent='Tu cuenta no tiene permiso para administrar Copa FUFY 2026.';return}
+ canEdit=!!(elevated||(access&&['editor','manager'].includes(access.access_role)));
+ canEditResponsibilities=!!elevated;
+ $('who').innerHTML='Sesión: <strong>'+esc(profile?.display_name||user.email)+'</strong> · permiso FUFY: <strong>'+esc(elevated?'administración club':access.access_role)+'</strong>'+(canEdit?' · edición habilitada':' · solo lectura');
+ const project=projectRes.data;
+ $('projectMeta').textContent=(project?.name||'Copa FUFY 2026')+' · '+(project?.status||'activo')+(project?.event_date?' · evento '+fmtDate(project.event_date):'');
+ if(!canEdit) document.querySelectorAll('#addTask,#addTeam,#addRequest,#addSponsor,#addDecision').forEach(x=>x.classList.add('hide'));
+ if(!canEditResponsibilities) {$('addResp').classList.add('hide');$('respHelp').textContent='Responsabilidades estructuradas. Solo Directiva/Superadmin puede modificarlas.'}
+ await loadAll();
+ $('loading').classList.add('hide');$('app').classList.remove('hide');
+}
+
+async function loadAll(){
+ const [tasks,teams,requests,sponsors,decisions,resps,docs]=await Promise.all([
+   sb.from('tasks').select('*').eq('project_id',PROJECT_ID).order('due_date',{ascending:true,nullsFirst:false}).order('code'),
+   sb.from('project_teams').select('*').eq('project_id',PROJECT_ID).order('sort_order').order('name'),
+   sb.from('project_external_requests').select('*').eq('project_id',PROJECT_ID).order('created_at',{ascending:false}),
+   sb.from('sponsor_prospects').select('*').eq('project_id',PROJECT_ID).order('created_at',{ascending:false}),
+   sb.from('project_decisions').select('*').eq('project_id',PROJECT_ID).order('decided_on',{ascending:false}).order('created_at',{ascending:false}),
+   sb.from('project_responsibilities').select('*').eq('project_id',PROJECT_ID).order('sort_order').order('title'),
+   sb.from('control_document_links').select('document_id,relationship').eq('entity_type','project').eq('entity_id',PROJECT_ID)
+ ]);
+ const errs=[tasks.error,teams.error,requests.error,sponsors.error,decisions.error,resps.error,docs.error].filter(Boolean);
+ if(errs.length) console.warn('Carga parcial FUFY',errs);
+ taskRows=tasks.data||[];teamRows=teams.data||[];requestRows=requests.data||[];sponsorRows=sponsors.data||[];decisionRows=decisions.data||[];responsibilityRows=resps.data||[];
+ linkedDocs=[];
+ if((docs.data||[]).length){const ids=docs.data.map(x=>x.document_id);const dr=await sb.from('control_document_catalog').select('id,title,current_version,source_status').in('id',ids).is('deleted_at',null).order('title');linkedDocs=dr.data||[]}
+ renderAll();
+}
+function renderAll(){renderKpis();renderTasks();renderTeams();renderRequests();renderSponsors();renderDecisions();renderResponsibilities();renderDocs();bindRowButtons()}
+function renderKpis(){
+ const activeTasks=taskRows.filter(x=>x.active!==false);
+ $('kTasks').textContent=activeTasks.length;
+ $('kDone').textContent=activeTasks.filter(x=>x.status==='done').length;
+ $('kProgress').textContent=activeTasks.filter(x=>x.status==='in_progress').length;
+ $('kWaiting').textContent=activeTasks.filter(x=>!['done','in_progress'].includes(x.status)).length;
+ const activeTeams=teamRows.filter(x=>x.active!==false&&['organizer','confirmed','roster_pending'].includes(x.status));
+ $('kTeams').textContent=activeTeams.length;
+ $('kSlots').textContent=Math.max(0,6-activeTeams.length);
+ const sponsors=sponsorRows.filter(x=>x.active!==false&&x.status==='confirmed');
+ $('kSponsorsOk').textContent=sponsors.length;
+ $('kSponsorMoney').textContent=fmtMoney(sponsors.reduce((a,x)=>a+Number(x.committed_amount||0),0));
 }
 function renderTasks(){
-  kTasks.textContent=taskRows.length;
-  kDone.textContent=taskRows.filter(x=>x.status==='done').length;
-  kProgress.textContent=taskRows.filter(x=>x.status==='in_progress').length;
-  kWaiting.textContent=taskRows.filter(x=>['waiting','pending','not_started','NO INICIADO'].includes(x.status)).length;
-  tasks.innerHTML=taskRows.length?taskRows.map(t=>'<div class="task"><div><strong>'+t.title+'</strong><small>'+(t.owner_name||'Sin responsable')+(t.due_date?' · vence '+t.due_date:'')+(t.priority?' · '+t.priority:'')+'</small></div><div>'+badge(t.status)+'</div><div><select data-id="'+t.id+'"><option value="waiting" '+(t.status==='waiting'?'selected':'')+'>Pendiente</option><option value="in_progress" '+(t.status==='in_progress'?'selected':'')+'>En curso</option><option value="done" '+(t.status==='done'?'selected':'')+'>Completada</option></select></div></div>').join(''):'<div class="muted">No hay tareas registradas.</div>';
-  tasks.querySelectorAll('select').forEach(s=>s.onchange=()=>updateTask(s.dataset.id,s.value,s));
+ const q=$('taskSearch').value.trim(),show=$('taskShowInactive').checked;
+ const rows=activeFilter(taskRows,show).filter(r=>contains(r,q,['code','title','owner_name','notes','source']));
+ $('taskSummary').textContent=rows.length+' visibles · '+taskRows.filter(x=>x.active!==false&&(!x.owner_name||!x.owner_name.trim())).length+' sin responsable';
+ $('tasksBody').innerHTML=rows.length?rows.map(r=>'<tr'+(r.active===false?' style="opacity:.55"':'')+'><td><strong>'+esc(r.code||'Sin código')+' · '+esc(r.title)+'</strong><div class="muted">'+esc((r.notes||'').slice(0,180))+'</div></td><td>'+esc(r.owner_name||'Sin responsable')+'</td><td>'+esc(priorityLabel(r.priority))+'</td><td>'+fmtDate(r.due_date)+'</td><td>'+badge(r.status)+'</td><td><strong>'+Number(r.progress||0)+'%</strong></td><td>'+rowActions('task',r,canEdit)+'</td></tr>').join(''):'<tr><td colspan="7">No hay resultados.</td></tr>';
 }
-function renderResponsibilities(rows){
- responsibilities.innerHTML=rows.length?rows.map(r=>'<div class="task"><div><strong>'+esc(r.title||r.area)+'</strong><small>'+esc(r.area||'')+(r.description?' · '+esc(r.description):'')+'</small></div><div><span class="badge in_progress">'+esc(r.responsible_name||'Sin responsable')+'</span></div><div class="muted">'+(r.responsible_email?esc(r.responsible_email):'')+'</div></div>').join(''):'<div class="muted">No hay responsabilidades estructuradas.</div>';
+function renderTeams(){
+ const q=$('teamSearch').value.trim(),show=$('teamShowInactive').checked;
+ const rows=activeFilter(teamRows,show).filter(r=>contains(r,q,['name','city','country','contact_name','contact_email','notes']));
+ $('teamsBody').innerHTML=rows.length?rows.map(r=>'<tr'+(r.active===false?' style="opacity:.55"':'')+'><td><strong>'+esc(r.name)+'</strong><div class="muted">'+esc([r.city,r.country].filter(Boolean).join(' · '))+'</div></td><td>'+badge(r.status)+'</td><td>'+esc(r.contact_name||'—')+'<div class="muted">'+esc(r.contact_phone||'')+(r.contact_email?'<br>'+esc(r.contact_email):'')+'</div></td><td>'+((r.participant_count??null)!==null?'<strong>'+Number(r.participant_count)+'</strong>':'—')+'</td><td class="muted">'+esc((r.notes||'').slice(0,180))+'</td><td>'+rowActions('team',r,canEdit)+'</td></tr>').join(''):'<tr><td colspan="6">No hay resultados.</td></tr>';
 }
-function renderDocs(rows){
- fufyDocs.innerHTML=rows.length?'<strong>Documentos relacionados:</strong> '+rows.map(r=>esc(r.title)+' · v'+(r.current_version||1)).join(' / '):'No hay documentos FUFY visibles para esta cuenta.';
+function renderRequests(){
+ const q=$('requestSearch').value.trim(),show=$('requestShowInactive').checked;
+ const rows=activeFilter(requestRows,show).filter(r=>contains(r,q,['area','organization','subject','contact_name','contact_email','notes']));
+ $('requestsBody').innerHTML=rows.length?rows.map(r=>'<tr'+(r.active===false?' style="opacity:.55"':'')+'><td><strong>'+esc(r.area)+'</strong><div class="muted">'+esc(r.organization)+'</div></td><td>'+esc(r.subject)+'</td><td>'+badge(r.status)+'</td><td>'+esc(r.contact_name||'—')+'<div class="muted">'+esc(r.contact_email||'')+'</div></td><td>'+fmtDate(r.next_action_date)+'<div class="muted">'+esc((r.notes||'').slice(0,120))+'</div></td><td>'+rowActions('request',r,canEdit)+'</td></tr>').join(''):'<tr><td colspan="6">No hay resultados.</td></tr>';
 }
-function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-async function updateTask(id,status,el){
-  el.disabled=true;
-  const {error}=await sb.from('tasks').update({status}).eq('id',id).eq('project_id',PROJECT_ID);
-  el.disabled=false;
-  if(error){alert('No se pudo actualizar: '+error.message);renderTasks();return}
-  const t=taskRows.find(x=>x.id===id);if(t)t.status=status;renderTasks();
+function renderSponsors(){
+ const q=$('sponsorSearch').value.trim(),show=$('sponsorShowInactive').checked;
+ const rows=activeFilter(sponsorRows,show).filter(r=>contains(r,q,['organization','contact_name','owner_name','notes','source']));
+ $('sponsorsBody').innerHTML=rows.length?rows.map(r=>'<tr'+(r.active===false?' style="opacity:.55"':'')+'><td><strong>'+esc(r.organization)+'</strong><div class="muted">'+esc(r.contact_name||'')+'</div></td><td>'+badge(r.status)+'</td><td><strong>'+fmtMoney(r.committed_amount||0)+'</strong><div class="muted">'+esc(r.contribution_type||'')+'</div></td><td>'+esc(r.owner_name||'Sin gestor')+'</td><td>'+fmtDate(r.next_action_date)+'</td><td>'+rowActions('sponsor',r,canEdit)+'</td></tr>').join(''):'<tr><td colspan="6">No hay resultados.</td></tr>';
 }
-logout.onclick=async()=>{await sb.auth.signOut({scope:'local'});location.replace('login.html?next=fufy.html')};
+function renderDecisions(){
+ const show=$('decisionShowInactive').checked;
+ const rows=activeFilter(decisionRows,show);
+ $('decisionsBody').innerHTML=rows.length?rows.map(r=>'<tr'+(r.active===false?' style="opacity:.55"':'')+'><td><strong>'+fmtDate(r.decided_on)+'</strong><div class="muted">'+esc(r.area||'')+'</div></td><td>'+esc(r.topic)+'</td><td>'+esc(r.decision)+'</td><td>'+esc(r.owner_name||'—')+'</td><td>'+badge(r.status)+'</td><td>'+rowActions('decision',r,canEdit)+'</td></tr>').join(''):'<tr><td colspan="6">No hay decisiones registradas.</td></tr>';
+}
+function renderResponsibilities(){
+ const show=$('respShowInactive').checked;
+ const rows=activeFilter(responsibilityRows,show);
+ $('respBody').innerHTML=rows.length?rows.map(r=>'<tr'+(r.active===false?' style="opacity:.55"':'')+'><td><strong>'+esc(r.area)+'</strong><div class="muted">'+esc(r.code||'')+'</div></td><td>'+esc(r.title)+'<div class="muted">'+esc(r.description||'')+'</div></td><td>'+esc(r.responsible_name||'POR DESIGNAR')+'</td><td>'+esc(r.responsible_email||'—')+'</td><td>'+rowActions('responsibility',r,canEditResponsibilities)+'</td></tr>').join(''):'<tr><td colspan="5">No hay responsabilidades.</td></tr>';
+}
+function renderDocs(){
+ $('fufyDocs').innerHTML=linkedDocs.length?'<strong>Documentos relacionados:</strong> '+linkedDocs.map(r=>esc(r.title)+' · v'+(r.current_version||1)).join(' / '):'No hay documentos adicionales vinculados al proyecto.';
+}
+function bindRowButtons(){
+ document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit,findRow(b.dataset.edit,b.dataset.id)));
+ document.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>toggleActive(b.dataset.toggle,b.dataset.id,b.dataset.active==='1'));
+}
+function findRow(type,id){
+ const map={task:taskRows,team:teamRows,request:requestRows,sponsor:sponsorRows,decision:decisionRows,responsibility:responsibilityRows};return (map[type]||[]).find(x=>x.id===id)||null;
+}
+function optionList(options,value){return options.map(([v,l])=>'<option value="'+esc(v)+'" '+(String(value??'')===v?'selected':'')+'>'+esc(l)+'</option>').join('')}
+function field(name,label,value,type='text',extra=''){
+ if(type==='textarea') return '<div class="field '+extra+'"><label>'+esc(label)+'</label><textarea name="'+esc(name)+'">'+esc(value||'')+'</textarea></div>';
+ return '<div class="field '+extra+'"><label>'+esc(label)+'</label><input type="'+esc(type)+'" name="'+esc(name)+'" value="'+esc(value??'')+'"></div>';
+}
+function selectField(name,label,value,options,extra=''){return '<div class="field '+extra+'"><label>'+esc(label)+'</label><select name="'+esc(name)+'">'+optionList(options,value)+'</select></div>'}
+function openEditor(type,row=null){
+ editing={type,row};
+ const isNew=!row;
+ $('modalTitle').textContent=(isNew?'Agregar ':'Editar ')+({task:'tarea',team:'equipo',request:'gestión externa',sponsor:'auspiciador',decision:'decisión',responsibility:'responsabilidad'}[type]||'registro');
+ $('modalSub').textContent='Guardar actualiza inmediatamente el Control Center.';
+ let f='';
+ if(type==='task'){
+   f+=field('code','Código',row?.code||'');
+   f+=field('title','Tarea / entregable',row?.title||'');
+   f+=field('owner_name','Responsable',row?.owner_name||'');
+   f+=selectField('priority','Prioridad',row?.priority||'high',[['critical','CRÍTICA'],['high','ALTA'],['medium','MEDIA'],['low','BAJA']]);
+   f+=field('due_date','Fecha límite',row?.due_date||'','date');
+   f+=selectField('status','Estado',row?.status||'waiting',[['waiting','Pendiente'],['in_progress','En curso'],['done','Completada']]);
+   f+=field('progress','% avance',row?.progress??0,'number');
+   f+=field('source','Fuente',row?.source||'Control Center');
+   f+=field('notes','Notas / evidencia / próxima acción',row?.notes||'','textarea','full');
+ } else if(type==='team'){
+   f+=field('name','Equipo',row?.name||'');
+   f+=selectField('status','Estado',row?.status||'invited',[['organizer','Organizador'],['invited','Invitado'],['interested','Interesado'],['confirmed','Confirmado'],['roster_pending','Nómina pendiente'],['reserve','Reserva'],['declined','Declinó'],['withdrawn','Retirado']]);
+   f+=field('city','Ciudad',row?.city||'');f+=field('country','País',row?.country||'Chile');
+   f+=field('contact_name','Contacto / delegado',row?.contact_name||'');f+=field('contact_phone','Teléfono',row?.contact_phone||'');
+   f+=field('contact_email','Correo',row?.contact_email||'','email');f+=field('participant_count','N° participantes',row?.participant_count??'','number');
+   f+=field('notes','Notas / próxima acción',row?.notes||'','textarea','full');f+=field('source','Fuente',row?.source||'Control Center','text','full');
+ } else if(type==='request'){
+   f+=field('area','Área',row?.area||'');f+=field('organization','Organización',row?.organization||'');
+   f+=field('subject','Asunto',row?.subject||'','text','full');
+   f+=selectField('status','Estado',row?.status||'pending',[['draft','Borrador'],['sent','Enviada'],['acknowledged','Recepcionada'],['pending','Pendiente'],['confirmed','Confirmada'],['declined','Rechazada'],['redirected','Derivada'],['closed','Cerrada'],['reference','Referencia']]);
+   f+=field('next_action_date','Próxima acción',row?.next_action_date||'','date');
+   f+=field('contact_name','Contacto',row?.contact_name||'');f+=field('contact_email','Correo',row?.contact_email||'','email');
+   f+=field('contact_phone','Teléfono',row?.contact_phone||'');f+=field('sent_at','Fecha envío',row?.sent_at?String(row.sent_at).slice(0,10):'','date');
+   f+=field('evidence_url','Evidencia / enlace',row?.evidence_url||'','url','full');f+=field('notes','Notas',row?.notes||'','textarea','full');
+ } else if(type==='sponsor'){
+   f+=field('organization','Organización',row?.organization||'');
+   f+=selectField('status','Estado',row?.status||'identified',[['identified','Identificado'],['contacted','Contactado'],['proposal_sent','Propuesta enviada'],['follow_up','Seguimiento'],['confirmed','Confirmado'],['declined','Declinó'],['closed','Cerrado']]);
+   f+=field('contact_name','Contacto',row?.contact_name||'');f+=field('contact_email','Correo',row?.contact_email||'','email');
+   f+=field('contact_phone','Teléfono',row?.contact_phone||'');f+=field('owner_name','Gestor responsable',row?.owner_name||'');
+   f+=field('contribution_type','Tipo de aporte',row?.contribution_type||'');f+=field('committed_amount','Monto comprometido',row?.committed_amount??'','number');
+   f+=field('next_action_date','Próxima acción',row?.next_action_date||'','date');f+=field('source','Fuente',row?.source||'Control Center');
+   f+=field('notes','Notas',row?.notes||'','textarea','full');
+ } else if(type==='decision'){
+   f+=field('decided_on','Fecha',row?.decided_on||new Date().toISOString().slice(0,10),'date');f+=field('area','Área',row?.area||'');
+   f+=field('topic','Tema',row?.topic||'','text','full');f+=field('decision','Decisión / acuerdo',row?.decision||'','textarea','full');
+   f+=field('owner_name','Responsable',row?.owner_name||'');f+=field('due_date','Fecha compromiso',row?.due_date||'','date');
+   f+=selectField('status','Estado',row?.status||'open',[['open','Abierta'],['closed','Cerrada']]);f+=field('notes','Notas',row?.notes||'','textarea','full');
+ } else if(type==='responsibility'){
+   f+=field('code','Código',row?.code||('FUFY-RESP-'+Date.now().toString().slice(-6)));
+   f+=field('area','Área',row?.area||'');f+=field('title','Responsabilidad / comisión',row?.title||'','text','full');
+   f+=field('responsible_name','Responsable',row?.responsible_name||'POR DESIGNAR');f+=field('responsible_email','Correo',row?.responsible_email||'','email');
+   f+=field('sort_order','Orden',row?.sort_order??100,'number');f+=field('description','Descripción',row?.description||'','textarea','full');
+ }
+ $('formFields').innerHTML=f;$('modal').classList.add('open');
+}
+function formObject(){const fd=new FormData($('editForm'));return Object.fromEntries(fd.entries())}
+function cleanPayload(type,o){
+ Object.keys(o).forEach(k=>{if(o[k]==='')o[k]=null});
+ if(type==='task'){o.progress=Math.max(0,Math.min(100,Number(o.progress||0)));o.active=true}
+ if(type==='team'){o.participant_count=o.participant_count===null?null:Number(o.participant_count);o.active=true;o.source=o.source||'Control Center'}
+ if(type==='request'){if(o.sent_at)o.sent_at=o.sent_at+'T12:00:00-03:00';o.active=true;o.source=editing.row?.source||'Control Center'}
+ if(type==='sponsor'){o.committed_amount=o.committed_amount===null?null:Number(o.committed_amount);o.active=true;o.source=o.source||'Control Center'}
+ if(type==='decision'){o.active=true}
+ if(type==='responsibility'){o.sort_order=Number(o.sort_order||100);o.active=true}
+ return o;
+}
+async function saveEditor(e){
+ e.preventDefault();if(!canEdit&&editing.type!=='responsibility')return;
+ if(editing.type==='responsibility'&&!canEditResponsibilities)return;
+ const payload=cleanPayload(editing.type,formObject());
+ const table={task:'tasks',team:'project_teams',request:'project_external_requests',sponsor:'sponsor_prospects',decision:'project_decisions',responsibility:'project_responsibilities'}[editing.type];
+ if(!editing.row) payload.project_id=PROJECT_ID;
+ $('saveModal').disabled=true;
+ let res;
+ if(editing.row) res=await sb.from(table).update(payload).eq('id',editing.row.id).eq('project_id',PROJECT_ID);
+ else res=await sb.from(table).insert(payload);
+ $('saveModal').disabled=false;
+ if(res.error){alert('No se pudo guardar: '+res.error.message);return}
+ closeModal();await loadAll();
+}
+async function toggleActive(type,id,active){
+ const table={task:'tasks',team:'project_teams',request:'project_external_requests',sponsor:'sponsor_prospects',decision:'project_decisions',responsibility:'project_responsibilities'}[type];
+ if(type==='responsibility'&&!canEditResponsibilities)return;if(type!=='responsibility'&&!canEdit)return;
+ const {error}=await sb.from(table).update({active}).eq('id',id).eq('project_id',PROJECT_ID);
+ if(error){alert('No se pudo actualizar: '+error.message);return}await loadAll();
+}
+function closeModal(){$('modal').classList.remove('open');editing={type:null,row:null}}
+
+$('editForm').addEventListener('submit',saveEditor);$('cancelModal').onclick=closeModal;$('modal').onclick=e=>{if(e.target===$('modal'))closeModal()};
+$('addTask').onclick=()=>openEditor('task');$('addTeam').onclick=()=>openEditor('team');$('addRequest').onclick=()=>openEditor('request');$('addSponsor').onclick=()=>openEditor('sponsor');$('addDecision').onclick=()=>openEditor('decision');$('addResp').onclick=()=>openEditor('responsibility');
+[['taskSearch',renderTasks],['taskShowInactive',renderTasks],['teamSearch',renderTeams],['teamShowInactive',renderTeams],['requestSearch',renderRequests],['requestShowInactive',renderRequests],['sponsorSearch',renderSponsors],['sponsorShowInactive',renderSponsors],['decisionShowInactive',renderDecisions],['respShowInactive',renderResponsibilities]].forEach(([id,fn])=>$(id).addEventListener(id.includes('Search')?'input':'change',()=>{fn();bindRowButtons()}));
+document.querySelectorAll('.tabbtn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabbtn').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab))});
+$('logout').onclick=async()=>{await sb.auth.signOut({scope:'local'});location.replace('login.html?next=fufy.html')};
 init();
-</script><script>window.addEventListener('load',()=>{GigantesUX.addTools({target:'main',title:'Copa FUFY 2026'});GigantesUX.guide({target:'main',title:'Copa FUFY: trabaja por etapas',text:'Usa esta pantalla como tablero del campeonato.',steps:[{title:'1. Equipos y fixture',text:'Confirma categorías y participantes.'},{title:'2. Operación',text:'Cancha, alimentación, salud, logística y comunicaciones.'},{title:'3. Recaudación y auspicios',text:'Registra responsables y avances.'},{title:'4. Documentos y cierre',text:'Guarda evidencias y genera impresión/resumen.'}]});GigantesUX.help({title:'Copa FUFY',text:'No necesitas revisar todo a la vez. Entra por la etapa que te corresponde.',steps:['Revisa primero los pendientes críticos.','Actualiza solo tu comisión o área.','Guarda documentos y evidencia.','Imprime el tablero para reuniones si hace falta.']})});</script><script src="ux.js?v=20261005"></script></body></html>
+</script>
+<script src="ux.js?v=20261005"></script>
+</body></html>
