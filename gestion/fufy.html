@@ -62,6 +62,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <button class="tabbtn" data-tab="decisionsTab">🧭 Decisiones</button>
 <button class="tabbtn" data-tab="respTab">👥 Responsables</button>
 <button class="tabbtn" data-tab="checkTab">☑️ Checklists</button>
+<button class="tabbtn" data-tab="eventModeTab">📟 Modo 24/10</button>
 <button class="tabbtn" data-tab="financeTab">💰 Finanzas</button>
 <button class="tabbtn" data-tab="fundraisingTab">🌭 Recaudación</button>
 <button class="tabbtn" data-tab="docsTab">📚 Documentos</button>
@@ -127,6 +128,17 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <div id="checkGroups" class="stack"></div>
 </section>
 
+<section id="eventModeTab" class="tab panel">
+<div class="toolbar"><div><h2>Modo operativo · 24 de octubre</h2><p>Vista de mando para usar durante la jornada. Resume cronograma, responsables y pendientes críticos.</p></div><div class="mini-actions"><button id="eventRefresh" class="btn ghost">↻ Actualizar</button></div></div>
+<div id="eventCommandKpis" class="command-grid"></div>
+<div class="split">
+<div><h3 style="margin:0 0 8px">Cronograma operativo</h3><div id="eventTimeline" class="stack"></div></div>
+<div><h3 style="margin:0 0 8px">Comando por comisión</h3><div id="eventLeads" class="stack"></div></div>
+</div>
+<h3 style="margin:16px 0 8px">Pendientes críticos del evento</h3><div id="eventCritical" class="stack"></div>
+<h3 style="margin:16px 0 8px">Salud, recinto y arbitraje</h3><div id="eventExternal" class="stack"></div>
+</section>
+
 <section id="financeTab" class="tab panel">
 <div class="toolbar"><div><h2>Finanzas FUFY</h2><p>Vista del proyecto sobre la Tesorería Classic + Adulta. No se duplica una caja paralela.</p></div><div class="mini-actions"><a class="btn" href="tesoreria-v2.html">Abrir Tesorería completa</a></div></div>
 <div id="financeSummary" class="command-grid"></div>
@@ -164,7 +176,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <script>
 const PROJECT_ID='8aa8f430-d58e-4cdd-977b-4ea134b36d55';
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
-let profile=null, access=null, currentUser=null, canEdit=false, canEditResponsibilities=false;
+let profile=null, access=null, currentUser=null, canEdit=false, canEditResponsibilities=false, currentProject=null;
 let taskRows=[],teamRows=[],requestRows=[],sponsorRows=[],decisionRows=[],responsibilityRows=[],linkedDocs=[],milestoneRows=[],eventRows=[],announcementRows=[],financeRows=[],obligationRows=[],fundraisingRows=[],goalRows=[],checkRows=[];
 let editing={type:null,row:null};
 
@@ -197,7 +209,7 @@ async function init(){
  const [p,a,projectRes]=await Promise.all([
    sb.from('profiles').select('display_name,role,active,email').eq('user_id',user.id).maybeSingle(),
    sb.from('project_user_access').select('access_role').eq('user_id',user.id).eq('project_id',PROJECT_ID).maybeSingle(),
-   sb.from('projects').select('name,status,event_date,owner_name,location,objective,fundraising_target,budget_target').eq('id',PROJECT_ID).maybeSingle()
+   sb.from('projects').select('name,status,event_date,owner_name,location,objective,fundraising_target,budget_target,public_details').eq('id',PROJECT_ID).maybeSingle()
  ]);
  profile=p.data;access=a.data;
  const elevated=profile?.active&&['superadmin','board'].includes(profile?.role);
@@ -206,7 +218,7 @@ async function init(){
  canEdit=!!(elevated||(access&&['editor','manager'].includes(access.access_role)));
  canEditResponsibilities=!!elevated;
  $('who').innerHTML='Sesión: <strong>'+esc(profile?.display_name||user.email)+'</strong> · permiso FUFY: <strong>'+esc(elevated?'administración club':access.access_role)+'</strong>'+(canEdit?' · edición habilitada':' · solo lectura');
- const project=projectRes.data;
+ const project=projectRes.data;currentProject=project;
  $('projectMeta').textContent=(project?.name||'Copa FUFY 2026')+' · '+(project?.status||'activo')+(project?.event_date?' · evento '+fmtDate(project.event_date):'')+(project?.location?' · '+project.location:'');
  if(!canEdit) document.querySelectorAll('#addTask,#addTeam,#addRequest,#addSponsor,#addDecision').forEach(x=>x.classList.add('hide'));
  if(!canEditResponsibilities) {$('addResp').classList.add('hide');$('respHelp').textContent='Responsabilidades estructuradas. Solo Directiva/Superadmin puede modificarlas.'}
@@ -241,7 +253,7 @@ async function loadAll(){
  if((docs.data||[]).length){const ids=docs.data.map(x=>x.document_id);const dr=await sb.from('control_document_catalog').select('id,title,current_version,source_status').in('id',ids).is('deleted_at',null).order('title');linkedDocs=dr.data||[]}
  renderAll(finance.error,obligations.error,fundraising.error);
 }
-function renderAll(financeError=null,obligationError=null,fundraisingError=null){renderKpis();renderDirection();renderTasks();renderTeams();renderRequests();renderSponsors();renderDecisions();renderResponsibilities();renderChecklists();renderFinance(financeError,obligationError);renderFundraising(fundraisingError);renderDocs();bindRowButtons()}
+function renderAll(financeError=null,obligationError=null,fundraisingError=null){renderKpis();renderDirection();renderTasks();renderTeams();renderRequests();renderSponsors();renderDecisions();renderResponsibilities();renderChecklists();renderEventMode();renderFinance(financeError,obligationError);renderFundraising(fundraisingError);renderDocs();bindRowButtons()}
 function renderKpis(){
  const activeTasks=taskRows.filter(x=>x.active!==false);
  $('kTasks').textContent=activeTasks.length;
@@ -306,6 +318,21 @@ async function updateChecklistStatus(id,status){
  const {error}=await sb.from('responsibility_checklist_items').update(payload).eq('id',id);
  if(error){alert('No se pudo actualizar checklist: '+error.message);return}
  await loadAll();
+}
+function renderEventMode(){
+ const details=currentProject?.public_details||{},dayPlan=Array.isArray(details.day_plan)?details.day_plan:[];
+ const activeTeams=teamRows.filter(x=>x.active!==false&&['organizer','confirmed','roster_pending'].includes(x.status)).length;
+ const openChecks=checkRows.filter(x=>x.status!=='done'),blocked=openChecks.filter(x=>x.status==='blocked').length;
+ const extCritical=requestRows.filter(x=>x.active!==false&&['Recinto','Salud y seguridad','Competencia'].includes(x.area)&&!['confirmed','closed'].includes(x.status));
+ $('eventCommandKpis').innerHTML='<div class="command-card"><span>Equipos disponibles</span><b>'+activeTeams+'/6</b></div><div class="command-card warn"><span>Checklists abiertos</span><b>'+openChecks.length+'</b></div><div class="command-card bad"><span>Bloqueados</span><b>'+blocked+'</b></div><div class="command-card warn"><span>Confirmaciones críticas</span><b>'+extCritical.length+'</b></div>';
+ $('eventTimeline').innerHTML=dayPlan.length?dayPlan.map((x,i)=>'<div class="stack-item"><strong>'+String(i+1).padStart(2,'0')+' · '+esc(x)+'</strong></div>').join(''):'<div class="restricted">Cronograma no cargado.</div>';
+ $('eventLeads').innerHTML=responsibilityRows.filter(x=>x.active!==false&&!String(x.code||'').startsWith('AUTO-')).map(r=>'<div class="stack-item"><strong>'+esc(r.title)+'</strong><small>'+esc(r.responsible_name||'POR DESIGNAR')+(r.responsible_email?' · '+esc(r.responsible_email):'')+'</small></div>').join('');
+ const criticalCodes=new Set(['FUFY-E06','FUFY-E07','FUFY-E12','FUFY-L01','FUFY-L04','FIN-02','FIN-03','FIN-06','LOG-05','COM-05','SALUD-01','SALUD-02']);
+ const criticalTasks=taskRows.filter(x=>x.active!==false&&x.status!=='done'&&['FUFY-E06','FUFY-E07','FUFY-E12','FUFY-L01','FUFY-L04'].includes(x.code)).map(x=>({title:x.code+' · '+x.title,status:x.status,due:x.due_date,owner:x.owner_name}));
+ const criticalChecks=checkRows.filter(x=>x.status!=='done'&&criticalCodes.has(x.code)).map(x=>({title:x.code+' · '+x.title,status:x.status,due:x.due_date,owner:x.assigned_name||x.project_responsibilities?.responsible_name}));
+ const crit=[...criticalTasks,...criticalChecks];
+ $('eventCritical').innerHTML=crit.length?crit.map(x=>'<div class="stack-item"><strong>'+esc(x.title)+'</strong><small>'+esc(x.owner||'Sin responsable')+' · '+statusLabel(x.status)+' · '+fmtDate(x.due)+'</small></div>').join(''):'<div class="stack-item"><strong>Sin pendientes críticos abiertos</strong></div>';
+ $('eventExternal').innerHTML=requestRows.filter(x=>x.active!==false&&['Recinto','Salud y seguridad','Competencia'].includes(x.area)).map(r=>'<div class="stack-item"><strong>'+esc(r.area)+' · '+esc(r.organization)+'</strong><small>'+esc(r.subject)+' · '+statusLabel(r.status)+' · próxima acción '+fmtDate(r.next_action_date)+'</small></div>').join('')||'<div class="restricted">Sin gestiones críticas registradas.</div>';
 }
 function renderFinance(financeError,obligationError){
  const canSee=!financeError;
@@ -452,6 +479,7 @@ async function toggleActive(type,id,active){
 function closeModal(){$('modal').classList.remove('open');editing={type:null,row:null}}
 
 $('refreshAll').onclick=loadAll;
+$('eventRefresh').onclick=loadAll;
 $('checkFilter').onchange=renderChecklists;
 $('editForm').addEventListener('submit',saveEditor);$('cancelModal').onclick=closeModal;$('modal').onclick=e=>{if(e.target===$('modal'))closeModal()};
 $('addTask').onclick=()=>openEditor('task');$('addTeam').onclick=()=>openEditor('team');$('addRequest').onclick=()=>openEditor('request');$('addSponsor').onclick=()=>openEditor('sponsor');$('addDecision').onclick=()=>openEditor('decision');$('addResp').onclick=()=>openEditor('responsibility');
