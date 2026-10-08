@@ -1,137 +1,116 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Accesos · Gigantes</title><style>
-:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial;background:#f4f6f8;color:#111}.top{background:#0b0f14;color:#fff;padding:18px}.in,main{max-width:1000px;margin:auto}.top h1{margin:0;font-size:22px}.top a{color:#f6a16f;text-decoration:none}.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px;margin:16px 0}.grid{display:grid;grid-template-columns:2fr 1fr auto;gap:10px}label{font-size:11px;font-weight:900;display:block;margin-bottom:4px}input,select{width:100%;padding:10px;border:1px solid #d0d5dd;border-radius:8px}.btn{border:0;border-radius:8px;background:var(--o);color:#fff;padding:10px 12px;font-weight:900;cursor:pointer;align-self:end}.row{padding:12px 0;border-top:1px solid #eee}.rowActions{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-end;margin-top:9px}.rowActions select{width:auto;min-width:170px;padding:7px}.badges{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:11px;font-weight:900}.badge.admin{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}.fieldMini{display:flex;flex-direction:column;gap:4px}.fieldMini span{font-size:10px;font-weight:900;color:#667085;text-transform:uppercase;letter-spacing:.03em}.btn.secondary{background:#fff;color:#111;border:1px solid var(--l)}.btn.bad{background:#991b1b}.meta{font-size:12px;color:var(--m)}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}.toolbar input,.toolbar select{max-width:300px}.summary{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.summary span{background:#f8fafc;border:1px solid #e5e7eb;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800}.saved{font-size:11px;color:#166534;font-weight:800;margin-left:8px}.hide{display:none}@media(max-width:680px){.grid{grid-template-columns:1fr}}</style><link rel="stylesheet" href="ux.css?v=20261005"></head><body>
+:root{--o:#f36b21;--d:#0b0f14;--l:#e5e7eb;--m:#667085;--ok:#166534;--warn:#9a6700;--bad:#b42318;--blue:#175cd3}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial;background:#f4f6f8;color:#111}.top{background:#0b0f14;color:#fff;padding:18px}.in,main{max-width:1100px;margin:auto}.top h1{margin:0;font-size:22px}.top a{color:#f6a16f;text-decoration:none}.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px;margin:16px 0}.grid{display:grid;grid-template-columns:2fr 1fr auto;gap:10px}label{font-size:11px;font-weight:900;display:block;margin-bottom:4px}input,select{width:100%;padding:10px;border:1px solid #d0d5dd;border-radius:8px}.btn{border:0;border-radius:8px;background:var(--o);color:#fff;padding:10px 12px;font-weight:900;cursor:pointer;align-self:end}.btn.secondary{background:#fff;color:#111;border:1px solid var(--l)}.btn.bad{background:#991b1b}.row{padding:14px 0;border-top:1px solid #eee}.rowActions{display:flex;gap:7px;flex-wrap:wrap;align-items:flex-end;margin-top:9px}.rowActions select{width:auto;min-width:170px;padding:7px}.badges{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:11px;font-weight:900}.badge.admin{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}.badge.ok{background:#ecfdf3;border-color:#abefc6;color:#067647}.badge.warn{background:#fffaeb;border-color:#fedf89;color:#b54708}.badge.bad{background:#fef3f2;border-color:#fecdca;color:#b42318}.fieldMini{display:flex;flex-direction:column;gap:4px}.fieldMini span{font-size:10px;font-weight:900;color:#667085;text-transform:uppercase;letter-spacing:.03em}.meta{font-size:12px;color:var(--m);line-height:1.45}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}.toolbar input,.toolbar select{max-width:310px}.summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0}.stat{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:12px}.stat b{display:block;font-size:22px}.stat span{font-size:11px;color:#667085;font-weight:800}.saved{font-size:11px;color:#166534;font-weight:800;margin-left:8px}.notice{border-radius:10px;padding:11px 12px;margin:10px 0;font-size:12px;line-height:1.45}.notice.warn{background:#fffaeb;border:1px solid #fedf89;color:#7a2e0e}.notice.ok{background:#ecfdf3;border:1px solid #abefc6;color:#067647}.hide{display:none}@media(max-width:780px){.grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:480px){.summary{grid-template-columns:1fr}}
+</style><link rel="stylesheet" href="ux.css?v=20261005"></head><body>
 <header class="top"><div class="in"><h1>Accesos y roles</h1><a href="index.html">← Control Center</a></div></header><main><div id="loading">Verificando acceso…</div><section id="app" class="hide">
-<div class="card"><h2>Invitar usuario</h2><div class="grid"><div><label>Correo</label><input id="email" type="email"></div><div><label>Rol</label><select id="role"><option value="board">Directiva</option><option value="treasury">Tesorería</option><option value="coach">Entrenador</option><option value="commission">Comisión</option><option value="member">Miembro</option></select></div><button id="invite" class="btn">Preautorizar</button></div><p class="meta">La persona entra con enlace mágico. No compartimos contraseñas comunes.</p><div id="msg" class="meta"></div></div>
-<div class="card"><h2>Activación manual temporal</h2><p class="meta">Modo de contingencia mientras corregimos el acceso general. Autoriza o reactiva una cuenta sin cambiar su rol real si ya existe.</p><div class="grid"><div><label>Correo del usuario</label><input id="manualEmail" type="email" placeholder="correo@ejemplo.cl"></div><div><label>Rol si aún no tiene cuenta</label><select id="manualRole"><option value="guardian">Apoderado</option><option value="player">Jugador adulto</option><option value="member">Miembro</option><option value="coach">Entrenador</option><option value="commission">Comisión</option><option value="board">Directiva</option><option value="treasury">Tesorería</option></select></div><button id="manualActivate" class="btn">Activar usuario</button></div><div id="manualMsg" class="meta"></div></div>
-<div class="card"><h2>Invitaciones activas</h2><div id="invites"></div></div>
-<div class="card"><h2>Usuarios y permisos</h2><p class="meta">Aquí ves a las personas que ya tienen una cuenta de acceso. <b>Jugador</b> y <b>Apoderado</b> describen su vínculo con el club; no les dan acceso al Control Center. Solo usa “Permiso administrativo” para Directiva, Tesorería, Entrenadores o Comisiones autorizadas.</p><div class="summary"><span id="totalUsers">0 usuarios</span><span id="adminUsers">0 con acceso administrativo</span></div><div class="toolbar"><input id="userSearch" type="search" placeholder="Buscar por nombre o correo"><select id="userFilter"><option value="all">Todos</option><option value="admin">Solo administrativos</option><option value="regular">Jugadores y apoderados</option></select></div><div id="profiles"></div></div>
+
+<div class="card"><h2>Estado general de ingreso</h2><p class="meta">Esta vista separa una invitación pendiente real de una cuenta ya creada. También avisa cuando la cuenta funciona, pero falta vincular correctamente a la persona o a sus jugadores.</p>
+<div class="summary"><div class="stat"><b id="sAccounts">0</b><span>Cuentas creadas</span></div><div class="stat"><b id="sSigned">0</b><span>Ya ingresaron</span></div><div class="stat"><b id="sNever">0</b><span>Nunca ingresaron</span></div><div class="stat"><b id="sPending">0</b><span>Invitaciones pendientes reales</span></div><div class="stat"><b id="sAttention">0</b><span>Vínculos por revisar</span></div></div>
+<div id="auditMsg" class="meta"></div></div>
+
+<div class="card"><h2>Preparar acceso</h2><div class="grid"><div><label>Correo</label><input id="email" type="email"></div><div><label>Tipo de acceso</label><select id="role"><option value="guardian">Apoderado</option><option value="player">Jugador adulto</option><option value="member">Miembro</option><option value="board">Directiva</option><option value="treasury">Tesorería</option><option value="coach">Entrenador</option><option value="commission">Comisión</option></select></div><button id="invite" class="btn">Preparar acceso</button></div><p class="meta">Esto autoriza el correo. La persona luego entra por “Primera vez · Activar mi acceso”.</p><div id="msg" class="meta"></div></div>
+
+<div class="card"><h2>Reparar / activar manualmente</h2><p class="meta">Úsalo cuando la persona ya intentó ingresar y aparece un problema de vinculación. No entrega permisos administrativos por sí solo.</p><div class="grid"><div><label>Correo del usuario</label><input id="manualEmail" type="email" placeholder="correo@ejemplo.cl"></div><div><label>Tipo base</label><select id="manualRole"><option value="guardian">Apoderado</option><option value="player">Jugador adulto</option><option value="member">Miembro</option><option value="coach">Entrenador</option><option value="commission">Comisión</option><option value="board">Directiva</option><option value="treasury">Tesorería</option></select></div><button id="manualActivate" class="btn">Revisar y reparar</button></div><div id="manualMsg" class="meta"></div></div>
+
+<div class="card"><h2>Invitaciones pendientes reales</h2><p class="meta">Aquí ya no aparecen personas que tienen una cuenta creada. Si la lista está aquí, todavía falta que completen la activación.</p><div id="invites"></div></div>
+
+<div class="card"><h2>Usuarios y permisos</h2><p class="meta"><b>Jugador</b> y <b>Apoderado</b> describen su vínculo con el club; no les dan acceso al Control Center. Los permisos administrativos se administran aparte.</p>
+<div class="toolbar"><input id="userSearch" type="search" placeholder="Buscar por nombre o correo"><select id="userFilter"><option value="all">Todos</option><option value="attention">Solo por revisar</option><option value="never">Nunca ingresaron</option><option value="admin">Solo administrativos</option><option value="regular">Jugadores y apoderados</option></select></div><div id="profiles"></div></div>
 </section></main>
+
 <script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});let me,userId;
-(async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=accesos.html';return}userId=session.user.id;const r=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();me=r.data;if(!me||!me.active||me.role!=='superadmin'){loading.textContent='Este módulo requiere rol superadministrador.';return}loading.classList.add('hide');app.classList.remove('hide');refresh()})();
 const ADMIN_ROLES=['superadmin','board','treasury','coach','commission'];
 const ADMIN_LABELS={superadmin:'Superadministrador',board:'Directiva',treasury:'Tesorería',coach:'Entrenador',commission:'Comisión'};
 const BASE_LABELS={guardian:'Apoderado',player:'Jugador',member:'Miembro'};
-let functionalByUser={};let profileCache=[];
+let auditUsers=[],pendingInvites=[],functionalByUser={};
 
-function isAdult(birthDate){
- if(!birthDate)return false;
- const d=new Date(birthDate+'T00:00:00Z');if(Number.isNaN(d.getTime()))return false;
- const n=new Date();let age=n.getUTCFullYear()-d.getUTCFullYear();
- const m=n.getUTCMonth()-d.getUTCMonth();if(m<0||(m===0&&n.getUTCDate()<d.getUTCDate()))age--;
- return age>=18;
-}
-function inviteRoleLabel(role){return ADMIN_LABELS[role]||BASE_LABELS[role]||role}
-async function refresh(){
- const [{data:i,error:ie},{data:p,error:pe}]=await Promise.all([
-  sb.from('access_invitations').select('id,email,role,active,created_at').eq('active',true).order('created_at',{ascending:false}),
-  sb.from('profiles').select('user_id,display_name,email,role,active,created_at').order('created_at',{ascending:false})
- ]);
- if(ie||pe){msg.textContent='No fue posible cargar accesos.';return}
+(async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=accesos.html';return}userId=session.user.id;const r=await sb.from('profiles').select('role,active').eq('user_id',session.user.id).maybeSingle();me=r.data;if(!me||!me.active||me.role!=='superadmin'){loading.textContent='Este módulo requiere rol superadministrador.';return}loading.classList.add('hide');app.classList.remove('hide');refresh()})();
 
- const ids=(p||[]).map(x=>x.user_id);
- let peopleData=[],guardianData=[];
- if(ids.length){
-  const [{data:people,error:peopleErr},{data:guardians,error:guardianErr}]=await Promise.all([
-   sb.from('people').select('auth_user_id,full_name,category,birth_date').in('auth_user_id',ids),
-   sb.from('guardian_links').select('guardian_user_id,child_person_id').in('guardian_user_id',ids)
-  ]);
-  if(peopleErr||guardianErr){msg.textContent='Se cargaron los usuarios, pero no todos sus tipos pudieron verificarse.'}
-  peopleData=people||[];guardianData=guardians||[];
- }
-
- const peopleMap={};
- for(const person of peopleData){if(person.auth_user_id)peopleMap[person.auth_user_id]=person}
- const guardianCount={};
- for(const gl of guardianData)guardianCount[gl.guardian_user_id]=(guardianCount[gl.guardian_user_id]||0)+1
-
- functionalByUser={};
- for(const x of (p||[])){
-  const person=peopleMap[x.user_id]||null;
-  const isGuardian=!!guardianCount[x.user_id]||x.role==='guardian';
-  const hasPlayerCategory=!!String(person?.category||'').trim();
-  const isPlayer=hasPlayerCategory||x.role==='player';
-  const playerText=isPlayer?(isAdult(person?.birth_date)||/^(mayores|classic|senior|adult)/i.test(String(person?.category||''))?'Jugador adulto':'Jugador'):null;
-  const types=[];if(playerText)types.push(playerText);if(isGuardian)types.push('Apoderado');if(!types.length)types.push('Miembro');
-  const baseRole=isGuardian?'guardian':(isPlayer?'player':'member');
-  functionalByUser[x.user_id]={types,baseRole,person,children:guardianCount[x.user_id]||0};
- }
-
- invites.innerHTML=(i||[]).length?(i||[]).map(x=>'<div class="row"><b>'+esc(x.email)+'</b><div class="meta">'+esc(inviteRoleLabel(x.role))+' · '+new Date(x.created_at).toLocaleString('es-CL')+'</div><div class="rowActions"><button class="btn bad" onclick="cancelInvite(\''+x.id+'\')">Cancelar invitación</button></div></div>').join(''):'<div class="meta">Sin invitaciones pendientes.</div>';
- profileCache=p||[];renderProfiles();
-}
-function renderProfiles(){
- const q=(document.getElementById('userSearch')?.value||'').trim().toLowerCase();
- const filter=document.getElementById('userFilter')?.value||'all';
- const admins=profileCache.filter(x=>ADMIN_ROLES.includes(x.role)&&x.active);
- if(document.getElementById('totalUsers'))totalUsers.textContent=profileCache.length+' usuarios';
- if(document.getElementById('adminUsers'))adminUsers.textContent=admins.length+' con acceso administrativo';
- const rows=profileCache.filter(x=>{
-  const fun=functionalByUser[x.user_id]||{};const name=fun.person?.full_name||x.display_name||'';
-  const match=!q||(name+' '+(x.email||'')).toLowerCase().includes(q);
-  const isAdmin=ADMIN_ROLES.includes(x.role)&&x.active;
-  return match&&(filter==='all'||(filter==='admin'&&isAdmin)||(filter==='regular'&&!isAdmin));
- });
- profiles.innerHTML=rows.length?rows.map(x=>profileRow(x)).join(''):'<div class="meta">No hay usuarios que coincidan con este filtro.</div>';
-}
-document.addEventListener('input',e=>{if(e.target?.id==='userSearch')renderProfiles()});
-document.addEventListener('change',e=>{if(e.target?.id==='userFilter')renderProfiles()});
-function profileRow(x){
- const own=x.user_id===userId,fun=functionalByUser[x.user_id]||{types:['Miembro'],baseRole:'member',children:0};
- const adminRole=ADMIN_ROLES.includes(x.role)?x.role:'none';
- const adminText=adminRole==='none'?'Sin permiso administrativo':ADMIN_LABELS[adminRole];
- const options=[
-  ['none','Sin permiso administrativo'],
-  ['board','Directiva'],
-  ['treasury','Tesorería'],
-  ['coach','Entrenador'],
-  ['commission','Comisión'],
-  ['superadmin','Superadministrador']
- ];
- const name=fun.person?.full_name||x.display_name||x.email||'Usuario';
- const emailText=x.email&&x.email.toLowerCase()!==String(name).toLowerCase()?'<div class="meta">'+esc(x.email)+'</div>':'';
- const typeBadges=fun.types.map(t=>'<span class="badge">'+esc(t)+'</span>').join('');
- const adminBadge=adminRole!=='none'?'<span class="badge admin">'+esc(adminText)+'</span>':'';
- const detail=fun.children?'<div class="meta">'+fun.children+' jugador(es) menor(es) vinculado(s)</div>':'';
- return '<div class="row"><b>'+esc(name)+(own?' · Tú':'')+'</b>'+emailText+
- '<div class="badges">'+typeBadges+adminBadge+'</div>'+detail+
- '<div class="meta">Permiso administrativo: '+esc(adminText)+' · Estado: '+(x.active?'Activo':'Inactivo')+'</div>'+
- (own?'<div class="meta">Tu propio permiso/estado está protegido.</div>':'<div class="rowActions"><label class="fieldMini"><span>Permiso administrativo</span><select id="role-'+x.user_id+'">'+options.map(o=>'<option value="'+o[0]+'" '+(o[0]===adminRole?'selected':'')+'>'+o[1]+'</option>').join('')+'</select></label><label class="fieldMini"><span>Estado de cuenta</span><select id="active-'+x.user_id+'"><option value="true" '+(x.active?'selected':'')+'>Activo</option><option value="false" '+(!x.active?'selected':'')+'>Inactivo</option></select></label><button class="btn secondary" id="save-'+x.user_id+'" onclick="saveProfile(\''+x.user_id+'\',\''+escAttr(x.role)+'\','+(x.active?'true':'false')+')">Guardar cambios</button><span class="saved" id="saved-'+x.user_id+'"></span></div>')+'</div>';
-}
-async function cancelInvite(id){if(!confirm('¿Cancelar esta invitación?'))return;const {error}=await sb.from('access_invitations').update({active:false}).eq('id',id).eq('active',true);if(error)return alert(error.message);await refresh()}
-async function saveProfile(id,oldRole,oldActive){
- const selectedPermission=document.getElementById('role-'+id).value,activeValue=document.getElementById('active-'+id).value==='true';
- const roleValue=selectedPermission==='none'?(functionalByUser[id]?.baseRole||'member'):selectedPermission;
- if(roleValue===oldRole&&activeValue===oldActive){const s=document.getElementById('saved-'+id);if(s)s.textContent='Sin cambios';return;}
- if(roleValue==='superadmin'&&oldRole!=='superadmin'&&!confirm('¿Dar permiso de SUPERADMINISTRADOR a este usuario? Tendrá acceso administrativo amplio.'))return;
- if(!activeValue&&oldActive&&!confirm('¿Desactivar este usuario? No podrá operar con su perfil mientras esté inactivo.'))return;
- const btn=document.getElementById('save-'+id),saved=document.getElementById('saved-'+id);if(btn){btn.disabled=true;btn.textContent='Guardando…'}if(saved)saved.textContent='';
- const {data,error}=await sb.from('profiles').update({role:roleValue,active:activeValue}).eq('user_id',id).select('user_id,role,active').maybeSingle();
- if(error){if(btn){btn.disabled=false;btn.textContent='Guardar cambios'}return alert('No se pudo guardar: '+error.message)}
- if(!data){if(btn){btn.disabled=false;btn.textContent='Guardar cambios'}return alert('No se guardó ningún cambio. Revisa tus permisos de superadministrador.')}
- if(saved)saved.textContent='✓ Guardado';setTimeout(()=>refresh(),700);
-}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function escAttr(s){return String(s??'').replace(/'/g,'&#39;')}
-invite.onclick=async()=>{if(!email.value.trim()){msg.textContent='Ingresa un correo.';return}const {error}=await sb.from('access_invitations').insert({email:email.value.trim().toLowerCase(),role:role.value});msg.textContent=error?'Error: '+error.message:'✅ Usuario preautorizado. Ahora puede entrar usando enlace mágico.';if(!error){email.value='';refresh()}}
+function roleLabel(r){return ADMIN_LABELS[r]||BASE_LABELS[r]||r||'Miembro'}
+function fmtDate(v){if(!v)return '—';try{return new Date(v).toLocaleString('es-CL')}catch{return '—'}}
+
+async function refresh(){
+ auditMsg.textContent='Actualizando estado real…';
+ const {data,error}=await sb.functions.invoke('admin-access-audit',{body:{}});
+ if(error||data?.error){auditMsg.textContent='No fue posible cargar la auditoría de acceso: '+(data?.error||error?.message||'error');return}
+ auditUsers=data.users||[];pendingInvites=data.pending_invitations||[];
+ const s=data.summary||{};sAccounts.textContent=s.accounts||0;sSigned.textContent=s.signed_in||0;sNever.textContent=s.never_signed_in||0;sPending.textContent=s.pending_invitations||0;sAttention.textContent=s.needs_attention||0;
+ auditMsg.textContent='✓ Estado actualizado. Las invitaciones de personas que ya tienen cuenta no se muestran como pendientes.';
+ renderInvites();renderProfiles();
+}
+
+function renderInvites(){
+ invites.innerHTML=pendingInvites.length?pendingInvites.map(x=>'<div class="row"><b>'+esc(x.email)+'</b><div class="badges"><span class="badge warn">Pendiente de activación</span><span class="badge">'+esc(roleLabel(x.role))+'</span></div><div class="meta">Preparada: '+fmtDate(x.created_at)+'</div><div class="rowActions"><a class="btn secondary" href="../activar.html?email='+encodeURIComponent(x.email)+'" target="_blank">Abrir activación</a><button class="btn bad" onclick="cancelInvite(\''+x.id+'\')">Cancelar</button></div></div>').join(''):'<div class="notice ok">No hay invitaciones pendientes.</div>';
+}
+
+function renderProfiles(){
+ const q=(userSearch.value||'').trim().toLowerCase(),filter=userFilter.value||'all';
+ const rows=auditUsers.filter(x=>{
+   const hay=(x.display_name+' '+(x.email||'')+' '+(x.person?.full_name||'')+' '+(x.children||[]).map(c=>c.full_name).join(' ')).toLowerCase();
+   const isAdmin=ADMIN_ROLES.includes(x.role)&&x.active;
+   return (!q||hay.includes(q))&&(filter==='all'||(filter==='attention'&&x.needs_attention)||(filter==='never'&&!x.last_sign_in_at)||(filter==='admin'&&isAdmin)||(filter==='regular'&&!isAdmin));
+ });
+ profiles.innerHTML=rows.length?rows.map(profileRow).join(''):'<div class="meta">No hay usuarios que coincidan con este filtro.</div>';
+}
+userSearch.addEventListener('input',renderProfiles);userFilter.addEventListener('change',renderProfiles);
+
+function profileRow(x){
+ const own=x.user_id===userId,isAdmin=ADMIN_ROLES.includes(x.role)&&x.active;
+ const adminRole=ADMIN_ROLES.includes(x.role)?x.role:'none',adminText=adminRole==='none'?'Sin permiso administrativo':ADMIN_LABELS[adminRole];
+ const status=x.needs_attention
+   ? '<span class="badge bad">Revisar vínculo</span>'
+   : x.last_sign_in_at?'<span class="badge ok">Acceso completo</span>':'<span class="badge warn">Cuenta creada · aún no ingresa</span>';
+ const relation=x.person?'<div class="meta">Persona: <b>'+esc(x.person.full_name)+'</b>'+(x.person.category?' · '+esc(x.person.category):'')+'</div>':'<div class="meta">Persona directa: —</div>';
+ const children=(x.children||[]).length?'<div class="meta">Jugador(es) vinculados: <b>'+x.children.map(c=>esc(c.full_name)+(c.category?' ('+esc(c.category)+')':'')).join(', ')+'</b></div>':'';
+ const attention=x.needs_attention?'<div class="notice warn">⚠ '+esc(x.attention_reason||'Revisar vinculación')+'</div>':'';
+ const options=[['none','Sin permiso administrativo'],['board','Directiva'],['treasury','Tesorería'],['coach','Entrenador'],['commission','Comisión'],['superadmin','Superadministrador']];
+ return '<div class="row"><b>'+esc(x.display_name)+(own?' · Tú':'')+'</b><div class="meta">'+esc(x.email||'')+'</div><div class="badges">'+status+'<span class="badge">'+esc(roleLabel(x.role))+'</span>'+(isAdmin?'<span class="badge admin">'+esc(adminText)+'</span>':'')+'</div>'+
+ relation+children+attention+
+ '<div class="meta">Correo confirmado: '+(x.email_confirmed_at?'Sí':'No')+' · Último ingreso: '+fmtDate(x.last_sign_in_at)+'</div>'+
+ (x.needs_attention?'<div class="rowActions"><button class="btn" onclick="prepareRepair(\''+escAttr(x.email||'')+'\',\''+escAttr(x.role||'guardian')+'\')">Reparar este acceso</button></div>':'')+
+ (own?'<div class="meta">Tu propio permiso/estado está protegido.</div>':'<div class="rowActions"><label class="fieldMini"><span>Permiso administrativo</span><select id="role-'+x.user_id+'">'+options.map(o=>'<option value="'+o[0]+'" '+(o[0]===adminRole?'selected':'')+'>'+o[1]+'</option>').join('')+'</select></label><label class="fieldMini"><span>Estado de cuenta</span><select id="active-'+x.user_id+'"><option value="true" '+(x.active?'selected':'')+'>Activo</option><option value="false" '+(!x.active?'selected':'')+'>Inactivo</option></select></label><button class="btn secondary" id="save-'+x.user_id+'" onclick="saveProfile(\''+x.user_id+'\',\''+escAttr(x.role)+'\','+(x.active?'true':'false')+')">Guardar cambios</button><span class="saved" id="saved-'+x.user_id+'"></span></div>')+'</div>';
+}
+
+function prepareRepair(emailValue,roleValue){manualEmail.value=emailValue;manualRole.value=['guardian','player','member','coach','commission','board','treasury'].includes(roleValue)?roleValue:'member';manualEmail.scrollIntoView({behavior:'smooth',block:'center'});manualEmail.focus()}
+
+async function cancelInvite(id){if(!confirm('¿Cancelar esta invitación?'))return;const {error}=await sb.from('access_invitations').update({active:false}).eq('id',id).eq('active',true);if(error)return alert(error.message);await refresh()}
+
+async function saveProfile(id,oldRole,oldActive){
+ const selected=document.getElementById('role-'+id).value,activeValue=document.getElementById('active-'+id).value==='true';
+ const original=auditUsers.find(x=>x.user_id===id);const base=(original?.role&& !ADMIN_ROLES.includes(original.role))?original.role:'member';
+ const roleValue=selected==='none'?base:selected;
+ if(roleValue===oldRole&&activeValue===oldActive){const s=document.getElementById('saved-'+id);if(s)s.textContent='Sin cambios';return}
+ if(roleValue==='superadmin'&&oldRole!=='superadmin'&&!confirm('¿Dar permiso de SUPERADMINISTRADOR a este usuario?'))return;
+ if(!activeValue&&oldActive&&!confirm('¿Desactivar este usuario?'))return;
+ const btn=document.getElementById('save-'+id),saved=document.getElementById('saved-'+id);btn.disabled=true;btn.textContent='Guardando…';
+ const {data,error}=await sb.from('profiles').update({role:roleValue,active:activeValue}).eq('user_id',id).select('user_id').maybeSingle();
+ if(error||!data){btn.disabled=false;btn.textContent='Guardar cambios';return alert('No se pudo guardar: '+(error?.message||'sin cambios'))}
+ saved.textContent='✓ Guardado';await refresh();
+}
+
+invite.onclick=async()=>{
+ const e=email.value.trim().toLowerCase();if(!e){msg.textContent='Ingresa un correo.';return}
+ const existing=auditUsers.find(x=>(x.email||'').toLowerCase()===e);
+ if(existing){msg.textContent='Esta persona ya tiene una cuenta creada. No necesita otra invitación.';return}
+ const pending=pendingInvites.find(x=>(x.email||'').toLowerCase()===e);
+ if(pending){msg.textContent='Este correo ya tiene una activación pendiente.';return}
+ const {error}=await sb.from('access_invitations').insert({email:e,role:role.value});
+ msg.textContent=error?'Error: '+error.message:'✅ Acceso preparado. La persona debe abrir “Primera vez · Activar mi acceso”.';if(!error){email.value='';await refresh()}
+}
+
 manualActivate.onclick=async()=>{
- const e=manualEmail.value.trim().toLowerCase();
- if(!e){manualMsg.textContent='Ingresa el correo del usuario.';return}
- if(!confirm('¿Activar manualmente a '+e+'? Esta acción habilita su acceso, pero no lo convierte en administrador.'))return;
- manualActivate.disabled=true;manualMsg.textContent='Activando y reparando vinculación…';
+ const e=manualEmail.value.trim().toLowerCase();if(!e){manualMsg.textContent='Ingresa el correo del usuario.';return}
+ if(!confirm('¿Revisar y reparar el acceso de '+e+'?'))return;
+ manualActivate.disabled=true;manualMsg.textContent='Revisando cuenta y vínculos…';
  try{
   const {data,error}=await sb.functions.invoke('admin-activate-user',{body:{email:e,role:manualRole.value}});
-  if(error)throw error;
-  if(data?.error)throw new Error(data.error);
-  if(data?.status==='preauthorized'){
-    manualMsg.innerHTML='✅ <b>Acceso preparado.</b> El usuario aún no tenía cuenta. Ya puede entrar por <a href="../activar.html" target="_blank">Activar Mi Gigantes</a> usando '+esc(e)+'.';
-  }else{
-    const extra=data?.person_linked?(data?.linked_children?(' · '+data.linked_children+' jugador(es) familiar(es) vinculados'):' · ficha personal vinculada'):' · revisar ficha personal';
-    manualMsg.textContent='✅ '+(data?.message||'Usuario activado correctamente.')+extra;
-  }
-  manualEmail.value='';await refresh();
- }catch(err){
-  manualMsg.textContent='❌ No fue posible activar: '+(err?.message||'error inesperado');
- }finally{manualActivate.disabled=false}
+  if(error)throw error;if(data?.error)throw new Error(data.error);
+  if(data?.status==='preauthorized')manualMsg.innerHTML='✅ <b>Acceso preparado.</b> Todavía no existe cuenta. Debe comenzar en <a href="../activar.html?email='+encodeURIComponent(e)+'" target="_blank">Activar Mi Gigantes</a>.';
+  else manualMsg.textContent='✅ '+(data?.message||'Acceso revisado correctamente.')+(data?.linked_children?(' · '+data.linked_children+' jugador(es) vinculado(s)'):'');
+  await refresh();
+ }catch(err){manualMsg.textContent='❌ '+(err?.message||'No fue posible reparar el acceso')}
+ finally{manualActivate.disabled=false}
 }
-</script><script src="ux.js?v=20261005"></script><script>window.addEventListener('load',()=>{if(window.GigantesUX){GigantesUX.addTools({target:'main',title:"Accesos y roles"});GigantesUX.help({title:"Accesos y roles",text:"Administra quién puede ver y editar cada área.",steps:['Empieza por los pendientes visibles.','Actualiza la información dentro de la app.','Usa Imprimir para reuniones o respaldo.']})}});</script></body></html>
+</script><script src="ux.js?v=20261005"></script><script>window.addEventListener('load',()=>{if(window.GigantesUX){GigantesUX.addTools({target:'main',title:"Accesos y roles"});GigantesUX.help({title:"Accesos y roles",text:"Consulta el estado real de cada acceso y actúa solo donde hace falta.",steps:['Revisa el resumen superior.','Las invitaciones pendientes son personas que todavía no crean su cuenta.','Usa “Reparar este acceso” solo en filas marcadas en rojo.']})}});</script></body></html>
