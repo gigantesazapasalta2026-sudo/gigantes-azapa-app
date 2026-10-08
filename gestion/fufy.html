@@ -32,7 +32,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <body>
 <header class="top"><div class="topin">
 <img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/Logo_Oficial_Copa_FUFY_2026.png" alt="Copa FUFY">
-<div><h1>Control Copa FUFY 2026</h1><p>Centro único de administración · Dirección Copa FUFY · <strong>versión áreas 08/10 · botones activos</strong></p></div>
+<div><h1>Control Copa FUFY 2026</h1><p>Centro único de administración · Dirección Copa FUFY · <strong>versión áreas 08/10 · navegación corregida</strong></p></div>
 <div class="actions"><a class="btn alt" href="../fufy.html">Ver página pública</a><a class="btn alt" href="index.html">Control Center</a><button id="logout" class="btn dark">Salir</button></div>
 </div></header>
 <main>
@@ -83,7 +83,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 
 <section id="directionTab" class="tab active panel">
 <div class="toolbar"><div><h2>Tablero de Dirección</h2><p>Qué exige atención ahora, quién lo tiene y qué tan preparada está cada área.</p></div><div class="mini-actions"><button id="refreshAll" class="btn ghost">↻ Actualizar</button><a class="btn ghost" href="../fufy.html">Página pública</a></div></div>
-<div id="directionActions" class="area-actions"></div>
+<div class="notice" style="background:#eef6ff;border-color:#bfdbfe;color:#1e3a8a"><strong>Accesos de Dirección General</strong> · Usa estos botones para abrir el control completo de la Copa.</div><div id="directionActions" class="area-actions"></div>
 <div class="command-grid">
 <div class="command-card bad"><span>Vencidas</span><b id="dOverdue">0</b></div>
 <div class="command-card warn"><span>Para hoy</span><b id="dToday">0</b></div>
@@ -298,12 +298,15 @@ function showTab(tabId,contextLabel=''){
    $('toolContextTitle').textContent=contextLabel||meta?.title||'Administración FUFY';
    $('toolContextSub').textContent=meta?'Herramienta dentro de '+meta.title:'Herramienta general';
  }
- window.scrollTo({top:Math.max(0,$('adminMenu').offsetTop-10),behavior:'smooth'});
+ const target=$(tabId);
+ if(target){
+   setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),30);
+ }
 }
 function openAdminArea(code){
  currentAdminArea=code;
  document.querySelectorAll('[data-admin-area]').forEach(b=>b.classList.toggle('active',b.dataset.adminArea===code));
- if(code==='DIR'){showTab('directionTab');return}
+ if(code==='DIR'){renderDirection();showTab('directionTab');return}
  renderAreaDetail(code);showTab('areaDetailTab');
 }
 function areaTaskRows(code){return taskRows.filter(x=>x.active!==false&&String(x.code||'').startsWith('FUFY-'+code))}
