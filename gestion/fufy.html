@@ -75,6 +75,13 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <div class="command-card"><span>Próximos 7 días</span><b id="dNext7">0</b></div>
 <div class="command-card ok"><span>Sin responsable</span><b id="dNoOwner">0</b></div>
 </div>
+<div class="command-grid">
+<div class="command-card"><span>Días para la Copa</span><b id="dDays">0</b></div>
+<div class="command-card"><span>Preparación general</span><b id="dReadiness">0%</b></div>
+<div class="command-card warn"><span>Bloqueos críticos</span><b id="dCritical">0</b></div>
+<div class="command-card"><span>Datos incompletos</span><b id="dDataIssues">0</b></div>
+</div>
+<div id="criticalList" class="alertline"></div>
 <div class="split">
 <div><h3 style="margin:0 0 8px">Prioridades y próximas acciones</h3><div id="priorityList" class="stack"></div></div>
 <div><h3 style="margin:0 0 8px">Gestiones externas</h3><div id="externalList" class="stack"></div></div>
@@ -259,6 +266,18 @@ function renderDirection(){
  const soon=active.filter(x=>x.status!=='done'&&x.due_date>today&&x.due_date<=next7);
  const noOwner=active.filter(x=>!x.owner_name||!x.owner_name.trim());
  $('dOverdue').textContent=overdue.length;$('dToday').textContent=dueToday.length;$('dNext7').textContent=soon.length;$('dNoOwner').textContent=noOwner.length;
+ const eventDate='2026-10-24',days=Math.max(0,Math.ceil((new Date(eventDate+'T12:00:00-03:00')-new Date())/86400000));
+ const readiness=active.length?Math.round(active.reduce((s,x)=>s+Number(x.progress||0),0)/active.length):0;
+ const criticalCodes=['FUFY-E07','FUFY-E12','FUFY-L01','FUFY-L04','FUFY-F01','FUFY-F02','FUFY-F03','FUFY-C04'];
+ const critical=criticalCodes.map(code=>active.find(x=>x.code===code)).filter(x=>x&&x.status!=='done');
+ const activeTeams=teamRows.filter(x=>x.active!==false&&['organizer','confirmed','roster_pending'].includes(x.status));
+ const teamIssues=activeTeams.filter(x=>!x.contact_name||!x.contact_email||x.participant_count===null).length;
+ const sponsorIssues=sponsorRows.filter(x=>x.active!==false&&['proposal_sent','follow_up','confirmed'].includes(x.status)&&(!x.next_action_date||!x.owner_name)).length;
+ const requestIssues=requestRows.filter(x=>x.active!==false&&!['closed','declined'].includes(x.status)&&!x.next_action_date).length;
+ const checkIssues=checkRows.filter(x=>x.status!=='done'&&!x.due_date).length;
+ const dataIssues=teamIssues+sponsorIssues+requestIssues+checkIssues;
+ $('dDays').textContent=days;$('dReadiness').textContent=readiness+'%';$('dCritical').textContent=critical.length;$('dDataIssues').textContent=dataIssues;
+ $('criticalList').innerHTML=critical.length?'<strong>Semáforo crítico:</strong> '+critical.map(x=>esc(x.code)+' '+esc(x.title)+' ('+Number(x.progress||0)+'%)').join(' · '):'<strong>Semáforo crítico:</strong> sin bloqueos críticos abiertos.';
  const priorities=[...overdue,...dueToday,...soon].slice(0,10);
  $('priorityList').innerHTML=priorities.length?priorities.map(r=>'<div class="stack-item"><strong>'+esc(r.code||'')+' · '+esc(r.title)+'</strong><small>'+esc(r.owner_name||'Sin responsable')+' · '+fmtDate(r.due_date)+' · '+statusLabel(r.status)+' · '+Number(r.progress||0)+'%</small></div>').join(''):'<div class="stack-item"><strong>Sin urgencias registradas</strong><small>Revisa igualmente los hitos y gestiones externas.</small></div>';
  const ext=requestRows.filter(x=>x.active!==false&&!['closed','declined'].includes(x.status)).sort((a,b)=>String(a.next_action_date||'9999').localeCompare(String(b.next_action_date||'9999'))).slice(0,8);
