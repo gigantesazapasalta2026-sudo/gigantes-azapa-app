@@ -131,10 +131,21 @@
    const st=document.getElementById('publicTableStatus');
    if(st)st.textContent=table.played+'/6 partidos finalizados · clasificación '+(table.played===6?'sujeta a validación de la mesa técnica':'provisoria')+'. '+(table.needsTryReview?'Faltan registros de tries para algunos desempates.':'');
   }
+  // Control Center is the source of truth for the current event program.
+  const program=Array.isArray(d.day_plan)?d.day_plan:[];
+  const timeline=document.querySelector('#itinerario .timeline');
+  if(timeline&&program.length){
+   timeline.innerHTML=program.map((line,index)=>{
+    const value=String(line||''),i=value.indexOf(' · ');
+    const time=i>=0?value.slice(0,i):'Actividad '+(index+1);
+    const desc=i>=0?value.slice(i+3):value;
+    return '<div class="time"><b>'+escapeHtml(time)+'</b><span>'+escapeHtml(desc)+'</span></div>';
+   }).join('');
+  }
   const sponsorOp=ops.find(x=>/CPC|aporte económico|auspicio/i.test(String(x)));
   const sponsor=document.getElementById('publicSponsorStatus');
   if(sponsor&&sponsorOp)sponsor.innerHTML='<b>Estado actual:</b> '+escapeHtml(sponsorOp)+'. Los compromisos solo se consideran recibidos cuando Tesorería verifica el abono.';
-  const updated=document.getElementById('publicUpdated');if(updated)updated.textContent='liga todos contra todos · estado vinculado al Control Center';
+  const updated=document.getElementById('publicUpdated');if(updated)updated.textContent='liga todos contra todos · itinerario y resultados conectados al Control Center';
  }catch(e){console.warn('Datos públicos de liga FUFY no disponibles',e)}
 })();
 </script>
