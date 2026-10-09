@@ -32,14 +32,14 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <body>
 <header class="top"><div class="topin">
 <img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/Logo_Oficial_Copa_FUFY_2026.png" alt="Copa FUFY">
-<div><h1>Control Copa FUFY 2026</h1><p>Centro único de administración · Dirección Copa FUFY · <strong>versión áreas 08/10 · centro de solución</strong></p></div>
+<div><h1>Control Copa FUFY 2026</h1><p>Centro único de administración · Dirección Copa FUFY · <strong>versión 09/10 · liga todos contra todos</strong></p></div>
 <div class="actions"><a class="btn alt" href="../fufy.html">Ver página pública</a><a class="btn alt" href="index.html">Control Center</a><button id="logout" class="btn dark">Salir</button></div>
 </div></header>
 <main>
 <div id="loading" class="notice">Validando acceso y cargando Copa FUFY…</div>
 <section id="app" class="hide">
 <div id="who" class="notice"></div><div class="notice" style="background:#ecfdf5;border-color:#bbf7d0;color:#166534"><strong>✓ Centro de Solución activo</strong> · El Control Center ahora prioriza lo que falta y te guía hacia la acción concreta para resolverlo.</div>
-<div id="urgent" class="alertline"><strong>Prioridad actual:</strong> Arica Classic informó el 07/10 que no presentará plantel. La Copa queda con 5 equipos disponibles y se debe cerrar un sexto equipo.</div>
+<div id="urgent" class="alertline"><strong>Modalidad deportiva confirmada:</strong> 4 equipos (Gigantes, Bucaneros, Toros y Provincia 7), liga todos contra todos, 6 partidos. Arica Classic y Koalas retirados. <a href="fufy-liga.html">Abrir liga, fixture y tabla →</a> Las bases V1.3 y los horarios están pendientes de ratificación.</div>
 
 <div class="kpis">
 <div class="card"><span>Tareas</span><b id="kTasks">0</b></div>
@@ -47,7 +47,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <div class="card"><span>En curso</span><b id="kProgress">0</b></div>
 <div class="card"><span>Pendientes</span><b id="kWaiting">0</b></div>
 <div class="card"><span>Equipos disponibles</span><b id="kTeams">0</b></div>
-<div class="card"><span>Cupo faltante</span><b id="kSlots">0</b></div>
+<div class="card"><span>Partidos de liga</span><b id="kSlots">0</b></div>
 <div class="card"><span>Sponsors confirmados</span><b id="kSponsorsOk">0</b></div>
 <div class="card"><span>Auspicio confirmado</span><b id="kSponsorMoney" class="money">$0</b></div>
 </div>
@@ -83,7 +83,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 
 <section id="directionTab" class="tab active panel">
 <div class="toolbar"><div><h2>Tablero de Dirección</h2><p>Qué exige atención ahora, quién lo tiene y qué tan preparada está cada área.</p></div><div class="mini-actions"><button id="refreshAll" class="btn ghost">↻ Actualizar</button><a class="btn ghost" href="../fufy.html">Página pública</a></div></div>
-<div class="notice" style="background:#eef6ff;border-color:#bfdbfe;color:#1e3a8a"><strong>Accesos de Dirección General</strong> · Usa estos botones para abrir el control completo de la Copa.</div><div id="directionActions" class="area-actions"></div>
+<div class="notice" style="background:#eef6ff;border-color:#bfdbfe;color:#1e3a8a"><strong>Accesos de Dirección General</strong> · Usa estos botones para abrir el control completo de la Copa.</div><div id="directionActions" class="area-actions"></div><div class="notice" style="background:#fff6ec;border-color:#fdba74;margin:12px 0"><strong>🏆 Liga 2026 · Todos contra todos</strong> · 4 equipos, 6 encuentros, 3 rondas, campeón por tabla. <a class="btn" style="margin:7px 0 0" href="fufy-liga.html">Abrir fixture, actas y clasificación →</a></div>
 <div class="solution-head"><div><h3>🛠️ Centro de Solución</h3><p>Lo que falta, qué hacer ahora y acceso directo para resolverlo.</p></div><button id="solveNext" class="btn">Resolver siguiente</button></div>
 <div id="solutionCenter" class="stack"></div>
 <div class="command-grid">
@@ -114,7 +114,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 </section>
 
 <section id="teamsTab" class="tab panel">
-<div class="toolbar"><div><h2>Equipos y cupos</h2><p>Participantes, reservas, retirados y contactos.</p></div><div class="right"><input id="teamSearch" class="search" placeholder="Buscar equipo"><label class="muted"><input id="teamShowInactive" class="check" type="checkbox"> ver ocultos</label><button id="addTeam" class="btn">+ Equipo</button></div></div>
+<div class="toolbar"><div><h2>Equipos participantes e historial</h2><p>Se muestran los 4 equipos en competencia; activa «ver historial» para consultar clubes retirados y reservas.</p></div><div class="right"><input id="teamSearch" class="search" placeholder="Buscar equipo"><label class="muted"><input id="teamShowInactive" class="check" type="checkbox"> ver historial / reservas</label><button id="addTeam" class="btn">+ Equipo</button></div></div>
 <div class="tablewrap"><table><thead><tr><th>Equipo</th><th>Estado</th><th>Contacto</th><th>Nómina</th><th>Notas</th><th>Acciones</th></tr></thead><tbody id="teamsBody"></tbody></table></div>
 </section>
 
@@ -146,7 +146,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 
 <section id="eventModeTab" class="tab panel">
 <div class="toolbar"><div><h2>Modo operativo · 24 de octubre</h2><p>Vista de mando para usar durante la jornada. Resume cronograma, responsables y pendientes críticos.</p></div><div class="mini-actions"><button id="eventRefresh" class="btn ghost">↻ Actualizar</button></div></div>
-<div id="eventCommandKpis" class="command-grid"></div>
+<div class="notice"><strong>🏉 Los seis partidos se controlan desde la Liga FUFY.</strong> <a href="fufy-liga.html">Abrir mesa de resultados →</a></div><div id="eventCommandKpis" class="command-grid"></div>
 <div class="split">
 <div><h3 style="margin:0 0 8px">Cronograma operativo</h3><div id="eventTimeline" class="stack"></div></div>
 <div><h3 style="margin:0 0 8px">Comando por comisión</h3><div id="eventLeads" class="stack"></div></div>
@@ -169,7 +169,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 </section>
 
 <section id="docsTab" class="tab panel">
-<h2>Documentación y carpetas FUFY</h2><p>Entrada directa a la documentación de trabajo. La gestión de datos operativos permanece en las pestañas anteriores.</p>
+<h2>Documentación y carpetas FUFY</h2><p>Entrada directa a documentos de trabajo e historial. Las bases V1.3 siguen pendientes de ratificación.</p><div class="area-actions"><a class="btn" href="fufy-liga.html">🏆 Liga · Mesa de resultados</a><a class="btn ghost" href="https://docs.google.com/document/d/19UWqBIAwGuURvt4flXwkL3zQSXeT1GfKn6vugr0j93U/edit" target="_blank" rel="noopener">📘 Adenda V1.3 (borrador)</a><a class="btn ghost" href="https://docs.google.com/document/d/1lQUh8rutbnjrItuPH2qWmvP7nCZllPFtpPO2ZiPFZX8/edit" target="_blank" rel="noopener">📅 Nuevo plan operativo</a></div>
 <div class="area-grid">
 <a class="area-card" href="drive.html?v=20261003g&folder=1ZOKCJ4xoz-dslJAg23043q8vLN8110fu"><span class="area-icon">🧭</span><span><strong>Dirección y control</strong><small>Manual, tablero maestro, checklist, auditorías y matriz de responsables.</small></span><span class="go">Abrir</span></a>
 <a class="area-card" href="drive.html?v=20261003g&folder=1qYMJe8sKeecGckqHHMjgqRNVRltfTNsa"><span class="area-icon">📘</span><span><strong>Bases y reglamentos</strong><small>Bases oficiales, reglamento de juego y versiones vigentes.</small></span><span class="go">Abrir</span></a>
@@ -290,7 +290,7 @@ function renderKpis(){
  $('kWaiting').textContent=activeTasks.filter(x=>!['done','in_progress'].includes(x.status)).length;
  const activeTeams=teamRows.filter(x=>x.active!==false&&['organizer','confirmed','roster_pending'].includes(x.status));
  $('kTeams').textContent=activeTeams.length;
- $('kSlots').textContent=Math.max(0,6-activeTeams.length);
+ $('kSlots').textContent=Number(currentProject?.public_details?.league?.matches||6);
  const sponsors=sponsorRows.filter(x=>x.active!==false&&x.status==='confirmed');
  $('kSponsorsOk').textContent=sponsors.length;
  $('kSponsorMoney').textContent=fmtMoney(sponsors.reduce((a,x)=>a+Number(x.committed_amount||0),0));
@@ -354,6 +354,7 @@ function renderAreaDetail(code){
    const tab={tasks:'tasksTab',checks:'checkTab',teams:'teamsTab',requests:'requestsTab',sponsors:'sponsorsTab',finance:'financeTab',fundraising:'fundraisingTab',docs:'docsTab'}[tool]||'areaDetailTab';
    actions.push('<a class="btn '+(primary?'':'ghost')+'" href="fufy.html?v=20261008g&area='+code+'&view='+tool+'#'+tab+'">'+label+' <span class="content-count">'+n+'</span></a>');
  };
+ if(code==='E')actions.push('<a class="btn" href="fufy-liga.html">🏆 Liga · Fixture, tabla y actas</a>');
  addAction('tasks','✅ Tareas del área',tasks.length,true);
  addAction('checks','☑️ Checklists',checks.length);
  if(code==='E')addAction('teams','🏉 Administrar equipos',teamRows.filter(x=>x.active!==false).length);
@@ -568,7 +569,7 @@ function renderTasks(){
 }
 function renderTeams(){
  const q=$('teamSearch').value.trim(),show=$('teamShowInactive').checked;
- const rows=activeFilter(teamRows,show).filter(r=>contains(r,q,['name','city','country','contact_name','contact_email','notes']));
+ const rows=activeFilter(teamRows,show).filter(r=>(show||['organizer','confirmed','roster_pending'].includes(r.status))&&contains(r,q,['name','city','country','contact_name','contact_email','notes']));
  $('teamsBody').innerHTML=rows.length?rows.map(r=>'<tr'+(r.active===false?' style="opacity:.55"':'')+'><td><strong>'+esc(r.name)+'</strong><div class="muted">'+esc([r.city,r.country].filter(Boolean).join(' · '))+'</div></td><td>'+badge(r.status)+'</td><td>'+esc(r.contact_name||'—')+'<div class="muted">'+esc(r.contact_phone||'')+(r.contact_email?'<br>'+esc(r.contact_email):'')+'</div></td><td>'+((r.participant_count??null)!==null?'<strong>'+Number(r.participant_count)+'</strong>':'—')+'</td><td class="muted">'+esc((r.notes||'').slice(0,180))+'</td><td>'+rowActions('team',r,canEdit)+'</td></tr>').join(''):'<tr><td colspan="6">No hay resultados.</td></tr>';
 }
 function renderRequests(){
