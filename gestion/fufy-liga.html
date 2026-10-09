@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liga todos contra todos · Control Copa FUFY 2026</title>
+<style>
+:root{--orange:#f36b21;--dark:#111827;--ink:#202734;--soft:#667085;--border:#e4e7ec;--bg:#f5f6f8}
+*{box-sizing:border-box}body{font-family:Inter,system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg);margin:0}
+header{background:linear-gradient(115deg,#111827,#392113);color:white;padding:21px 0;border-bottom:4px solid var(--orange)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 17px}header .wrap{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+header img{width:78px;height:75px;object-fit:contain}header h1{margin:0;font-size:clamp(1.3rem,3vw,2.1rem)}header p{margin:4px 0;color:#e5e7eb}.links{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+a.btn,button.btn{background:var(--orange);color:white;text-decoration:none;border:none;border-radius:10px;padding:11px 14px;font-size:.86rem;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.btn.secondary{background:white;color:var(--ink);border:1px solid var(--border)}.btn.dark{background:#1f2937}.btn:disabled{opacity:.5;cursor:not-allowed}
+main{padding:22px 0 50px}.notice{padding:14px 16px;border:1px solid #f6c38d;background:#fff6ec;color:#884413;border-radius:12px;margin-bottom:14px;line-height:1.5}
+.notice.ok{border-color:#a6e4be;background:#f0fdf4;color:#14532d}.notice.bad{border-color:#fecaca;background:#fef2f2;color:#991b1b}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:15px 0 18px}
+.metric{background:#fff;border:1px solid var(--border);border-radius:13px;padding:16px}.metric span{display:block;color:var(--soft);font-size:.78rem;font-weight:800}.metric strong{display:block;font-size:1.9rem;margin-top:6px;color:#152034}
+.panel{background:white;border:1px solid var(--border);border-radius:15px;margin:16px 0;padding:18px;box-shadow:0 2px 10px #11182706}
+.panel h2{font-size:1.23rem;margin:0 0 6px}.panel p{font-size:.9rem;color:var(--soft);margin:6px 0 10px;line-height:1.5}
+.head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.actions{display:flex;gap:8px;flex-wrap:wrap}
+.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.85rem;min-width:730px}th,td{text-align:left;border-bottom:1px solid var(--border);padding:11px 10px;vertical-align:middle}
+th{background:#f9fafb;color:#475467;font-size:.72rem;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
+td:first-child,th:first-child{font-weight:750}.status{border-radius:999px;padding:5px 8px;background:#f2f4f7;font-size:.73rem;font-weight:800;color:#344054;white-space:nowrap}
+.status.final{background:#dcfce7;color:#166534}.status.in_progress{background:#fef3c7;color:#92400e}.status.cancelled{background:#fee2e2;color:#991b1b}
+.muted{color:var(--soft);font-size:.81rem}.fixture{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.game{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.game strong{display:block;margin:6px 0;font-size:1rem}.game small{color:var(--soft)}.game .meta{font-size:.74rem;color:#7b4b2a;font-weight:800}
+.tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.modal{display:none;position:fixed;inset:0;background:#0b0f14b9;align-items:center;justify-content:center;padding:12px;z-index:10}.modal.open{display:flex}
+.dialog{width:min(660px,100%);max-height:94vh;overflow:auto;background:white;border-radius:16px;padding:22px}.dialog h2{margin:0 0 8px}
+.fields{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.field{display:flex;flex-direction:column;gap:5px;font-size:.81rem;font-weight:750}.field.full{grid-column:1/-1}
+input,select,textarea{padding:10px;border:1px solid #cdd3dc;border-radius:8px;font:inherit;color:var(--ink);width:100%}
+textarea{min-height:75px;resize:vertical}.dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:16px}
+ul{line-height:1.6}.smallnote{font-size:.84rem;color:#667085;line-height:1.5}
+@media(max-width:770px){.metrics{grid-template-columns:repeat(2,1fr)}.fixture{grid-template-columns:1fr}header .links{margin-left:0}.fields{grid-template-columns:1fr}}
+@media print{header,.actions,.links,.btn,.modal,.no-print{display:none!important}body{background:#fff}.wrap{max-width:none}.panel{break-inside:avoid;box-shadow:none}.metric{break-inside:avoid}.fixture{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body><header><div class="wrap">
+<img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/Logo_Oficial_Copa_FUFY_2026.png" alt="Logo Copa FUFY">
+<div><h1>🏆 Liga Copa FUFY 2026</h1><p>Control Center · Todos contra todos · Rugby XV Classic +40</p></div>
+<div class="links"><a class="btn secondary" href="fufy.html?area=E&amp;view=area">← Competencia</a><a class="btn secondary" href="../fufy.html">🌐 Sitio público</a></div>
+</div></header>
+<main><div class="wrap">
+<div id="notice" class="notice">Verificando permisos y cargando los seis encuentros...</div>
+<div class="metrics"><div class="metric"><span>Equipos</span><strong id="metricTeams">—</strong></div><div class="metric"><span>Partidos programados</span><strong id="metricMatches">—</strong></div><div class="metric"><span>Actas cerradas</span><strong id="metricPlayed">—</strong></div><div class="metric"><span>Rondas</span><strong>3</strong></div></div>
+<div class="panel">
+<div class="head"><div><h2>📍 Dirección deportiva</h2><p>Seis partidos de 20 minutos. Cada club disputa tres encuentros y el campeón se define por la tabla, sin finales.</p></div>
+<div class="actions"><button class="btn secondary" id="reload">↻ Actualizar</button><button class="btn secondary" id="print">🖨️ Imprimir</button><button class="btn secondary" id="csv">⬇️ Exportar CSV</button></div></div>
+<div class="notice no-print" style="margin:12px 0 0"><strong>Programación tentativa:</strong> equipos y horarios previstos para planificación. El sorteo de cruces, la reunión técnica y la Adenda V1.3 deben ratificarse antes de considerarlos oficiales. No modificar marcadores sin acta firmada por árbitro y mesa.</div>
+</div>
+<section class="panel" id="teams"><h2>🏉 Cuatro clubes participantes</h2><div id="teamCards" class="fixture"></div><div class="smallnote" style="margin-top:12px">Retirados: Arica Classic y Koalas. Sus antecedentes siguen disponibles en <a href="fufy.html?view=teams">Equipos e historial</a>. Bucaneros había informado 13 jugadores; comprobar habilitación de 15 para Rugby XV antes del inicio.</div></section>
+<section class="panel" id="fixture"><div class="head"><div><h2>🕘 Fixture y actas</h2><p>Abre un partido para ajustar su horario, cruce, marcador, tries, tarjetas y observaciones. Cada cambio se guarda en Supabase y actualiza el sitio público.</p></div></div><div id="fixtureGrid" class="fixture"></div><div id="fixtureAudit" class="smallnote" style="margin-top:14px"></div></section>
+<section class="panel" id="tabla"><h2>🏅 Tabla de posiciones</h2><p>Victoria 4 puntos · empate 2 · derrota 0 · sin bonus. Se actualiza al marcar un encuentro como finalizado.</p><div class="tablewrap"><table><thead><tr><th>#</th><th>Club</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>PF</th><th>PC</th><th>Dif</th><th>Tries</th><th>PTS</th></tr></thead><tbody id="tableBody"></tbody></table></div><div id="tableNote" class="smallnote"></div></section>
+<section class="panel"><h2>📋 Documentos y pasos de cierre</h2><div class="tools">
+<a class="btn secondary" target="_blank" rel="noopener" href="https://docs.google.com/document/d/19UWqBIAwGuURvt4flXwkL3zQSXeT1GfKn6vugr0j93U/edit">📘 Revisar Adenda V1.3</a>
+<a class="btn secondary" target="_blank" rel="noopener" href="https://docs.google.com/document/d/1lQUh8rutbnjrItuPH2qWmvP7nCZllPFtpPO2ZiPFZX8/edit">📅 Plan deportivo y horario</a>
+<a class="btn secondary" href="fufy.html?area=E&amp;view=tasks">✅ Resolver tareas del área</a>
+</div><p>Prioridades: confirmar nóminas y cobertura de salud, asegurar ambulancia y recinto, aprobar sorteo/fixture, validar desempates y preparar actas, mesa de control y premiación. La versión V1.2 permanece como antecedente histórico; no sustituirla públicamente por un borrador sin ratificación.</p></section>
+</div></main>
+<div class="modal" id="editor" role="dialog" aria-modal="true" aria-label="Editar partido"><div class="dialog">
+<h2 id="editorTitle">Acta de partido</h2><p class="smallnote" id="editorInfo"></p>
+<form id="matchForm"><div class="fields">
+<label class="field">Equipo local<select name="home_team_id" required></select></label>
+<label class="field">Equipo visitante<select name="away_team_id" required></select></label>
+<label class="field">Hora local Chile<input type="time" name="kickoff" required></label>
+<label class="field">Estado<select name="status"><option value="scheduled">Programado</option><option value="in_progress">En juego</option><option value="final">Finalizado / acta cerrada</option><option value="cancelled">Suspendido</option></select></label>
+<label class="field">Puntos local<input type="number" min="0" name="home_score" placeholder="Pendiente"></label>
+<label class="field">Puntos visitante<input type="number" min="0" name="away_score" placeholder="Pendiente"></label>
+<label class="field">Tries local<input type="number" min="0" name="home_tries" placeholder="Pendiente"></label>
+<label class="field">Tries visitante<input type="number" min="0" name="away_tries" placeholder="Pendiente"></label>
+<label class="field">Amarillas local<input type="number" min="0" name="home_yellow" value="0"></label>
+<label class="field">Amarillas visitante<input type="number" min="0" name="away_yellow" value="0"></label>
+<label class="field">Rojas local<input type="number" min="0" name="home_red" value="0"></label>
+<label class="field">Rojas visitante<input type="number" min="0" name="away_red" value="0"></label>
+<label class="field full">Observaciones y acta<textarea name="notes" placeholder="Árbitro, observaciones, respaldo del acta..."></textarea></label>
+</div><div class="dialog-actions"><button type="button" id="close" class="btn secondary">Cancelar</button><button id="submit" type="submit" class="btn">💾 Guardar partido</button></div></form>
+</div></div>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script src="../fufy-league.js?v=20261009-1"></script>
+<script>
+(function(){
+'use strict';
+const projectId='8aa8f430-d58e-4cdd-977b-4ea134b36d55';
+const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+const $=id=>document.getElementById(id),league=window.FUFY_LEAGUE,esc=league.escape;
+const clock=new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Santiago',hour:'2-digit',minute:'2-digit',hour12:false});
+let teams=[],matches=[],editEnabled=false,selected=null;
+const label=s=>({scheduled:'Programado',in_progress:'En juego',final:'Finalizado',cancelled:'Suspendido'}[s]||s);
+const htmlName=id=>esc(teams.find(t=>t.id===id)?.name||'Equipo no registrado');
+function msg(text,bad){const el=$('notice');el.textContent=text;el.className='notice '+(bad?'bad':'ok')}
+function localClock(x){return clock.format(new Date(x.starts_at))}
+function standings(){return league.standings(teams,matches)}
+function checkRest(candidate){const ordered=[...candidate].sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));const last={};
+ for(const m of ordered){const t=new Date(m.starts_at).getTime();for(const id of [m.home_team_id,m.away_team_id]){if(last[id]!==undefined&&t-last[id]<60*60*1000)return 'El descanso entre partidos de un mismo equipo debe ser de al menos 40 minutos después de los 20 minutos de juego.';last[id]=t;}}return null}
+async function load(){
+ const [tr,mr]=await Promise.all([sb.from('project_teams').select('id,name,status,participant_count,active').eq('project_id',projectId).order('sort_order'),sb.from('fufy_matches').select('*').eq('project_id',projectId).order('match_no')]);
+ if(tr.error||mr.error){msg('Error al consultar Control Center: '+(tr.error?.message||mr.error?.message),true);return}
+ teams=(tr.data||[]).filter(t=>t.active!==false&&['organizer','confirmed','roster_pending'].includes(t.status));matches=mr.data||[];
+ render();msg('Datos consultados: '+teams.length+' equipos y '+matches.length+' partidos. '+(editEnabled?'Edición disponible.':'Modo solo lectura.'),false);
+}
+function render(){
+ $('metricTeams').textContent=teams.length;$('metricMatches').textContent=matches.length;
+ const st=standings();$('metricPlayed').textContent=st.played;
+ $('teamCards').innerHTML=teams.map(t=>'<div class="game"><div><strong>'+esc(t.name)+'</strong><small>'+ (t.participant_count!=null?Number(t.participant_count)+' jugadores informados':'Nómina por confirmar')+'</small></div><span class="status">'+(t.status==='organizer'?'Organizador':'Participante')+'</span></div>').join('');
+ $('fixtureGrid').innerHTML=matches.map(m=>'<div class="game"><div><div class="meta">RONDA '+m.round_no+' · PARTIDO '+m.match_no+' · '+league.time(m)+'</div><strong>'+htmlName(m.home_team_id)+' <span class="muted">vs</span> '+htmlName(m.away_team_id)+'</strong><small>'+ (league.isFinal(m)?m.home_score+' – '+m.away_score:'Resultado pendiente')+' · '+label(m.status)+'</small></div><div class="actions"><span class="status '+esc(m.status)+'">'+label(m.status)+'</span>'+(editEnabled?'<button type="button" class="btn" data-edit="'+esc(m.id)+'">✎ Acta</button>':'')+'</div></div>').join('');
+ $('fixtureAudit').textContent=league.fixtureAudit(teams,matches).concat(checkRest(matches)?[checkRest(matches)]:[]).join(' | ')||'✓ Los seis cruces cubren a los cuatro equipos una sola vez. Descansos mínimos respetados en el fixture registrado.';
+ $('tableBody').innerHTML=st.rows.map(r=>'<tr><td>'+r.pos+'</td><td>'+esc(r.name)+'</td><td>'+r.pj+'</td><td>'+r.pg+'</td><td>'+r.pe+'</td><td>'+r.pp+'</td><td>'+r.pf+'</td><td>'+r.pc+'</td><td>'+r.dif+'</td><td>'+r.tries+'</td><td><strong>'+r.pts+'</strong></td></tr>').join('');
+ $('tableNote').textContent=(st.played===st.total&&st.total===6?'Seis actas cerradas. Clasificación por verificar con mesa técnica.':'Tabla provisoria: '+st.played+' de 6 encuentros finalizados.')+(st.needsTryReview?' ATENCIÓN: faltan tries en actas finalizadas, necesarios para los desempates.':'')+' Ante empates no resueltos por criterios deportivos, decide el Comité Organizador.';
+ document.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>openEditor(b.dataset.edit)));
+}
+function openEditor(id){
+ if(!editEnabled)return;selected=matches.find(x=>x.id===id);if(!selected)return;
+ $('editorTitle').textContent='Ronda '+selected.round_no+' · Partido '+selected.match_no;
+ $('editorInfo').textContent='Registra únicamente un resultado validado por árbitro y mesa. El sitio público lo mostrará inmediatamente después de guardar.';
+ const f=$('matchForm');
+ for(const field of ['home_team_id','away_team_id']){
+  f.elements[field].innerHTML=teams.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>').join('');
+  f.elements[field].value=selected[field];
+ }
+ f.elements.kickoff.value=localClock(selected);
+ f.elements.status.value=selected.status;
+ for(const field of ['home_score','away_score','home_tries','away_tries','home_yellow','away_yellow','home_red','away_red'])f.elements[field].value=selected[field]??'';
+ f.elements.notes.value=selected.notes||'';
+ $('editor').classList.add('open');f.elements.kickoff.focus();
+}
+async function save(e){
+ e.preventDefault();if(!editEnabled||!selected)return;
+ const f=$('matchForm'),v=Object.fromEntries(new FormData(f).entries());
+ const numberOrNull=key=>v[key]===''?null:Number(v[key]);
+ const ints=['home_score','away_score','home_tries','away_tries','home_yellow','away_yellow','home_red','away_red'];
+ if(!/^\d{2}:\d{2}$/.test(v.kickoff)){alert('Ingresa la hora de inicio.');return}
+ if(v.home_team_id===v.away_team_id){alert('Los dos clubes deben ser distintos.');return}
+ for(const x of ints){const n=numberOrNull(x);if(n!==null&&(!Number.isInteger(n)||n<0)){alert('Revisa el campo '+x+': usa un número entero no negativo.');return}}
+ if(v.status==='final'&&['home_score','away_score','home_tries','away_tries'].some(x=>numberOrNull(x)===null)){alert('Para cerrar el acta registra puntos y tries de ambos clubes, incluso si son cero.');return}
+ const payload={home_team_id:v.home_team_id,away_team_id:v.away_team_id,starts_at:'2026-10-24T'+v.kickoff+':00-03:00',status:v.status,notes:v.notes.trim()||null};
+ for(const x of ints)payload[x]=numberOrNull(x);
+ for(const x of ['home_yellow','away_yellow','home_red','away_red'])payload[x]??=0;
+ const proposed=matches.map(m=>m.id===selected.id?{...m,...payload}:m);
+ const errors=league.fixtureAudit(teams,proposed),rest=checkRest(proposed);
+ if(errors.length||rest){alert('Revisa el fixture: '+[...errors,rest].filter(Boolean).join(' '));return}
+ $('submit').disabled=true;
+ const {data,error}=await sb.from('fufy_matches').update(payload).eq('id',selected.id).eq('project_id',projectId).select('id').maybeSingle();
+ $('submit').disabled=false;
+ if(error||!data){alert('No se guardó el partido: '+(error?.message||'No autorizado o sin cambios'));return}
+ $('editor').classList.remove('open');selected=null;await load();msg('✓ Partido actualizado y guardado. La página pública utilizará el nuevo registro.',false);
+}
+function csv(){
+ const st=standings(),h=[['Fixture · Copa FUFY 2026'],['Partido','Ronda','Hora Chile','Local','Visitante','Estado','Puntos local','Puntos visitante'],...matches.map(m=>[m.match_no,m.round_no,league.time(m),teams.find(t=>t.id===m.home_team_id)?.name,teams.find(t=>t.id===m.away_team_id)?.name,label(m.status),m.home_score??'',m.away_score??'']),[],['Tabla de posiciones'],['Club','PJ','PG','PE','PP','PF','PC','Dif','Tries','PTS'],...st.rows.map(s=>[s.name,s.pj,s.pg,s.pe,s.pp,s.pf,s.pc,s.dif,s.tries,s.pts])];
+ const escCsv=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
+ const data='\ufeff'+h.map(row=>row.map(escCsv).join(';')).join('\r\n'),url=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'}));
+ const a=document.createElement('a');a.href=url;a.download='Liga_Copa_FUFY_2026.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
+}
+async function init(){
+ const {data:{user},error}=await sb.auth.getUser();
+ if(error||!user){location.replace('login.html?next=fufy-liga.html');return}
+ const [p,a]=await Promise.all([sb.from('profiles').select('role,active').eq('user_id',user.id).maybeSingle(),sb.from('project_user_access').select('access_role').eq('user_id',user.id).eq('project_id',projectId).maybeSingle()]);
+ const elevated=p.data?.active&&['superadmin','board'].includes(p.data.role),projectMember=p.data?.active&&['viewer','editor','manager','treasury'].includes(a.data?.access_role);
+ if(!elevated&&!projectMember){msg('Tu cuenta no tiene permisos para consultar Liga Copa FUFY.',true);return}
+ editEnabled=!!(elevated||['editor','manager'].includes(a.data?.access_role));
+ await load();
+}
+$('close').onclick=()=>{$('editor').classList.remove('open');selected=null};
+$('editor').onclick=e=>{if(e.target===$('editor'))$('close').click()};
+$('matchForm').onsubmit=save;$('reload').onclick=load;$('print').onclick=()=>window.print();$('csv').onclick=csv;
+init();
+})();
+</script></body></html>
