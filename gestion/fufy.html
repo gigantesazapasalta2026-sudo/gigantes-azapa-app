@@ -57,7 +57,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <section class="panel admin-menu" id="adminMenu">
 <div class="admin-menu-head">
 <div><h2>Administración por áreas</h2><p>Elige el área que quieres dirigir. Dentro encontrarás solo sus tareas, responsables, checklist y accesos relacionados.</p></div>
-<div class="mini-actions"><a class="btn ghost" href="fufy.html?v=20261008g&view=docs#docsTab">📚 Documentos</a><a class="btn ghost" href="../fufy.html">🌐 Página pública</a></div>
+<div class="mini-actions"><a class="btn ghost" href="fufy.html?view=program#programTab">📅 Programa y homenajes</a><a class="btn ghost" href="fufy.html?v=20261008g&view=docs#docsTab">📚 Documentos</a><a class="btn ghost" href="../fufy.html">🌐 Página pública</a></div>
 </div>
 <div class="admin-area-grid">
 <a class="admin-area active" data-admin-area="DIR" href="fufy.html?v=20261008g&area=DIR&view=direction#directionTab"><span class="ico">🧭</span><span><strong>Dirección General</strong><small>Prioridades, decisiones, hitos, metas y modo del día.</small><span class="area-stat" id="areaStatDIR">Vista ejecutiva</span></span></a>
@@ -83,7 +83,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 
 <section id="directionTab" class="tab active panel">
 <div class="toolbar"><div><h2>Tablero de Dirección</h2><p>Qué exige atención ahora, quién lo tiene y qué tan preparada está cada área.</p></div><div class="mini-actions"><button id="refreshAll" class="btn ghost">↻ Actualizar</button><a class="btn ghost" href="../fufy.html">Página pública</a></div></div>
-<div class="notice" style="background:#eef6ff;border-color:#bfdbfe;color:#1e3a8a"><strong>Accesos de Dirección General</strong> · Usa estos botones para abrir el control completo de la Copa.</div><div id="directionActions" class="area-actions"></div><div class="notice" style="margin:10px 0;background:#fff7ed;border-color:#fdba74"><b>⏱️ Programa ajustado:</b> Classic XV 20 min por partido; Festival Infantil 2×10 min con pausa de 2 min; pasillo generacional 10:55 y homenaje de 11:10 a 11:45. El siguiente Classic empieza a las 11:50. <a href="fufy.html?area=C&amp;view=area">Revisar homenaje y tareas de protocolo →</a></div><div class="notice" style="background:#fff6ec;border-color:#fdba74;margin:12px 0"><strong>🏆 Liga 2026 · Todos contra todos</strong> · 4 equipos, 6 encuentros, 3 rondas, campeón por tabla. <a class="btn" style="margin:7px 0 0" href="fufy-liga.html">Abrir fixture, actas y clasificación →</a></div>
+<div class="notice" style="background:#eef6ff;border-color:#bfdbfe;color:#1e3a8a"><strong>Accesos de Dirección General</strong> · Usa estos botones para abrir el control completo de la Copa.</div><div id="directionActions" class="area-actions"></div><p><a class="btn" href="fufy.html?view=program#programTab">📅 Editar programación y homenajes</a></p><div class="notice" style="margin:10px 0;background:#fff7ed;border-color:#fdba74"><b>⏱️ Programa ajustado:</b> Classic XV 20 min por partido; Festival Infantil 2×10 min con pausa de 2 min; pasillo generacional 10:55 y homenaje de 11:10 a 11:45. El siguiente Classic empieza a las 11:50. <a href="fufy.html?area=C&amp;view=area">Revisar homenaje y tareas de protocolo →</a></div><div class="notice" style="background:#fff6ec;border-color:#fdba74;margin:12px 0"><strong>🏆 Liga 2026 · Todos contra todos</strong> · 4 equipos, 6 encuentros, 3 rondas, campeón por tabla. <a class="btn" style="margin:7px 0 0" href="fufy-liga.html">Abrir fixture, actas y clasificación →</a></div>
 <div class="solution-head"><div><h3>🛠️ Centro de Solución</h3><p>Lo que falta, qué hacer ahora y acceso directo para resolverlo.</p></div><button id="solveNext" class="btn">Resolver siguiente</button></div>
 <div id="solutionCenter" class="stack"></div>
 <div class="command-grid">
@@ -144,6 +144,14 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <div id="checkGroups" class="stack"></div>
 </section>
 
+<section id="programTab" class="tab panel">
+<div class="toolbar"><div><h2>📅 Programa del día y homenajes</h2><p>La programación de esta ficha es la fuente pública: al guardarla se actualizará automáticamente el itinerario de la página de Copa FUFY.</p></div><div class="mini-actions"><a class="btn ghost" href="../fufy.html#itinerario" target="_blank" rel="noopener">🌐 Abrir página pública</a><a class="btn ghost" href="fufy-liga.html">🏉 Fixture y tabla</a></div></div>
+<div class="notice"><strong>Modalidad:</strong> 6 partidos Classic de 20 minutos · Festival Infantil 10 minutos por lado, pausa de 2 min · Ceremonia 11:10–11:45 con Fufy, Romy Cartagena y Cristian Riquelme. Horarios por ratificar. No confirmar asistencia de invitados antes de verificarla.</div>
+<div class="head" style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h3>Itinerario operativo</h3><button id="programPrint" class="btn ghost" type="button">🖨️ Imprimir programa</button></div>
+<div id="programRows" class="stack"></div>
+<div id="programEditPanel" class="restricted hide" style="margin-top:16px"><label style="display:block;font-weight:800;margin-bottom:8px" for="programTextarea">Editar itinerario (una línea por bloque; formato HORARIO · ACTIVIDAD)</label><textarea id="programTextarea" rows="20" style="width:100%;box-sizing:border-box;min-height:250px;border:1px solid #cbd5e1;border-radius:10px;padding:12px;font:inherit" spellcheck="true"></textarea>
+<div class="rowactions" style="margin-top:12px"><button class="btn" id="programSave" type="button">💾 Guardar y actualizar página pública</button><button class="btn ghost" id="programReset" type="button">↶ Recuperar versión cargada</button></div><div id="programFeedback" class="muted" style="margin-top:6px"></div></div>
+<div class="notice" id="programPermission" style="margin-top:15px">La programación se actualiza en Supabase bajo permisos de la Directiva; otros miembros pueden consultar, imprimir y proponer cambios mediante tareas del área.</div></section>
 <section id="eventModeTab" class="tab panel">
 <div class="toolbar"><div><h2>Modo operativo · 24 de octubre</h2><p>Vista de mando para usar durante la jornada. Resume cronograma, responsables y pendientes críticos.</p></div><div class="mini-actions"><button id="eventRefresh" class="btn ghost">↻ Actualizar</button></div></div>
 <div class="notice"><strong>🏉 Classic 20 min · Infantil 10 min por lado · Ceremonia 35 min.</strong> Los seis encuentros se controlan desde <a href="fufy-liga.html">Liga FUFY</a>. Los homenajes de Fufy, Romy Cartagena y Cristian Riquelme tienen tareas y checklist en Comunicaciones y Deportiva.</div><div id="eventCommandKpis" class="command-grid"></div>
@@ -194,7 +202,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <script>
 const PROJECT_ID='8aa8f430-d58e-4cdd-977b-4ea134b36d55';
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
-let profile=null, access=null, currentUser=null, canEdit=false, canEditResponsibilities=false, currentProject=null;
+let profile=null, access=null, currentUser=null, canEdit=false, canEditResponsibilities=false, canEditProgram=false,currentProject=null;
 let taskRows=[],teamRows=[],requestRows=[],sponsorRows=[],decisionRows=[],responsibilityRows=[],linkedDocs=[],milestoneRows=[],eventRows=[],announcementRows=[],financeRows=[],obligationRows=[],fundraisingRows=[],goalRows=[],checkRows=[],requirementRows=[];let activeWorkItem=null;
 let editing={type:null,row:null};let currentAdminArea='DIR';
 
@@ -243,6 +251,7 @@ async function init(){
  if(!elevated&&!projectMember){$('loading').textContent='Tu cuenta no tiene permiso para administrar Copa FUFY 2026.';return}
  canEdit=!!(elevated||(access&&['editor','manager'].includes(access.access_role)));
  canEditResponsibilities=!!elevated;
+ canEditProgram=!!elevated;
  $('who').innerHTML='Sesión: <strong>'+esc(profile?.display_name||user.email)+'</strong> · permiso FUFY: <strong>'+esc(elevated?'administración club':access.access_role)+'</strong>'+(canEdit?' · edición habilitada':' · solo lectura');
  const project=projectRes.data;currentProject=project;
  $('projectMeta').textContent=(project?.name||'Copa FUFY 2026')+' · '+(project?.status||'activo')+(project?.event_date?' · evento '+fmtDate(project.event_date):'')+(project?.location?' · '+project.location:'');
@@ -281,7 +290,7 @@ async function loadAll(){
  if((docs.data||[]).length){const ids=docs.data.map(x=>x.document_id);const dr=await sb.from('control_document_catalog').select('id,title,current_version,source_status').in('id',ids).is('deleted_at',null).order('title');linkedDocs=dr.data||[]}
  renderAll(finance.error,obligations.error,fundraising.error);
 }
-function renderAll(financeError=null,obligationError=null,fundraisingError=null){renderKpis();renderAdminMenu();renderDirection();renderTasks();renderTeams();renderRequests();renderSponsors();renderDecisions();renderResponsibilities();renderChecklists();renderEventMode();renderFinance(financeError,obligationError);renderFundraising(fundraisingError);renderDocs();bindRowButtons();bindSolutionActions()}
+function renderAll(financeError=null,obligationError=null,fundraisingError=null){renderKpis();renderAdminMenu();renderDirection();renderTasks();renderTeams();renderRequests();renderSponsors();renderDecisions();renderResponsibilities();renderChecklists();renderEventMode();renderFinance(financeError,obligationError);renderFundraising(fundraisingError);renderDocs();renderProgram();bindRowButtons();bindSolutionActions()}
 function renderKpis(){
  const activeTasks=taskRows.filter(x=>x.active!==false);
  $('kTasks').textContent=activeTasks.length;
@@ -302,7 +311,7 @@ function applyRouteFromUrl(){
  currentAdminArea=(area==='DIR'||ADMIN_AREAS[area])?area:'DIR';
  document.querySelectorAll('[data-admin-area]').forEach(b=>b.classList.toggle('active',b.dataset.adminArea===currentAdminArea));
  if(currentAdminArea!=='DIR'&&view==='area'){renderAreaDetail(currentAdminArea);showTab('areaDetailTab');return}
- const viewMap={direction:'directionTab',tasks:'tasksTab',checks:'checkTab',decisions:'decisionsTab',responsibilities:'respTab',event:'eventModeTab',docs:'docsTab',teams:'teamsTab',requests:'requestsTab',sponsors:'sponsorsTab',finance:'financeTab',fundraising:'fundraisingTab'};
+ const viewMap={direction:'directionTab',tasks:'tasksTab',checks:'checkTab',decisions:'decisionsTab',responsibilities:'respTab',event:'eventModeTab',program:'programTab',docs:'docsTab',teams:'teamsTab',requests:'requestsTab',sponsors:'sponsorsTab',finance:'financeTab',fundraising:'fundraisingTab'};
  if(view==='tasks'){$('taskAreaFilter').value=currentAdminArea==='DIR'?'':currentAdminArea;renderTasks()}
  if(view==='checks'){
    if(currentAdminArea==='DIR'){$('checkFilter').value='';renderChecklists()}
@@ -355,6 +364,7 @@ function renderAreaDetail(code){
    actions.push('<a class="btn '+(primary?'':'ghost')+'" href="fufy.html?v=20261008g&area='+code+'&view='+tool+'#'+tab+'">'+label+' <span class="content-count">'+n+'</span></a>');
  };
  if(code==='E')actions.push('<a class="btn" href="fufy-liga.html">🏆 Liga · Fixture, tabla y actas</a>');
+ if(['E','C'].includes(code))actions.push('<a class="btn ghost" href="fufy.html?view=program#programTab">📅 Programa del día y homenajes</a>');
  addAction('tasks','✅ Tareas del área',tasks.length,true);
  addAction('checks','☑️ Checklists',checks.length);
  if(code==='E')addAction('teams','🏉 Administrar equipos',teamRows.filter(x=>x.active!==false).length);
@@ -604,6 +614,46 @@ function renderResponsibilities(){
 function renderDocs(){
  $('fufyDocs').innerHTML=linkedDocs.length?'<strong>Documentos relacionados:</strong> '+linkedDocs.map(r=>esc(r.title)+' · v'+(r.current_version||1)).join(' / '):'No hay documentos adicionales vinculados al proyecto.';
 }
+function renderProgram(){
+ const plan=Array.isArray(currentProject?.public_details?.day_plan)?currentProject.public_details.day_plan:[];
+ const lines=plan.map(x=>String(x||'')).filter(Boolean);
+ const box=$('programRows');if(!box)return;
+ box.innerHTML=lines.map((line,i)=>{const j=line.indexOf(' · '),time=j>=0?line.slice(0,j):'Actividad '+(i+1),desc=j>=0?line.slice(j+3):line;
+ return '<div class="stack-item"><strong>'+esc(time)+'</strong><small>'+esc(desc)+'</small></div>';}).join('')||'<div class="restricted">No hay bloques de programación registrados.</div>';
+ const panel=$('programEditPanel');
+ if(panel){
+  panel.classList.toggle('hide',!canEditProgram);
+  if(canEditProgram&&document.activeElement!==$('programTextarea'))$('programTextarea').value=lines.join('\n');
+ }
+ const perm=$('programPermission');
+ if(perm)perm.textContent=canEditProgram?'Dirección autorizada para editar. Después de guardar, el itinerario de la página pública se actualizará desde esta misma información. Evita anunciar invitados sin confirmación.':'Solo la Directiva o Superadmin puede editar el itinerario oficial. Se permite consultar e imprimir la propuesta.';
+}
+async function saveProgram(){
+ if(!canEditProgram)return alert('No tienes permiso para cambiar la programación oficial.');
+ const raw=$('programTextarea').value;
+ const plan=raw.split('\n').map(x=>x.trim()).filter(Boolean);
+ if(plan.length<8||plan.length>50)return alert('El programa debe tener entre 8 y 50 bloques.');
+ if(plan.some(x=>x.length>450||!x.includes(' · ')))return alert('Cada bloque debe usar HORARIO · ACTIVIDAD y tener menos de 450 caracteres.');
+ const button=$('programSave');button.disabled=true;$('programFeedback').textContent='Guardando programa...';
+ try{
+  const read=await sb.from('projects').select('public_details').eq('id',PROJECT_ID).maybeSingle();
+  if(read.error||!read.data)throw Error(read.error?.message||'No fue posible consultar el proyecto');
+  const details={...(read.data.public_details||{}),day_plan:plan};
+  const write=await sb.from('projects').update({public_details:details}).eq('id',PROJECT_ID).select('public_details').maybeSingle();
+  if(write.error||!write.data)throw Error(write.error?.message||'Sin autorización de edición del proyecto');
+  if(currentProject)currentProject.public_details=write.data.public_details;
+  renderProgram();renderEventMode();$('programFeedback').textContent='✓ Itinerario guardado. La página pública leerá los cambios desde Control Center.';
+ }catch(err){$('programFeedback').textContent='No se guardó el programa: '+err.message;}
+ finally{button.disabled=false;}
+}
+function printProgram(){
+ const rows=(currentProject?.public_details?.day_plan||[]);
+ if(!Array.isArray(rows)||!rows.length)return;
+ const w=window.open('','_blank');
+ if(!w){alert('Permite ventanas emergentes para imprimir el programa.');return}
+ w.document.write('<html><head><meta charset="utf-8"><title>Programa Copa FUFY 2026</title><style>body{font-family:Arial;padding:24px;color:#111}h1{color:#a34810}li{padding:6px;border-bottom:1px solid #ddd;line-height:1.4}</style></head><body><h1>Copa FUFY 2026 · Programa operativo</h1><p>24 de octubre de 2026 · Arica · Todos contra todos · Horarios propuestos</p><ol>'+rows.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol></body></html>');
+ w.document.close();w.focus();setTimeout(()=>w.print(),250);
+}
 function bindRowButtons(){
  document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit,findRow(b.dataset.edit,b.dataset.id)));
  document.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>toggleActive(b.dataset.toggle,b.dataset.id,b.dataset.active==='1'));
@@ -703,6 +753,9 @@ async function toggleActive(type,id,active){
 function closeModal(){$('modal').classList.remove('open');editing={type:null,row:null}}
 
 $('refreshAll').onclick=loadAll;
+$('programSave').onclick=saveProgram;
+$('programReset').onclick=()=>{$('programTextarea').value=(currentProject?.public_details?.day_plan||[]).join('\n');$('programFeedback').textContent='Se restauró la versión cargada sin guardar cambios.'};
+$('programPrint').onclick=printProgram;
 $('eventRefresh').onclick=loadAll;
 $('checkFilter').onchange=renderChecklists;
 $('taskAreaFilter').onchange=renderTasks;
