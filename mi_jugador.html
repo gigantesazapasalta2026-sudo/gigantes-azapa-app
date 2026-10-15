@@ -179,7 +179,7 @@ async function uploadDoc(type,file){
    if(!ok)return;
    const v=prompt('Fecha de vencimiento de la cédula (DD/MM/AAAA):','');
    if(v===null)return;
-   const m=v.trim().match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
+   const m=v.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
    if(!m){alert('Ingresa la fecha con formato chileno DD/MM/AAAA. Ejemplo: 25/11/2028.');return}
    const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]);
    const dt=new Date(year,month-1,day);
