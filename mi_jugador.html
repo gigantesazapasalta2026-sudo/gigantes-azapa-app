@@ -32,9 +32,11 @@ async function init(){const {data:{session},error:sessionError}=await sb.auth.ge
   const {data:scopes}=await sb.from('project_user_access').select('access_role,project_id').eq('user_id',session.user.id);
   const isStaff=!!staffProfile?.active&&['superadmin','board','treasury','coach','commission'].includes(staffProfile.role);
   const hasFufy=!!staffProfile?.active&&(scopes||[]).some(a=>a.project_id==='8aa8f430-d58e-4cdd-977b-4ea134b36d55'&&['viewer','editor','manager','treasury'].includes(a.access_role));
-  if(isStaff||hasFufy){
+  const {data:accountPermission}=await sb.from('user_permissions').select('active').eq('user_id',session.user.id).eq('permission_code','treasury.classic.read').maybeSingle();
+  const canAccount=!!staffProfile?.active&&!!accountPermission?.active;
+  if(isStaff||hasFufy||canAccount){
    const box=document.getElementById('staffControlShortcut');
-   box.innerHTML='<h2>🏛️ Mi acceso de gestión</h2><p class="empty">Accesos vinculados a tu cuenta institucional. Mi Gigante mantiene tus datos familiares.</p><div class="profileActions">'+(isStaff?'<a class="btn" href="gestion/index.html">🔐 ABRIR CONTROL CENTER</a>':'')+(hasFufy?'<a class="btn secondary" href="gestion/fufy.html">🏉 CONTROL COPA FUFY</a>':'')+'</div>';
+   box.innerHTML='<h2>🏛️ Mi acceso de gestión</h2><p class="empty">Accesos vinculados a tu cuenta institucional. Mi Gigante mantiene tus datos familiares.</p><div class="profileActions">'+(isStaff?'<a class="btn" href="gestion/index.html">🔐 ABRIR CONTROL CENTER</a>':'')+(hasFufy?'<a class="btn secondary" href="gestion/fufy.html">🏉 CONTROL COPA FUFY</a>':'')+(canAccount?'<a class="btn secondary" href="gestion/tesoreria-consulta.html">📊 CONSULTA CONTABLE · EXCEL</a>':'')+'</div>';
    box.classList.remove('hidden');
   }
  }catch(e){console.warn('No se pudieron mostrar accesos de gestion',e)}
