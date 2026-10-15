@@ -432,6 +432,10 @@ render();
   const canDiscipline=profile.role==='superadmin'||disciplinePerm?.active===true;
   const canProtection=profile.role==='superadmin'||protectionPerm?.active===true;
   if(!staffRoles.includes(profile.role)){
+    // Scoped project managers should reach only their authorized project dashboard.
+    // Never expand their club-wide role or grant general Control Center access.
+    const scoped=await client.from('project_user_access').select('project_id,access_role,projects!inner(code)').eq('user_id',session.user.id).in('access_role',['viewer','editor','manager','treasury']);
+    if(!scoped.error && (scoped.data||[]).some(a=>a.projects?.code==='FUFY2026')){location.replace('fufy.html');return}
     if(canProtection){location.replace('proteccion.html');return}
     if(canDiscipline){location.replace('disciplina.html');return}
     location.replace('../mi_jugador.html');return
