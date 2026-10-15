@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Consulta Contable · Tesorería Classic</title>
+<style>
+:root{font:14px Inter,system-ui,Arial,sans-serif;color:#142131;background:#f4f6f8}*{box-sizing:border-box}body{margin:0}header{background:#121b29;color:#fff;padding:20px}header .inner,main{max-width:1200px;margin:auto}h1{margin:4px 0;font-size:26px}h2{font-size:18px;margin:0 0 12px}p{line-height:1.5}.muted{color:#64748b}.hint{color:#fed7aa}a{color:inherit}.nav{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;margin-top:12px}.nav a{color:#ffb681}main{padding:18px}.panel{background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:18px;margin:14px 0;box-shadow:0 3px 14px #11223308}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{padding:15px;border-radius:11px;background:#f8fafc;border:1px solid #e2e8f0}.metric small{color:#64748b;display:block}.metric b{font-size:19px;display:block;margin-top:5px}.controls{display:flex;flex-wrap:wrap;align-items:end;gap:9px}.controls label{font-size:12px;font-weight:bold}.controls input,.controls select{display:block;margin-top:5px;padding:11px;border:1px solid #cbd5e1;border-radius:8px;background:white;min-width:145px}.btn{border:0;border-radius:9px;padding:11px 14px;font:inherit;font-weight:800;background:#ef6a25;color:white;cursor:pointer}.btn:disabled{opacity:.55;cursor:wait}.btn.secondary{background:#182235;color:white}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:900px;font-size:12px}td,th{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left;vertical-align:top}th{background:#f1f5f9;white-space:nowrap}td.num{text-align:right;white-space:nowrap}.good{color:#166534}.bad{color:#b91c1c}.notice{background:#fff7ed;border:1px solid #fed7aa;padding:12px;border-radius:10px}.hidden{display:none}@media(max-width:700px){.metrics{grid-template-columns:repeat(2,1fr)}.controls label{flex:1;min-width:145px}.controls input,.controls select{width:100%}}
+</style></head><body>
+<header><div class="inner"><h1>📊 Consulta contable · Classic + Adulta</h1>
+<div class="hint">Revisión y exportación Excel · Solo lectura · Operación bancaria y aprobaciones permanecen en Tesorería</div>
+<div class="nav"><a href="fufy.html">← Copa FUFY</a><a href="fufy-presupuesto.html">💰 Presupuesto FUFY</a><a href="index.html">Control Center</a><a href="../mi_gigantes.html">Mi Gigante</a></div></div></header>
+<main><div id="loading" class="panel">Verificando identidad y permiso contable…</div>
+<section id="app" class="hidden"><div class="notice">Esta vista muestra únicamente movimientos autorizados de <b>Tesorería Classic + Adulta</b>. Un movimiento sin proyecto asignado no debe asumirse como gasto o ingreso FUFY. El presupuesto son proyecciones, no saldos bancarios. No se pueden editar, aprobar, pagar ni anular registros aquí.</div>
+<div class="panel"><div class="controls">
+<label>Año <select id="year"></select></label>
+<label>Tipo <select id="kind"><option value="">Todos</option><option value="income">Ingresos</option><option value="expense">Gastos</option><option value="adjustment">Ajustes</option></select></label>
+<label>Proyecto <select id="projectFilter"><option value="">Todos</option><option value="fufy">Copa FUFY</option><option value="missing">Sin proyecto</option><option value="other">Otros proyectos</option></select></label>
+<label>Buscar <input id="query" type="search" placeholder="Comprobante, proveedor, concepto"></label>
+<button class="btn" id="exportExcel">⬇ Exportar cuenta a Excel</button>
+<button class="btn secondary" id="refresh">↻ Actualizar</button>
+</div><p class="muted" id="scope"></p></div>
+<div class="metrics"><div class="metric"><small>Ingresos registrados</small><b id="kIncome">$0</b></div>
+<div class="metric"><small>Gastos registrados</small><b id="kExpense">$0</b></div>
+<div class="metric"><small>Saldo registrado</small><b id="kNet">$0</b></div>
+<div class="metric"><small>Movimientos revisados</small><b id="kCount">0</b></div></div>
+<div class="panel"><h2>Libro de ingresos y gastos</h2><div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Contraparte</th><th>Documento</th><th>Proyecto</th><th>Estado</th><th>Monto CLP</th></tr></thead><tbody id="tableBody"></tbody></table></div></div>
+<div class="panel"><h2>Observaciones para conciliación</h2><div id="observations"></div></div></section></main>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script src="excel-export.js?v=20261015"></script>
+<script>
+(()=>{
+'use strict';
+const UNIT='aea3eb7d-3f2a-4e2d-8bd8-bab64c18ffaf', FUFY='8aa8f430-d58e-4cdd-977b-4ea134b36d55';
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+const $=id=>document.getElementById(id);const money=x=>new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(Number(x||0));
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+let transactions=[],who='',account='';
+function projectLabel(x){return x.project_id===FUFY?'Copa FUFY':x.project_id?'Otro proyecto':'Sin proyecto'}
+function filtered(){const y=$('year').value,k=$('kind').value,p=$('projectFilter').value,q=$('query').value.toLowerCase().trim();
+ return transactions.filter(x=>{
+  if(y&&String(x.transaction_date||'').slice(0,4)!==y)return false;
+  if(k&&x.transaction_type!==k)return false;
+  if(p==='fufy'&&x.project_id!==FUFY)return false;
+  if(p==='missing'&&x.project_id)return false;
+  if(p==='other'&&(!x.project_id||x.project_id===FUFY))return false;
+  if(q&&![x.description,x.counterparty,x.document_number,x.category,x.notes,x.item_name].join(' ').toLowerCase().includes(q))return false;
+  return true;
+ })}
+function render(){const rows=filtered(),active=rows.filter(x=>!x.voided_at),income=active.filter(x=>x.transaction_type==='income').reduce((s,x)=>s+Number(x.amount||0),0),expense=active.filter(x=>x.transaction_type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
+ $('kIncome').textContent=money(income);$('kExpense').textContent=money(expense);$('kNet').textContent=money(income-expense);$('kCount').textContent=rows.length;
+ $('scope').textContent=rows.length+' movimientos visibles · '+who+' · '+account;
+ $('tableBody').innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.transaction_date)+'</td><td>'+esc(x.transaction_type)+'</td><td>'+esc(x.category)+'</td><td>'+esc(x.description)+'</td><td>'+esc(x.counterparty||'—')+'</td><td>'+esc(x.document_number||'—')+'</td><td>'+esc(projectLabel(x))+'</td><td>'+(x.voided_at?'<span class="bad">Anulado</span>':'Vigente')+'</td><td class="num">'+money(x.amount)+'</td></tr>').join(''):'<tr><td colspan="9">No hay movimientos que coincidan con los filtros.</td></tr>';
+ const missing=active.filter(x=>!x.project_id).length,undocumented=active.filter(x=>!x.document_number&&!x.receipt_path).length;
+ $('observations').innerHTML='<p><b>'+missing+'</b> movimiento(s) sin proyecto asignado; <b>'+undocumented+'</b> sin número de documento ni respaldo cargado. Estos indicadores son alertas de revisión, no prueba de un error contable.</p>';
+}
+async function reload(){
+ $('refresh').disabled=true;
+ try{
+ const [unit,tx]=await Promise.all([sb.from('treasury_units').select('id,name').eq('id',UNIT).maybeSingle(),sb.from('treasury_transactions').select('*').eq('treasury_unit_id',UNIT).order('transaction_date',{ascending:false}).limit(3000)]);
+ if(unit.error||tx.error)throw new Error(unit.error?.message||tx.error?.message);
+ if(!unit.data)throw Error('La unidad contable no es visible para esta cuenta.');
+ account=unit.data.name;transactions=tx.data||[];
+ const old=$('year').value,years=[...new Set([String(new Date().getFullYear()),...transactions.map(x=>String(x.transaction_date||'').slice(0,4)).filter(Boolean)])].sort().reverse();
+ $('year').innerHTML=years.map(y=>'<option value="'+y+'">'+y+'</option>').join('');$('year').value=old&&years.includes(old)?old:String(new Date().getFullYear());render();
+ }catch(e){$('scope').textContent='Error cargando registros: '+e.message;}finally{$('refresh').disabled=false}
+}
+async function exportXlsx(){
+ const b=$('exportExcel');b.disabled=true;
+ try{
+ const rows=filtered(),active=rows.filter(x=>!x.voided_at),monthly=Array.from({length:12},(_,i)=>{
+ const n=String(i+1).padStart(2,'0'),arr=active.filter(x=>String(x.transaction_date||'').slice(5,7)===n);
+ const inc=arr.filter(x=>x.transaction_type==='income').reduce((s,x)=>s+Number(x.amount||0),0),exp=arr.filter(x=>x.transaction_type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
+ return [n,inc,exp,inc-exp,arr.length];
+ });
+ const sheets=[
+ GigantesExcel.metadata('Tesorería Classic + Adulta',account+' · '+$('year').value),
+ {name:'Movimientos',rows:[['Fecha','Tipo','Categoria','Descripcion','Contraparte','Nro documento','Monto CLP','Forma pago','Proyecto','Estado','Fecha anulacion','Item','Cantidad','Precio unitario','Observaciones'],...rows.map(x=>[x.transaction_date,x.transaction_type,x.category,x.description,x.counterparty,x.document_number,Number(x.amount||0),x.payment_method,projectLabel(x),x.voided_at?'Anulado':'Vigente',x.voided_at||'',x.item_name,x.quantity===null?'':Number(x.quantity||0),x.unit_price===null?'':Number(x.unit_price||0),x.notes])]},
+ {name:'Resumen mensual',rows:[['Mes','Ingresos CLP','Gastos CLP','Resultado CLP','Movimientos vigentes'],...monthly]},
+ {name:'Revision',rows:[['Indicador','Cantidad'],['Movimientos visibles',rows.length],['Sin proyecto',active.filter(x=>!x.project_id).length],['Sin documento ni respaldo',active.filter(x=>!x.document_number&&!x.receipt_path).length],['Anulados',rows.length-active.length]]}
+ ];
+ await GigantesExcel.exportBook('Gigantes_Tesoreria_Classic_'+$('year').value+'.xlsx',sheets);
+ }catch(e){alert('No se pudo exportar Excel: '+e.message)}finally{b.disabled=false}
+}
+async function init(){
+ const u=await sb.auth.getUser();if(u.error||!u.data.user){location.replace('login.html?next=tesoreria-consulta.html');return}
+ const user=u.data.user, [p,perm,unit]=await Promise.all([
+ sb.from('profiles').select('display_name,role,active').eq('user_id',user.id).maybeSingle(),
+ sb.from('user_permissions').select('active').eq('user_id',user.id).eq('permission_code','treasury.classic.read').maybeSingle(),
+ sb.from('treasury_units').select('id,name').eq('id',UNIT).maybeSingle()
+ ]);
+ const isStaff=!!p.data?.active&&['superadmin','board','treasury'].includes(p.data.role);
+ if(p.error||!p.data?.active||(!perm.data?.active&&!isStaff)||unit.error||!unit.data){$('loading').textContent='Esta cuenta no tiene permiso para consultar la Tesorería Classic + Adulta.';return}
+ who=p.data.display_name||user.email;account=unit.data.name;
+ $('loading').classList.add('hidden');$('app').classList.remove('hidden');
+ ['year','kind','projectFilter','query'].forEach(id=>$(id).addEventListener(id==='query'?'input':'change',render));
+ $('exportExcel').onclick=exportXlsx;$('refresh').onclick=reload;await reload();
+}
+init().catch(e=>{$('loading').textContent='No se pudo verificar el acceso: '+e.message});
+})();
+</script></body></html>
