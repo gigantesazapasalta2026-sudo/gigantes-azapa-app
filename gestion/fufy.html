@@ -164,7 +164,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 </section>
 
 <section id="financeTab" class="tab panel">
-<div class="toolbar"><div><h2>Finanzas FUFY</h2><p>Vista del proyecto sobre la Tesorería Classic + Adulta. No se duplica una caja paralela.</p></div><div class="mini-actions"><a class="btn" href="tesoreria-v2.html">+ Cargar movimiento en Tesorería</a></div></div>
+<div class="toolbar"><div><h2>Finanzas FUFY</h2><p>Vista del proyecto sobre la Tesorería Classic + Adulta. No se duplica una caja paralela.</p></div><div class="mini-actions"><a class="btn" href="fufy-presupuesto.html">📊 Presupuesto FUFY</a><a class="btn ghost" href="tesoreria-consulta.html">🧾 Consulta contable</a><button class="btn ghost" id="fufyFinanceExcel" onclick="exportFufyFinanceExcel()">⬇ Excel finanzas FUFY</button><a class="btn" id="fufyTreasuryManage" href="tesoreria-v2.html">+ Cargar movimiento en Tesorería</a></div></div>
 <div id="financeSummary" class="command-grid"></div>
 <div id="financeAccess" class="restricted"></div>
 <div id="financeTransactions" class="tablewrap" style="margin-top:12px"></div>
@@ -199,6 +199,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 
 <script src="../config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script src="excel-export.js?v=20261015"></script>
 <script>
 const PROJECT_ID='8aa8f430-d58e-4cdd-977b-4ea134b36d55';
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
@@ -248,6 +249,7 @@ async function init(){
  profile=p.data;access=a.data;
  const elevated=profile?.active&&['superadmin','board'].includes(profile?.role);
  const projectMember=profile?.active&&access&&['viewer','editor','manager','treasury'].includes(access.access_role);
+  const treasuryManage=$('fufyTreasuryManage');if(treasuryManage&&!['superadmin','board','treasury'].includes(profile?.role))treasuryManage.classList.add('hide');
  if(!elevated&&!projectMember){$('loading').textContent='Tu cuenta no tiene permiso para administrar Copa FUFY 2026.';return}
  canEdit=!!(elevated||(access&&['editor','manager'].includes(access.access_role)));
  canEditResponsibilities=!!elevated;
@@ -567,6 +569,19 @@ function renderEventMode(){
  const crit=[...criticalTasks,...criticalChecks];
  $('eventCritical').innerHTML=crit.length?crit.map(x=>'<div class="stack-item"><strong>'+esc(x.title)+'</strong><small>'+esc(x.owner||'Sin responsable')+' · '+statusLabel(x.status)+' · '+fmtDate(x.due)+'</small></div>').join(''):'<div class="stack-item"><strong>Sin pendientes críticos abiertos</strong></div>';
  $('eventExternal').innerHTML=requestRows.filter(x=>x.active!==false&&['Recinto','Salud y seguridad','Competencia'].includes(x.area)).map(r=>'<div class="stack-item"><strong>'+esc(r.area)+' · '+esc(r.organization)+'</strong><small>'+esc(r.subject)+' · '+statusLabel(r.status)+' · próxima acción '+fmtDate(r.next_action_date)+'</small></div>').join('')||'<div class="restricted">Sin gestiones críticas registradas.</div>';
+}
+async function exportFufyFinanceExcel(){
+ const btn=$('fufyFinanceExcel');if(btn)btn.disabled=true;
+ try{
+  const actual=financeRows.filter(x=>!x.voided_at),income=actual.filter(x=>x.transaction_type==='income').reduce((a,x)=>a+Number(x.amount||0),0),expenses=actual.filter(x=>x.transaction_type==='expense').reduce((a,x)=>a+Number(x.amount||0),0);
+  const sheets=[GigantesExcel.metadata('Finanzas Copa FUFY 2026','Movimientos reales solo si asociados a proyecto FUFY'),
+   {name:'Resumen',rows:[['Dato','Importe CLP'],['Ingresos reales registrados',income],['Gastos reales registrados',expenses],['Saldo de movimientos reales',income-expenses],['Movimientos vinculados',actual.length],['Actividades recaudacion',fundraisingRows.length],['Obligaciones registradas',obligationRows.length],['Advertencia','Los movimientos sin project_id FUFY no aparecen aqui.']]},
+   {name:'Movimientos reales',rows:[['Fecha','Tipo','Categoria','Descripcion','Monto CLP','Medio','Contraparte','Documento','Estado'],...financeRows.map(x=>[x.transaction_date,x.transaction_type,x.category,x.description,Number(x.amount||0),x.payment_method,x.counterparty,x.document_number,x.voided_at?'Anulado':'Vigente'])]},
+   {name:'Recaudacion FUFY',rows:[['Fecha','Actividad','Estado','Bruto CLP','Gastos CLP','Neto CLP','Unidades'],...fundraisingRows.map(x=>[x.event_date,x.title,x.status,Number(x.gross_amount||0),Number(x.expenses_amount||0),Number(x.gross_amount||0)-Number(x.expenses_amount||0),Number(x.units_sold||0)])]},
+   {name:'Obligaciones FUFY',rows:[['Vencimiento','Concepto','Monto CLP','Estado'],...obligationRows.map(x=>[x.due_date,x.title||x.description||x.category||'',Number(x.amount||0),x.status])]}
+  ];
+  await GigantesExcel.exportBook('Copa_FUFY_2026_Finanzas.xlsx',sheets);
+ }catch(e){alert('No se pudo exportar Excel FUFY: '+e.message)}finally{if(btn)btn.disabled=false}
 }
 function renderFinance(financeError,obligationError){
  const canSee=!financeError;
