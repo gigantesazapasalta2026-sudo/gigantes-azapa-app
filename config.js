@@ -42,3 +42,14 @@ window.GIGANTES_AUTH_STORAGE={
 
 // Public photo hero: reuse real club album photos on internal public pages.
 (()=>{const own=document.currentScript;if(!own?.src)return;const root=new URL('./',own.src);const add=()=>{if(!document.querySelector('link[data-gigantes-hero]')){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL('club-hero.css?v=20261007-3',root).href;l.dataset.gigantesHero='1';document.head.appendChild(l)}if(!document.querySelector('script[data-gigantes-hero]')){const s=document.createElement('script');s.src=new URL('club-hero.js?v=20261007-3',root).href;s.defer=true;s.dataset.gigantesHero='1';document.head.appendChild(s)}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add,{once:true});else add();})();
+
+
+// Presupuesto editable Copa FUFY, visible dentro de sus áreas y en el Control Center.
+(()=>{const current=document.currentScript; if(!current?.src)return; const root=new URL('./',current.src);
+const p=location.pathname;const fufy=new URL('gestion/fufy.html',root).pathname;const center=new URL('gestion/index.html',root).pathname;
+if(p!==fufy&&p!==center)return;
+const add=()=>{if(document.querySelector('[data-fufy-budget-shortcut]'))return;
+const a=document.createElement('a');a.href=new URL('gestion/fufy-presupuesto.html',root).href;a.className='btn';a.dataset.fufyBudgetShortcut='1';a.textContent='💰 Presupuesto FUFY · Editar';
+if(p===fufy){a.style.cssText='background:#e8692b;color:#fff;';const admin=document.querySelector('.admin-area-grid');const area=document.querySelector('[data-admin-area="F"]');if(area){const b=a.cloneNode(true);b.href=a.href;b.style.cssText='display:block;padding:12px;border-radius:10px;background:#e8692b;color:white;font-weight:bold;text-decoration:none;grid-column:1/-1';b.textContent='💰 Abrir presupuesto maestro editable · 31 partidas';admin?.appendChild(b);}const head=document.querySelector('header .actions');head?.prepend(a);}
+else{a.className='btn primary';const actions=document.querySelector('.top .actions');actions?.prepend(a);const menu=document.querySelector('.more-panel');if(menu){const b=a.cloneNode(true);b.className='';b.style='';menu.prepend(b);}}};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add,{once:true});else add();})();
