@@ -74,27 +74,25 @@ function renderTribute(d){if(!d?.tribute_text)return;tributeTitle.textContent=d.
  const labels={tribute_title:'',tribute_name:'',tribute_text:'',tribute_closing:'',headline:'Resumen',summary:'Qué estamos haciendo',format:'Formato deportivo',day_plan:'Programa del día',club_status:'Clubes y delegaciones',operations:'Avances operativos',sponsor_value:'Valor para auspiciadores',sports:'Encuentro deportivo',itinerary:'Programa general',progress:'Dónde estamos hoy',fundraising:'Recaudación y apoyo',needs:'Lo próximo que debemos cerrar',target_period:'Período objetivo',category_targets:'Metas por categoría',formats:'Formatos previstos',status_note:'Estado de confirmación',targets:'Metas del proyecto',funding:'Financiamiento / presupuesto de trabajo',invite_map:'Invitaciones objetivo',program_base:'Base oficial del programa recibido',program_methodology:'Metodología formativa',school_receives:'Qué recibe cada colegio',impact_measurement:'Cómo se mide el impacto',arica_proposal:'Propuesta para Arica',learning_path:'Ruta de aprendizaje vinculada',sponsor_opportunities:'Cómo pueden apoyar los aliados',federation_context:'Vínculo con Chile Rugby',vision_2030:'Proyección 2030',source_note:'Fuente y estado de coordinación',milestones:'Ruta de hitos',why_it_matters:'Por qué hacemos esta gira',family_experience:'La experiencia de las familias',learning_experience:'Lo que aprenden nuestros niños y jóvenes',future_horizons:'Horizontes que se abren',legacy:'Qué queremos que deje esta gira',tentative_itinerary_title:'Itinerario tentativo',tentative_itinerary:'Programa tentativo de la gira',flight_coordination:'Coordinación de vuelos y transfers',lodging_strategy:'Estrategia de alojamiento',saturday_activity_plan:'Actividad grupal del sábado',sunday_option:'Domingo · opción deportiva por confirmar',delegation_update_date:'Última actualización de delegación',delegation_status:'Estado de la nómina',player_count_confirmed:'Jugadores confirmados',fixture_availability:'Disponibilidad para fixture Stade Français',companion_tracking:'Acompañantes y alojamiento',roster_privacy_note:'Privacidad de la nómina',fixture_summary:'Disponibilidad actual para fixture',delegation_snapshot:'Delegación conocida',fixture_roster_update:'Actualización del fixture',delegation_summary:'Resumen de delegación',delegation_logistics_status:'Conteo operativo para alojamiento y transporte',family_updates:'Grupos familiares',fixture_notes:'Notas para Stade Français',fixture_pending:'Definiciones pendientes antes del fixture'};
  const code=String(projectCode||'').toUpperCase();
 
- // Gira Santiago: una sola agenda, sin repetir los mismos horarios en varias tarjetas.
+ // Gira Santiago 2026: agenda y alojamiento provienen de Supabase.
  if(code==='SCL2026'){
-   const pending=[
-     'Confirmar hora definitiva de inicio de la jornada del domingo.',
-     'Confirmar horarios de almuerzos y actividades complementarias.'
-   ];
-   const why=d?.why_it_matters||'La gira busca ampliar las experiencias deportivas y personales de nuestros jugadores, fortaleciendo el aprendizaje, la convivencia y la identidad de club.';
-   details.innerHTML=
-     '<article class="detailCard scl-itinerary">'+
-       '<h2>🏉 Itinerario de partidos · Gira Santiago 2026</h2>'+
-       '<div class="scl-days">'+
-         '<section class="scl-day"><span class="date">Viernes 6 de noviembre</span><h3>📍 Stade Français</h3><p class="scl-line"><span class="scl-time">🕕 18:00–19:30 hrs.</span></p><p class="scl-line">🏉 Entrenamiento con staff de Stade Français.</p></section>'+
-         '<section class="scl-day"><span class="date">Sábado 7 de noviembre</span><h3>📍 Stade Français</h3><p class="scl-line"><span class="scl-time">🕚 11:00–12:30 hrs.</span></p><p class="scl-line">🏉 Gigantes de Azapa vs Stade Français.</p><p class="scl-line"><span class="scl-time">🍽 13:00–14:30 hrs. aprox.</span><br>Tercer tiempo.</p></section>'+
-         '<section class="scl-day"><span class="date">Domingo 8 de noviembre</span><h3>📍 Country Club</h3><p class="scl-line"><span class="scl-time">🕘 09:00 o 10:00 hrs. aprox.</span></p><p class="scl-line">🏉 Gigantes de Azapa vs Country Club &amp; Old Locks.</p><p class="scl-line">⏰ Jornada deportiva hasta aprox. las 12:00 hrs.</p><p class="scl-line"><span class="scl-time">🍽 12:30–13:30 / 14:00 hrs. aprox.</span><br>Tercer tiempo.</p></section>'+
-       '</div>'+
-       '<p class="scl-note"><b>Por confirmar:</b> horario definitivo del domingo, almuerzos y actividades complementarias.</p>'+
-     '</article>'+
-     '<article class="detailCard scl-simple"><h2>⏳ Lo pendiente por confirmar</h2><ul>'+pending.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></article>'+
-     '<article class="detailCard scl-simple"><h2>🖤 Por qué hacemos esta gira</h2><p>'+esc(why)+'</p></article>';
-   detailsSection.style.display='block';
-   return;
+   const schedule=Array.isArray(d?.itinerary_schedule)?d.itinerary_schedule:[];
+   const venue=Array.isArray(d?.rugby_venues)?d.rugby_venues:[];
+   const lodging=d?.lodging_info||{};
+   const mapsLink=address=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(address);
+   const routeLink=address=>'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(lodging.address||'Laredo 8497, Las Condes, Santiago')+'&destination='+encodeURIComponent(address)+'&travelmode=driving';
+   const safeLink=u=>/^https:\/\//i.test(String(u||''))?u:'#';
+   const money=n=>'$'+Number(n||0).toLocaleString('es-CL');
+   const dayCards=schedule.map(day=>'<section class="scl-day"><span class="date">'+esc(day.label||day.date||'')+'</span><h3>📍 '+esc(day.venue||'')+'</h3>'+
+     (day.items||[]).map(item=>'<p class="scl-line"><span class="scl-time">'+esc(item.time||'')+'</span> · '+esc(item.description||'')+
+     (item.status==='por_confirmar'?' <b>(por confirmar)</b>':item.status==='aproximado'?' <em>(aprox.)</em>':'')+'</p>').join('')+'</section>').join('');
+   const lodgingCard=lodging.address?'<article class="detailCard scl-itinerary"><h2>🏠 Alojamiento · '+esc(lodging.name||'Laredo Top')+'</h2><div style="padding:12px 16px"><p><b>Dirección:</b> '+esc(lodging.address)+'</p><p><b>Ingreso:</b> desde las 14:00 · <b>Salida:</b> 11:00</p><p>'+esc(lodging.front_desk||'')+'</p><p><b>Tarifas por noche</b></p><ul>'+((lodging.rooms||[]).map(room=>'<li>'+Number(room.people||0)+' personas: <b>'+money(room.price_per_night)+'</b></li>').join(''))+'</ul><p>'+esc(lodging.invoice_note||'')+'</p><p><a class="docbtn" href="'+esc(mapsLink(lodging.address))+'" target="_blank" rel="noopener">📍 Abrir hostal en Google Maps</a> <a class="docbtn" href="'+esc(safeLink(lodging.url))+'" target="_blank" rel="noopener">🌐 Sitio del alojamiento</a></p><p class="empty">'+esc(lodging.booking_note||'')+'</p></div></article>':'';
+   const venueCards=venue.map(v=>'<div class="scl-venue"><h3>'+esc(v.name||'')+'</h3><p>'+esc(v.address||'')+'</p><p><b>'+esc(v.dates||'')+'</b> · '+esc(v.activity||'')+'</p><p><a class="docbtn" href="'+esc(mapsLink(v.address))+'" target="_blank" rel="noopener">📍 Google Maps</a> <a class="docbtn" href="'+esc(routeLink(v.address))+'" target="_blank" rel="noopener">🚗 Cómo llegar desde Laredo</a></p>'+(v.note?'<p class="empty">'+esc(v.note)+'</p>':'')+'</div>').join('');
+   const venuesCard=venueCards?'<article class="detailCard scl-itinerary"><h2>🏉 Canchas de rugby · ubicaciones</h2><div style="padding:12px 16px"><p><a class="docbtn" href="'+esc(mapsLink(lodging.address||'Laredo 8497, Las Condes'))+'" target="_blank" rel="noopener">🗺️ Ver alojamiento en Google Maps</a></p>'+venueCards+'</div></article>':'';
+   const why=d?.why_it_matters||'La gira busca ampliar las experiencias deportivas y personales de nuestros jugadores.';
+   details.innerHTML='<article class="detailCard scl-itinerary"><h2>📅 Itinerario oficial · Gira Santiago 2026</h2><div class="scl-days">'+dayCards+'</div><p class="scl-note"><b>Importante:</b> '+esc(d?.itinerary_notice||'Los horarios del domingo están sujetos a confirmación de los clubes anfitriones.')+'</p></article>'+lodgingCard+venuesCard+
+    '<article class="detailCard scl-simple"><h2>🖤 Por qué hacemos esta gira</h2><p>'+esc(why)+'</p></article>';
+   detailsSection.style.display='block';return;
  }
 
  const hiddenBase=new Set(['headline','summary','tribute_title','tribute_name','tribute_text','tribute_closing','delegation_private_note']);
