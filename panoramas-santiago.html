@@ -34,28 +34,28 @@ const link=(u,label)=>u&&/^https:\/\//i.test(u)?'<a href="'+safe(u)+'" rel="noop
  const eligibility=await sb.rpc('can_vote_santiago_panorama');if(eligibility.error)throw eligibility.error;canVote=eligibility.data===true;
  const ownVote=await sb.from('travel_activity_votes').select('option_id').eq('poll_id',poll.id).eq('voter_user_id',me).maybeSingle();if(ownVote.error)throw ownVote.error;
  myVote=ownVote.data?.option_id||null;
- status.innerHTML=canVote?'<span class="pill ok">✅ Apoderado habilitado para votar</span>':'<span class="pill no">Consulta habilitada · Sin voto: requiere vínculo de apoderado y jugador participante en la gira</span>';
+ document.getElementById('status').innerHTML=canVote?'<span class="pill ok">✅ Apoderado habilitado para votar</span>':'<span class="pill no">Consulta habilitada · Sin voto: requiere vínculo de apoderado y jugador participante en la gira</span>';
  draw();
-}catch(e){status.textContent='No fue posible cargar la votación: '+(e.message||e)} })();
+}catch(e){document.getElementById('status').textContent='No fue posible cargar la votación: '+(e.message||e)} })();
 function draw(){
  const total=opts.reduce((s,o)=>s+Number(o.vote_count||0),0), max=Math.max(0,...opts.map(o=>Number(o.vote_count||0)));
  const open=poll.status==='open'&&(!poll.closes_at||Date.now()<new Date(poll.closes_at).getTime());
- summary.innerHTML='<div class="summary"><div><strong>'+total+'</strong><span class="muted">votos registrados</span></div><div><strong>'+opts.filter(o=>o.eligible_for_vote).length+'</strong><span class="muted">alternativas votables</span></div><div><strong>'+(open?'Abierta':'Cerrada')+'</strong><span class="muted">estado</span></div></div><p class="muted">Cierre: '+(poll.closes_at?new Date(poll.closes_at).toLocaleString('es-CL'):'por definir')+'. '+(myVote?'Tu voto está registrado; puedes modificarlo antes del cierre.':'Selecciona una actividad elegible para votar.')+'</p>';
- cards.innerHTML=opts.map(o=>{const eligible=o.eligible_for_vote&&o.estimated_child_max_clp<=poll.budget_cap_clp;
+ document.getElementById('summary').innerHTML='<div class="summary"><div><strong>'+total+'</strong><span class="muted">votos registrados</span></div><div><strong>'+opts.filter(o=>o.eligible_for_vote).length+'</strong><span class="muted">alternativas votables</span></div><div><strong>'+(open?'Abierta':'Cerrada')+'</strong><span class="muted">estado</span></div></div><p class="muted">Cierre: '+(poll.closes_at?new Date(poll.closes_at).toLocaleString('es-CL'):'por definir')+'. '+(myVote?'Tu voto está registrado; puedes modificarlo antes del cierre.':'Selecciona una actividad elegible para votar.')+'</p>';
+ document.getElementById('cards').innerHTML=opts.map(o=>{const eligible=o.eligible_for_vote&&o.estimated_child_max_clp<=poll.budget_cap_clp;
  const pct=total?Math.round(100*(o.vote_count||0)/total):0;
  const price=o.estimated_child_min_clp===o.estimated_child_max_clp?money(o.estimated_child_min_clp):money(o.estimated_child_min_clp)+' a '+money(o.estimated_child_max_clp);
  return '<article class="option"><div class="row"><span class="pill '+(eligible?'ok':'no')+'">'+(eligible?'En votación':'Pendiente de tarifa u horario')+'</span><span class="price">'+price+'</span></div><h3>'+safe(o.title)+'</h3><p>'+safe(o.description)+'</p><p class="meta"><b>📍 Dirección:</b> '+safe(o.address)+' '+link(o.map_url,'🗺️ Ver mapa')+'</p><p class="meta"><b>⏱️ Tiempo:</b> '+safe(o.duration_notes)+'</p><p class="meta"><b>🚌 Traslado:</b> '+safe(o.transport_notes)+'</p><p class="meta"><b>💵 Condiciones:</b> '+safe(o.price_notes)+'</p><p class="meta"><b>📞 Reservas:</b> '+safe(o.contact_phone||'Sin teléfono confirmado')+(o.contact_email?' · <a href="mailto:'+safe(o.contact_email)+'">'+safe(o.contact_email)+'</a>':'')+'</p><p class="meta">'+link(o.source_url,'Información oficial ↗')+' · Reserva: '+safe(o.booking_status)+'</p><div class="results"><div class="row"><b>'+Number(o.vote_count||0)+' votos</b><span>'+pct+'%</span></div><div class="bar"><span style="width:'+pct+'%"></span></div></div><button class="btn '+(myVote===o.id?'secondary':'')+'" data-vote="'+safe(o.id)+'" '+(!open||!eligible||!canVote?'disabled':'')+'>'+(myVote===o.id?'✓ Tu elección':'Votar por este panorama')+'</button></article>'}).join('');
- cards.querySelectorAll('[data-vote]').forEach(b=>b.onclick=()=>vote(b.dataset.vote));
+ document.getElementById('cards').querySelectorAll('[data-vote]').forEach(b=>b.onclick=()=>vote(b.dataset.vote));
 }
 async function vote(id){
  if(!canVote||poll.status!=='open'||(poll.closes_at&&Date.now()>=new Date(poll.closes_at).getTime()))return;
  const option=opts.find(o=>o.id===id);if(!option||!option.eligible_for_vote||option.estimated_child_max_clp>poll.budget_cap_clp)return;
  if(myVote===id)return;
- status.textContent='Registrando tu voto…';
+ document.getElementById('status').textContent='Registrando tu voto…';
  let r=myVote?await sb.from('travel_activity_votes').update({option_id:id,voted_at:new Date().toISOString()}).eq('poll_id',poll.id).eq('voter_user_id',me):await sb.from('travel_activity_votes').insert({poll_id:poll.id,option_id:id,voter_user_id:me});
- if(r.error){status.textContent='No se registró el voto: '+r.error.message;return}
+ if(r.error){document.getElementById('status').textContent='No se registró el voto: '+r.error.message;return}
  myVote=id;
  const rr=await sb.from('travel_activity_options').select('*').eq('poll_id',poll.id).order('sort_order');if(!rr.error)opts=rr.data||opts;
- status.innerHTML='<span class="pill ok">✅ Voto guardado correctamente</span>';draw();
+ document.getElementById('status').innerHTML='<span class="pill ok">✅ Voto guardado correctamente</span>';draw();
 }
 </script></body></html>
