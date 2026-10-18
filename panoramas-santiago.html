@@ -31,7 +31,7 @@ const link=(u,label)=>u&&/^https:\/\//i.test(u)?'<a href="'+safe(u)+'" rel="noop
  const eligibleIds=[...children,...(own.data?[own.data.id]:[])];
  // The database remains authoritative: write policies validate authenticated guardians of trip players.
  const trip=eligibleIds.length?await sb.from('travel_participants').select('person_id,role,attendance_status').eq('project_id',poll.project_id).in('person_id',eligibleIds):{data:[]};
- canVote=children.some(id=>(trip.data||[]).some(t=>t.person_id===id&&t.role==='player'&&t.attendance_status!=='cancelled'));
+ const eligibility=await sb.rpc('can_vote_santiago_panorama');if(eligibility.error)throw eligibility.error;canVote=eligibility.data===true;
  const ownVote=await sb.from('travel_activity_votes').select('option_id').eq('poll_id',poll.id).eq('voter_user_id',me).maybeSingle();if(ownVote.error)throw ownVote.error;
  myVote=ownVote.data?.option_id||null;
  status.innerHTML=canVote?'<span class="pill ok">✅ Apoderado habilitado para votar</span>':'<span class="pill no">Consulta habilitada · Sin voto: requiere vínculo de apoderado y jugador participante en la gira</span>';
