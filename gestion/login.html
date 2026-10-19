@@ -62,6 +62,10 @@ magic.onclick=async()=>{
   const e=email.value.trim().toLowerCase();
   if(!e){msg.textContent='Escribe tu correo electrónico.';email.focus();return}
   msg.textContent='Enviando enlace…';
+  const help=document.getElementById('emailHelp');
+  const contact=document.getElementById('contactClub');
+  help.hidden=false;
+  contact.href='mailto:gigantesazapa.salta2026@gmail.com?subject='+encodeURIComponent('Ayuda acceso Mi Gigantes')+'&body='+encodeURIComponent('Hola, necesito verificar mi ficha de acceso. Mi correo es '+e+'. Mi nombre completo es: ');
   const {error}=await sb.auth.signInWithOtp({email:e,options:{emailRedirectTo:new URL(nextPath,location.href).href,shouldCreateUser:false}});
   if(error){
     if(error.message&&/Signups not allowed for otp/i.test(error.message)){
@@ -72,7 +76,7 @@ magic.onclick=async()=>{
     msg.textContent='No fue posible enviar el enlace. Intenta nuevamente o usa “Primera vez · Activar mi acceso”.';
     return;
   }
-  msg.textContent='Revisa tu correo. Te enviamos un enlace seguro.';
+  msg.textContent='Solicitud aceptada. Revisa tu correo, No deseado y Otros. Si no llega, solicita ayuda al club; no vuelvas a registrarte.';
 };
 repair.onclick=async()=>{
   repair.disabled=true;msg.textContent='Reparando sesión local…';
