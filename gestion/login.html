@@ -82,6 +82,12 @@ magic.onclick=async()=>{
   apply.href='../inscripcion.html?origen=acceso&email='+encoded;
   existing.href='../regularizar-correo.html?email='+encoded;
   contact.href='mailto:gigantesazapa.salta2026@gmail.com?subject='+encodeURIComponent('Ayuda acceso Mi Gigantes')+'&body='+encodeURIComponent('Hola, necesito verificar mi ficha de acceso. Mi correo es '+e+'. Mi nombre completo es: ');
+  const cooldownKey='gigantes-access-request-'+e;
+  const previous=Number(sessionStorage.getItem(cooldownKey)||0);
+  if(previous&&Date.now()-previous<180000){
+    msg.textContent='Ya solicitaste un enlace. No vuelvas a enviarlo: revisa Bandeja de entrada, No deseado y Otros. Espera al menos 3 minutos antes de un nuevo intento.';
+    help.hidden=false;return;
+  }
   msg.textContent='Comprobando tu cuenta de acceso…';
   magic.disabled=true;
   try{
@@ -100,14 +106,15 @@ magic.onclick=async()=>{
       const noAccount=/signups? not allowed for otp|user not found|user not registered|no user found|account not found|otp signups? not allowed/.test(raw);
       if(noAccount){
         msg.textContent='El correo fue reconocido en el Registro Maestro, pero todavía no tiene una cuenta activada. Solicita apoyo a la directiva.';
-        missing.hidden=false;
+        help.hidden=false;
         return;
       }
       msg.textContent='No fue posible comprobar o enviar el acceso: '+(error.status===429?'demasiados intentos. Intenta más tarde.':'puede haber un problema temporal. Revisa las opciones de ayuda.');
       help.hidden=false;
       return;
     }
-    msg.textContent='Solicitud aceptada. Revisa tu correo (incluyendo No deseado y Otros). Esto no garantiza que el mensaje haya llegado.';
+    sessionStorage.setItem(cooldownKey,String(Date.now()));
+    msg.textContent='Solicitud recibida. Enviamos una sola petición. Revisa primero Bandeja de entrada, No deseado y Otros; NO presiones otra vez ni solicites un segundo enlace durante 3 minutos. El sistema no puede garantizar la entrega.';
     help.hidden=false;
   }catch(err){
     msg.textContent='No fue posible conectar con el servicio de acceso. Inténtalo nuevamente o solicita ayuda al club.';
