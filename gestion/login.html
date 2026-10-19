@@ -10,8 +10,16 @@
 <button class="btn" id="magic" type="button">Continuar · Recibir enlace de acceso</button>
 <div class="msg" id="msg" role="status" aria-live="polite"></div>
 <div class="support-box" id="emailHelp" hidden><p><b>¿No recibes el correo o nunca te inscribiste con este email?</b> No crees otra cuenta. La Secretaría debe comprobar que tu correo esté incorporado a tu ficha.</p><a id="contactClub" href="mailto:gigantesazapa.salta2026@gmail.com?subject=Ayuda%20con%20Mi%20Gigantes">✉️ Solicitar revisión de mi acceso al club</a></div>
+<div class="support-box" id="missingAccount" hidden role="status" aria-live="polite">
+<b>Este correo aún no tiene una cuenta de acceso registrada en Mi Gigantes.</b>
+<p>Si eres nuevo en el club, comienza aquí tu incorporación. La Directiva revisará y aprobará los antecedentes antes de habilitar el acceso.</p>
+<a class="first-access" id="startRegistration" href="../inscripcion.html" style="margin:8px 0">🏉 Iniciar inscripción desde cero</a>
+<p><b>¿Ya perteneces a Gigantes?</b> No te inscribas de nuevo: tu cuenta puede estar pendiente de activación o tu correo puede faltar en la ficha.</p>
+<a id="existingMemberActivation" href="../activar.html">Ya soy integrante · Activar mi acceso</a>
+</div>
 <a class="first-access" id="firstAccess" href="../activar.html">✨ Es mi primera vez · Activar acceso<small>Si eres integrante autorizado y no has creado contraseña, entra aquí.</small></a>
 <details class="support" id="passwordMode"><summary>Ya tengo contraseña · Ingresar</summary><div class="support-box"><label for="password">Contraseña personal</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña"><button class="btn dark" id="signin" type="button">Ingresar con contraseña</button></div></details>
+<a class="secondary-link" href="../inscripcion.html">¿Aún no eres integrante del club? Solicita tu incorporación →</a>
 <a class="secondary-link" href="../recuperar.html">¿Olvidaste tu clave? Recuperar con RUT</a>
 <details class="support"><summary>¿Tienes problemas para ingresar?</summary><div class="support-box"><p><b>Reparar sesión</b> se usa solamente si este navegador queda atrapado en el login, abre otro usuario o funciona en incógnito pero no aquí. No es un paso normal para entrar.</p><button class="btn repair-btn" id="repair">Reparar sesión de este navegador</button></div></details>
 </section>
@@ -60,23 +68,45 @@ signin.onclick=async()=>{
 firstAccess.onclick=(ev)=>{const e=email.value.trim().toLowerCase();if(e){ev.preventDefault();location.href='../activar.html?email='+encodeURIComponent(e)}};
 magic.onclick=async()=>{
   const e=email.value.trim().toLowerCase();
-  if(!e){msg.textContent='Escribe tu correo electrónico.';email.focus();return}
-  msg.textContent='Enviando enlace…';
   const help=document.getElementById('emailHelp');
+  const missing=document.getElementById('missingAccount');
   const contact=document.getElementById('contactClub');
-  help.hidden=false;
+  const apply=document.getElementById('startRegistration');
+  const existing=document.getElementById('existingMemberActivation');
+  help.hidden=true;missing.hidden=true;msg.textContent='';
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(e)){
+    msg.textContent='Ingresa una dirección de correo válida para continuar.';
+    email.focus();return;
+  }
+  const encoded=encodeURIComponent(e);
+  apply.href='../inscripcion.html?origen=acceso&email='+encoded;
+  existing.href='../activar.html?email='+encoded;
   contact.href='mailto:gigantesazapa.salta2026@gmail.com?subject='+encodeURIComponent('Ayuda acceso Mi Gigantes')+'&body='+encodeURIComponent('Hola, necesito verificar mi ficha de acceso. Mi correo es '+e+'. Mi nombre completo es: ');
-  const {error}=await sb.auth.signInWithOtp({email:e,options:{emailRedirectTo:new URL(nextPath,location.href).href,shouldCreateUser:false}});
-  if(error){
-    if(error.message&&/Signups not allowed for otp/i.test(error.message)){
-      msg.textContent='Este correo todavía no tiene una cuenta activada. Te llevamos a la activación inicial…';
-      setTimeout(()=>location.href='../activar.html?email='+encodeURIComponent(e),650);
+  msg.textContent='Comprobando tu cuenta de acceso…';
+  magic.disabled=true;
+  try{
+    const {error}=await sb.auth.signInWithOtp({
+      email:e,
+      options:{emailRedirectTo:new URL(nextPath,location.href).href,shouldCreateUser:false}
+    });
+    if(error){
+      const raw=(String(error.message||'')+' '+String(error.code||'')).toLowerCase();
+      const noAccount=/signups? not allowed for otp|user not found|user not registered|no user found|account not found|otp signups? not allowed/.test(raw);
+      if(noAccount){
+        msg.textContent='No encontramos una cuenta de acceso creada con este correo.';
+        missing.hidden=false;
+        return;
+      }
+      msg.textContent='No fue posible comprobar o enviar el acceso: '+(error.status===429?'demasiados intentos. Intenta más tarde.':'puede haber un problema temporal. Revisa las opciones de ayuda.');
+      help.hidden=false;
       return;
     }
-    msg.textContent='No fue posible enviar el enlace. Intenta nuevamente o usa “Primera vez · Activar mi acceso”.';
-    return;
-  }
-  msg.textContent='Solicitud aceptada. Revisa tu correo, No deseado y Otros. Si no llega, solicita ayuda al club; no vuelvas a registrarte.';
+    msg.textContent='Solicitud aceptada. Revisa tu correo (incluyendo No deseado y Otros). Esto no garantiza que el mensaje haya llegado.';
+    help.hidden=false;
+  }catch(err){
+    msg.textContent='No fue posible conectar con el servicio de acceso. Inténtalo nuevamente o solicita ayuda al club.';
+    help.hidden=false;
+  }finally{magic.disabled=false;}
 };
 repair.onclick=async()=>{
   repair.disabled=true;msg.textContent='Reparando sesión local…';
