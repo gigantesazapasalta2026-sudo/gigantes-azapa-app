@@ -74,7 +74,7 @@ magic.onclick=async()=>{
   const apply=document.getElementById('startRegistration');
   const existing=document.getElementById('existingMemberActivation');
   help.hidden=true;missing.hidden=true;msg.textContent='';
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(e)){
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){
     msg.textContent='Ingresa una dirección de correo válida para continuar.';
     email.focus();return;
   }
