@@ -71,7 +71,7 @@ function showNoSession(message=''){
   if(recoveryMode){
     request.innerHTML='<div class="notice">'+(message||'El enlace de recuperación no pudo abrir una sesión válida o ya fue utilizado.')+'</div><p class="msg"><a href="recuperar.html">Solicitar un nuevo enlace de recuperación →</a></p><p class="msg"><a href="gestion/login.html">Volver al acceso →</a></p>';
   }else if(message){
-    requestMsg.textContent=message;
+    requestMsgEl.textContent=message;
   }
 }
 async function routeAfterAuth(){
@@ -130,7 +130,7 @@ sendLinkBtn.addEventListener('click',async()=>{
     }
   });
   sendLinkBtn.disabled=false;
-  requestMsgEl.textContent=error?'No fue posible procesar la solicitud. Verifica que tu acceso haya sido habilitado por el club.':'Si el correo tiene un acceso habilitado, recibirás un enlace seguro en unos minutos.';
+  requestMsgEl.textContent=error?'No se pudo enviar el enlace de activación: '+error.message+'. Comunícate con la directiva para que verifique la autorización.':'La solicitud se procesó. Revisa el correo y la carpeta No deseado. Si el enlace no llega, avisa a la directiva; no debes crear otra cuenta.';requestMsgEl.className=error?'msg error':'msg';
 });
 
 savePassBtn.addEventListener('click',async()=>{
