@@ -98,6 +98,8 @@
 <script>
 const RULES_PDF='assets/docs/reglamento-interno-gigantes-azapa-v1.0.pdf';
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY),$=id=>document.getElementById(id);
+// Prefill only the contact email when arriving from the access screen; approval remains mandatory.
+(()=>{const p=new URLSearchParams(location.search);const e=(p.get('email')||'').trim().toLowerCase();if(p.get('origen')==='acceso'&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){const input=document.getElementById('email');if(input&&!input.value)input.value=e;}})();
 function age(){if(!$('dob').value)return null;const d=new Date($('dob').value+'T12:00:00'),n=new Date();let a=n.getFullYear()-d.getFullYear();const m=n.getMonth()-d.getMonth();if(m<0||(m===0&&n.getDate()<d.getDate()))a--;return a}
 function minorUI(){const a=age();$('guardianReq').textContent=(a!==null&&a>=18)?'':'*'}
 function transferUI(){$('transferBlock').classList.toggle('hidden',$('previousClub').value!=='yes')}function imageUI(){const ok=$('imageAuth').value==='yes';$('photoBlock').classList.toggle('hidden',!ok);if(!ok){$('playerPhoto').value='';$('photoPreview').style.display='none'}}
