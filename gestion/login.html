@@ -11,11 +11,11 @@
 <div class="msg" id="msg" role="status" aria-live="polite"></div>
 <div class="support-box" id="emailHelp" hidden><p><b>¿No recibes el correo o nunca te inscribiste con este email?</b> No crees otra cuenta. La Secretaría debe comprobar que tu correo esté incorporado a tu ficha.</p><a id="contactClub" href="mailto:gigantesazapa.salta2026@gmail.com?subject=Ayuda%20con%20Mi%20Gigantes">✉️ Solicitar revisión de mi acceso al club</a></div>
 <div class="support-box" id="missingAccount" hidden role="status" aria-live="polite">
-<b>Este correo aún no tiene una cuenta de acceso registrada en Mi Gigantes.</b>
+<b>No tenemos este correo actualizado en el Registro Maestro.</b>
 <p>Si eres nuevo en el club, comienza aquí tu incorporación. La Directiva revisará y aprobará los antecedentes antes de habilitar el acceso.</p>
 <a class="first-access" id="startRegistration" href="../inscripcion.html" style="margin:8px 0">🏉 Iniciar inscripción desde cero</a>
 <p><b>¿Ya perteneces a Gigantes?</b> No te inscribas de nuevo: tu cuenta puede estar pendiente de activación o tu correo puede faltar en la ficha.</p>
-<a id="existingMemberActivation" href="../activar.html">Ya soy integrante · Activar mi acceso</a>
+<a id="existingMemberActivation" href="../regularizar-correo.html">Ya pertenezco al club · Completar mis datos</a>
 </div>
 <a class="first-access" id="firstAccess" href="../activar.html">✨ Es mi primera vez · Activar acceso<small>Si eres integrante autorizado y no has creado contraseña, entra aquí.</small></a>
 <details class="support" id="passwordMode"><summary>Ya tengo contraseña · Ingresar</summary><div class="support-box"><label for="password">Contraseña personal</label><input id="password" type="password" autocomplete="current-password" placeholder="Tu contraseña"><button class="btn dark" id="signin" type="button">Ingresar con contraseña</button></div></details>
@@ -80,11 +80,17 @@ magic.onclick=async()=>{
   }
   const encoded=encodeURIComponent(e);
   apply.href='../inscripcion.html?origen=acceso&email='+encoded;
-  existing.href='../activar.html?email='+encoded;
+  existing.href='../regularizar-correo.html?email='+encoded;
   contact.href='mailto:gigantesazapa.salta2026@gmail.com?subject='+encodeURIComponent('Ayuda acceso Mi Gigantes')+'&body='+encodeURIComponent('Hola, necesito verificar mi ficha de acceso. Mi correo es '+e+'. Mi nombre completo es: ');
   msg.textContent='Comprobando tu cuenta de acceso…';
   magic.disabled=true;
   try{
+    const gate=await sb.functions.invoke('master-access-gate',{body:{action:'check',email:e}});
+    if(gate.error||gate.data?.error){msg.textContent='No se pudo revisar el registro central. Intenta luego o solicita ayuda al club.';help.hidden=false;return;}
+    if(!gate.data?.recognized){
+      msg.textContent='Todavía no tenemos tus antecedentes actualizados en nuestra base central. Si ya perteneces al club, escribe tu nombre o el de tu hijo para localizar tu ficha.';
+      missing.hidden=false;return;
+    }
     const {error}=await sb.auth.signInWithOtp({
       email:e,
       options:{emailRedirectTo:new URL(nextPath,location.href).href,shouldCreateUser:false}
@@ -93,7 +99,7 @@ magic.onclick=async()=>{
       const raw=(String(error.message||'')+' '+String(error.code||'')).toLowerCase();
       const noAccount=/signups? not allowed for otp|user not found|user not registered|no user found|account not found|otp signups? not allowed/.test(raw);
       if(noAccount){
-        msg.textContent='No encontramos una cuenta de acceso creada con este correo.';
+        msg.textContent='El correo fue reconocido en el Registro Maestro, pero todavía no tiene una cuenta activada. Solicita apoyo a la directiva.';
         missing.hidden=false;
         return;
       }
