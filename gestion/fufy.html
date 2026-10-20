@@ -595,7 +595,11 @@ function renderFinance(financeError,obligationError){
 function renderFundraising(err){
  const rows=fundraisingRows||[],gross=rows.reduce((s,x)=>s+Number(x.gross_amount||0),0),expenses=rows.reduce((s,x)=>s+Number(x.expenses_amount||0),0);
  $('fundraisingSummary').innerHTML='<div class="command-card"><span>Actividades FUFY</span><b>'+rows.length+'</b></div><div class="command-card ok"><span>Ingreso bruto</span><b>'+fmtMoney(gross)+'</b></div><div class="command-card warn"><span>Gastos</span><b>'+fmtMoney(expenses)+'</b></div><div class="command-card"><span>Neto</span><b>'+fmtMoney(gross-expenses)+'</b></div>';
- $('fundraisingList').innerHTML=err?'<div class="restricted">Tu rol no puede acceder a Recaudación.</div>':(rows.length?rows.map(r=>'<div class="stack-item"><strong>'+esc(r.title)+'</strong><small>'+fmtDate(r.event_date)+' · '+esc(r.status)+' · bruto '+fmtMoney(r.gross_amount||0)+' · gastos '+fmtMoney(r.expenses_amount||0)+'</small></div>').join(''):'<div class="restricted">No hay actividades de recaudación vinculadas todavía a FUFY. Las próximas deben crearse desde Recaudación seleccionando Copa FUFY 2026 como proyecto.</div>');
+ $('fundraisingList').innerHTML=err?'<div class="restricted">Tu rol no puede acceder a Recaudación.</div>':(rows.length?rows.map(r=>{
+  const menu=Array.isArray(r.sales_menu)?r.sales_menu:[];
+  const items=menu.length?'<div style="display:flex;flex-wrap:wrap;gap:6px;margin:9px 0">'+menu.map(item=>'<span class="badge" style="font-size:11px">'+esc(item.item)+(item.price!=null?' · '+fmtMoney(item.price):' · precio por confirmar')+'</span>').join('')+'</div>':'';
+  return '<div class="stack-item"><strong>'+esc(r.title)+'</strong><small>'+fmtDate(r.event_date)+' · '+esc(r.status)+' · bruto '+fmtMoney(r.gross_amount||0)+' · gastos '+fmtMoney(r.expenses_amount||0)+'</small>'+items+'<small>'+esc(r.public_summary||'')+'</small><div class="work-actions"><a class="btn ghost small" href="../fufy.html#ventas" target="_blank" rel="noopener">🌭 Ver ventas en página pública</a><a class="btn ghost small" href="recaudacion.html">📋 Revisar recaudación</a></div></div>';
+ }).join(''):'<div class="restricted">No hay actividades de recaudación vinculadas todavía a FUFY. Las próximas deben crearse desde Recaudación seleccionando Copa FUFY 2026 como proyecto.</div>');
 }
 function renderTasks(){
  const q=$('taskSearch').value.trim(),show=$('taskShowInactive').checked,area=$('taskAreaFilter').value;
