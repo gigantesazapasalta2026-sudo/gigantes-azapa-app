@@ -33,7 +33,7 @@ input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-rad
 <header class="top"><div class="topin">
 <img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/Logo_Oficial_Copa_FUFY_2026.png" alt="Copa FUFY">
 <div><h1>Control Copa FUFY 2026</h1><p>Centro único de administración · Dirección Copa FUFY · <strong>versión 09/10 · liga todos contra todos</strong></p></div>
-<div class="actions"><a class="btn alt" href="../fufy.html">Ver página pública</a><a class="btn alt" href="index.html">Control Center</a><button id="logout" class="btn dark">Salir</button></div>
+<div class="actions"><a class="btn" href="fufy-clubes.html">🏉 Clubes invitados y nóminas</a><a class="btn alt" href="../fufy.html">Ver página pública</a><a class="btn alt" href="index.html">Control Center</a><button id="logout" class="btn dark">Salir</button></div>
 </div></header>
 <main>
 <div id="loading" class="notice">Validando acceso y cargando Copa FUFY…</div>
@@ -367,6 +367,7 @@ function renderAreaDetail(code){
    actions.push('<a class="btn '+(primary?'':'ghost')+'" href="fufy.html?v=20261008g&area='+code+'&view='+tool+'#'+tab+'">'+label+' <span class="content-count">'+n+'</span></a>');
  };
  if(code==='E')actions.push('<a class="btn" href="fufy-liga.html">🏆 Liga · Fixture, tabla y actas</a>');
+ if(['E','D'].includes(code))actions.push('<a class="btn" href="fufy-clubes.html">🏉 Accesos de clubes · Nóminas y documentos</a>');
  if(['E','C'].includes(code))actions.push('<a class="btn ghost" href="fufy.html?view=program#programTab">📅 Programa del día y homenajes</a>');
  addAction('tasks','✅ Tareas del área',tasks.length,true);
  addAction('checks','☑️ Checklists',checks.length);

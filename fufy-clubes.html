@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0f14">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Acceso de los clubes invitados a Copa FUFY para preparar su nómina y entregar los antecedentes del torneo.">
+  <title>Clubes invitados · Copa FUFY 2026</title>
+  <script>
+    // Remove the capability from browser history before loading any other script.
+    (()=>{try{const p=new URLSearchParams(location.hash.slice(1));if(p.has('acceso')){window.FUFY_INITIAL_ACCESS=p.get('acceso')||'';history.replaceState(null,'',location.pathname+location.search);}}catch{}})();
+  </script>
+  <link rel="stylesheet" href="fufy-clubes.css?v=20261021-1">
+  <script src="config.js" defer></script>
+  <script src="fufy-portal-core.js?v=20261021-1" defer></script>
+  <script src="fufy-clubes.js?v=20261021-1" defer></script>
+</head>
+<body>
+  <a class="fp-skip" href="#fp-main">Ir al contenido</a>
+  <header class="fp-header">
+    <div class="fp-wrap">
+      <div class="fp-brandrow">
+        <a class="fp-back" href="fufy.html">← Copa FUFY</a>
+        <span class="fp-event-tag">24 OCT 2026 · ARICA</span>
+      </div>
+      <div class="fp-hero">
+        <div>
+          <div class="fp-eyebrow">PRIMERA COPA INTERNACIONAL FUFY</div>
+          <h1>El equipo se prepara <span>desde aquí.</span></h1>
+          <p>Acceso para los clubes invitados. Completa tu nómina, reúne los antecedentes y sigue la revisión de la organización.</p>
+        </div>
+        <div class="fp-logos" aria-label="Organización del torneo">
+          <img class="fp-club-logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg" width="92" height="92" alt="Gigantes de Azapa">
+          <img class="fp-cup-logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/Logo_Oficial_Copa_FUFY_2026.png" width="126" height="126" alt="Logo oficial Copa FUFY 2026">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="fp-main" class="fp-wrap fp-main" tabindex="-1">
+    <noscript><div class="fp-message fp-message--error">Activa JavaScript para ingresar y guardar tu nómina. Los enlaces informativos de Chile Rugby siguen disponibles al final de esta página.</div></noscript>
+    <div id="fp-message" class="fp-message" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+
+    <section id="fp-access" aria-labelledby="fp-access-title">
+      <div class="fp-grid fp-access-grid">
+        <div class="fp-card fp-access-card">
+          <span class="fp-eyebrow fp-orange">ACCESO DE TU CLUB</span>
+          <h2 id="fp-access-title">Ingresa con tu invitación</h2>
+          <p class="fp-muted">Abre el enlace privado que recibió tu delegado o pega aquí el enlace o código de acceso del club.</p>
+          <form id="fp-access-form">
+            <fieldset>
+              <div class="fp-field">
+                <label for="fp-access-code">Enlace o código de acceso</label>
+                <input id="fp-access-code" name="access_code" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="700" required aria-describedby="fp-access-help">
+                <small id="fp-access-help">Cada invitación permite gestionar solamente la nómina de su club. Solicita el enlace a la organización si aún no lo tienes.</small>
+              </div>
+              <button type="submit" class="fp-btn">Entrar a mi club <span aria-hidden="true">→</span></button>
+            </fieldset>
+          </form>
+          <p class="fp-small fp-muted">El acceso se conserva en esta pestaña. Usa «Cerrar acceso» cuando termines en un equipo compartido.</p>
+        </div>
+        <div class="fp-card fp-intro-card">
+          <h2>Una nómina, todo en orden</h2>
+          <ol class="fp-intro-list">
+            <li><span>1</span><div><strong>Presenta a tu delegación</strong><p>Delegado, manager, capitán y responsable de primeros auxilios.</p></div></li>
+            <li><span>2</span><div><strong>Agrega hasta 25 jugadores</strong><p>Identidad, fechas de nacimiento y medio de atención médica declarado.</p></div></li>
+            <li><span>3</span><div><strong>Adjunta y envía</strong><p>Imprime la nómina para las firmas, carga los documentos y envíala a revisión.</p></div></li>
+          </ol>
+          <a class="fp-text-link" data-fp-link="bases" href="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/01_BASES_OFICIALES_COPA_FUFY_2026_V1.2.pdf" target="_blank" rel="noopener noreferrer">Consultar bases del torneo ↗</a>
+        </div>
+      </div>
+      <div class="fp-participants" aria-live="polite"><span class="fp-small fp-muted">CLUBES PARTICIPANTES</span><div id="fp-public-teams" class="fp-chips"></div></div>
+    </section>
+
+    <div id="fp-workspace" hidden>
+      <section class="fp-card fp-team-header" aria-labelledby="fp-team-name">
+        <div><div class="fp-eyebrow fp-orange">NÓMINA DE CLUB</div><h2 id="fp-team-name" tabindex="-1"></h2><p id="fp-team-place" class="fp-muted"></p></div>
+        <div class="fp-team-actions"><span id="fp-team-status" class="fp-status"></span><button id="fp-reload" class="fp-btn fp-btn--secondary" type="button">Actualizar</button><button id="fp-logout" class="fp-btn fp-btn--quiet" type="button">Cerrar acceso</button></div>
+      </section>
+      <div id="fp-read-only" class="fp-note" role="status" hidden></div>
+      <nav class="fp-steps" aria-label="Secciones de la nómina">
+        <a href="#fp-delegation"><span>1</span> Delegación</a><a href="#fp-players"><span>2</span> Jugadores <b id="fp-player-count">0/25</b></a><a href="#fp-documents"><span>3</span> Documentos</a><a href="#fp-review"><span>4</span> Enviar a revisión</a>
+      </nav>
+
+      <section id="fp-delegation" class="fp-card fp-section" aria-labelledby="fp-delegation-title">
+        <div class="fp-section-heading"><div><span class="fp-eyebrow fp-orange">01 · DELEGACIÓN</span><h2 id="fp-delegation-title">Datos de la delegación</h2><p class="fp-muted">Puedes guardar un borrador y completar los datos que falten más adelante.</p></div><span id="fp-saved-at" class="fp-small fp-muted"></span></div>
+        <form id="fp-delegation-form">
+          <fieldset class="fp-mutable">
+            <div class="fp-form-grid">
+              <div class="fp-field"><label for="fp-club-city">Ciudad de la delegación</label><input id="fp-club-city" name="club_city" maxlength="120" autocomplete="address-level2" aria-describedby="fp-city-help"><small id="fp-city-help">Necesaria para completar la inscripción final. Puedes dejarla pendiente en el borrador.</small></div>
+              <div class="fp-field"><label for="fp-club-country">País de la delegación</label><input id="fp-club-country" name="club_country" maxlength="80" autocomplete="country-name" aria-describedby="fp-country-help"><small id="fp-country-help">Necesario para completar la inscripción final. Confirma el país de origen del club.</small></div>
+              <div class="fp-field"><label for="fp-delegate-name">Nombre del delegado</label><input id="fp-delegate-name" name="delegate_name" maxlength="160" autocomplete="name"><small>Persona que gestiona esta inscripción.</small></div>
+              <div class="fp-field"><label for="fp-delegate-email">Correo del delegado</label><input id="fp-delegate-email" name="delegate_email" type="email" maxlength="254" autocomplete="email"></div>
+              <div class="fp-field"><label for="fp-delegate-phone">Teléfono del delegado</label><input id="fp-delegate-phone" name="delegate_phone" type="tel" maxlength="40" autocomplete="tel" placeholder="Incluye código de país"></div>
+              <div class="fp-field"><label for="fp-manager-name">Nombre del manager</label><input id="fp-manager-name" name="manager_name" maxlength="160"><small>Responsable de la veracidad de la nómina.</small></div>
+              <div class="fp-field"><label for="fp-manager-phone">Teléfono del manager</label><input id="fp-manager-phone" name="manager_phone" type="tel" maxlength="40"></div>
+              <div class="fp-field"><label for="fp-captain-name">Nombre del capitán</label><input id="fp-captain-name" name="captain_name" maxlength="160"></div>
+              <div class="fp-field"><label for="fp-first-aid-name">Responsable de primeros auxilios</label><input id="fp-first-aid-name" name="first_aid_name" maxlength="160"></div>
+              <div class="fp-field"><label for="fp-first-aid-phone">Teléfono de primeros auxilios</label><input id="fp-first-aid-phone" name="first_aid_phone" type="tel" maxlength="40"></div>
+              <div class="fp-field fp-span-2"><label for="fp-club-notes">Observaciones para la organización</label><textarea id="fp-club-notes" name="club_notes" rows="3" maxlength="2000" aria-describedby="fp-notes-help"></textarea><small id="fp-notes-help">Anota dudas o antecedentes de coordinación. No incluyas diagnósticos ni historias clínicas.</small></div>
+            </div>
+            <div class="fp-checks-form">
+              <label class="fp-check"><input type="checkbox" name="accepted_bases"><span>He leído las <a data-fp-link="bases" href="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/01_BASES_OFICIALES_COPA_FUFY_2026_V1.2.pdf" target="_blank" rel="noopener noreferrer">bases del torneo</a> y las he comunicado a la delegación.</span></label>
+              <label class="fp-check"><input type="checkbox" name="confirmed_accuracy"><span>Declaro que los datos de la nómina son veraces y corresponden a los integrantes de mi delegación.</span></label>
+              <label class="fp-check"><input type="checkbox" name="privacy_consent"><span>Cuento con autorización para presentar estos datos a la organización y utilizarlos en la inscripción, acreditación y coordinación de la Copa FUFY.</span></label>
+            </div>
+            <div class="fp-toolbar"><button class="fp-btn" type="submit" data-fp-write>Guardar delegación</button><span id="fp-unsaved" class="fp-small fp-muted" role="status">Sin cambios pendientes.</span></div>
+          </fieldset>
+        </form>
+      </section>
+
+      <section id="fp-players" class="fp-card fp-section" aria-labelledby="fp-players-title">
+        <div class="fp-section-heading"><div><span class="fp-eyebrow fp-orange">02 · JUGADORES</span><h2 id="fp-players-title">Tu plantel</h2><p class="fp-muted">Hasta 25 personas. Se acepta RUT, DNI o pasaporte según corresponda.</p></div><button id="fp-add-player" class="fp-btn" type="button" data-fp-write>+ Agregar jugador</button></div>
+        <p class="fp-small fp-muted">Mostramos la edad el 24 de octubre y la que cumple cada jugador durante 2026. Los casos menores de 40 años quedan sujetos a revisión de la organización.</p>
+        <div id="fp-player-list"></div>
+        <div class="fp-toolbar fp-export-toolbar"><button id="fp-csv" class="fp-btn fp-btn--secondary" type="button">Descargar nómina CSV</button><button id="fp-print-roster" class="fp-btn fp-btn--secondary" type="button">Imprimir nómina para firmas</button></div>
+      </section>
+
+      <section id="fp-documents" class="fp-card fp-section" aria-labelledby="fp-documents-title">
+        <div class="fp-section-heading"><div><span class="fp-eyebrow fp-orange">03 · DOCUMENTOS</span><h2 id="fp-documents-title">Antecedentes y firmas</h2><p class="fp-muted">Adjunta la nómina y declaraciones firmadas, junto con los antecedentes que correspondan a tu delegación.</p></div><span id="fp-document-count" class="fp-status"></span></div>
+        <div class="fp-note"><strong>Primero completa los datos de los jugadores.</strong> Después imprime, reúne las firmas y adjunta el documento. Si cambia la identidad o composición del plantel, las firmas afectadas deben reemplazarse por una versión actual.</div>
+        <form id="fp-upload-form" class="fp-upload-form">
+          <fieldset class="fp-mutable">
+            <div class="fp-form-grid">
+              <div class="fp-field"><label for="fp-document-kind">Tipo de documento</label><select id="fp-document-kind" name="kind"><option value="signed_roster">Nómina y declaraciones firmadas</option><option value="manager_declaration">Declaración firmada del manager</option><option value="player_declaration">Declaración firmada de un jugador</option><option value="insurance">Seguro / respaldo de cobertura</option><option value="federation">Inscripción federativa</option><option value="identity">Documento de identidad</option><option value="other">Otro antecedente</option></select></div>
+              <div class="fp-field"><label for="fp-document-player">¿A quién corresponde?</label><select id="fp-document-player" name="player_id"><option value="">Todo el club</option></select></div>
+              <div class="fp-field fp-span-2"><label for="fp-document-file">Archivo</label><input id="fp-document-file" name="file" type="file" accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png" required aria-describedby="fp-file-help"><small id="fp-file-help">PDF, JPG o PNG · Máximo 5 MiB por archivo. Los documentos estarán disponibles para tu club y la organización autorizada.</small></div>
+            </div>
+            <button class="fp-btn" type="submit" data-fp-write>Subir documento</button>
+          </fieldset>
+        </form>
+        <div id="fp-document-list"></div>
+      </section>
+
+      <section id="fp-review" class="fp-card fp-section" aria-labelledby="fp-review-title">
+        <div class="fp-section-heading"><div><span class="fp-eyebrow fp-orange">04 · REVISIÓN</span><h2 id="fp-review-title">Revisa y envía tu nómina</h2><p class="fp-muted">La organización verá tus datos y los pendientes para preparar la acreditación.</p></div></div>
+        <div id="fp-review-note" class="fp-note" hidden></div>
+        <div id="fp-checklist" class="fp-checklist"></div>
+        <p class="fp-small fp-muted">Puedes enviar con antecedentes pendientes para que la organización haga seguimiento. La recepción del formulario no confirma por sí sola la habilitación deportiva ni la vigencia de una cobertura.</p>
+        <div class="fp-toolbar"><button id="fp-submit" class="fp-btn" type="button" data-fp-write>Enviar nómina a revisión</button><span id="fp-submitted-at" class="fp-small fp-muted"></span></div>
+      </section>
+    </div>
+
+    <section id="fp-rugby" class="fp-card fp-section fp-rugby" aria-labelledby="fp-rugby-title">
+      <div class="fp-section-heading"><div><span class="fp-eyebrow fp-orange">AYUDA PARA TU DELEGACIÓN</span><h2 id="fp-rugby-title">Chile Rugby y seguro deportivo</h2><p class="fp-muted">Accesos oficiales para quienes necesitan completar su registro o gestionar su seguro.</p></div><span class="fp-status">Trámites en sitio oficial</span></div>
+      <div class="fp-grid fp-rugby-grid">
+        <article><h3>1. Registro federativo</h3><p>Ingresa a la plataforma de Chile Rugby y completa los datos que solicite. Si ya hiciste el trámite, conserva los antecedentes disponibles y consulta su estado con tu club o asociación.</p><a class="fp-btn fp-btn--secondary" data-fp-link="rugbyRegister" href="https://bd.chile.rugby/registro" target="_blank" rel="noopener noreferrer">Inscribirme en Chile Rugby ↗</a><a class="fp-text-link" data-fp-link="rugbyLogin" href="https://bd.chile.rugby/users/login" target="_blank" rel="noopener noreferrer">Acceso de usuarios BD ↗</a></article>
+        <article><h3>2. Seguro y certificado</h3><p>La guía oficial dirige a la misma plataforma para el registro y pago del seguro. Sigue allí las indicaciones y guarda el certificado con su período de vigencia.</p><a class="fp-btn fp-btn--secondary" data-fp-link="rugbyRegister" href="https://bd.chile.rugby/registro" target="_blank" rel="noopener noreferrer">Gestionar mi seguro ↗</a><a class="fp-text-link" data-fp-link="rugbyInfo" href="https://chile.rugby/bd-chile-rugby/" target="_blank" rel="noopener noreferrer">Consultar información oficial ↗</a></article>
+        <article><h3>3. Vuelve a tu nómina</h3><p>Declara el estado del trámite y adjunta los comprobantes que correspondan. Abrir estos enlaces no registra ni asegura automáticamente a ningún jugador.</p><p>Las bases contemplan seguro, previsión u otro medio de atención médica. Los clubes extranjeros pueden aportar su documentación de origen para revisión de la organización.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="fp-footer"><div class="fp-wrap"><strong>Gigantes de Azapa · Copa FUFY 2026</strong><span>Rugby, amistad y tradición.</span><a href="fufy.html">Volver a la Copa FUFY</a></div></footer>
+
+  <dialog id="fp-player-dialog" class="fp-dialog" aria-labelledby="fp-player-dialog-title">
+    <div class="fp-dialog-heading"><div><span class="fp-eyebrow fp-orange">NÓMINA DEL CLUB</span><h2 id="fp-player-dialog-title">Agregar jugador</h2></div><button id="fp-player-close" class="fp-btn fp-btn--quiet" type="button" aria-label="Cerrar formulario de jugador">✕</button></div>
+    <form id="fp-player-form">
+      <fieldset class="fp-mutable">
+        <input type="hidden" name="id">
+        <p class="fp-small fp-muted">Para guardar la ficha ingresa nombre completo, documento de identidad y fecha de nacimiento. Los demás antecedentes y archivos pueden completarse después.</p>
+        <div class="fp-form-grid">
+          <div class="fp-field fp-span-2"><label for="fp-player-name">Nombre completo <span aria-label="obligatorio">*</span></label><input id="fp-player-name" name="full_name" maxlength="160" required></div>
+          <div class="fp-field"><label for="fp-player-document-type">Tipo de documento</label><select id="fp-player-document-type" name="document_type"><option>RUT</option><option>DNI</option><option>Pasaporte</option><option>Otro</option></select></div>
+          <div class="fp-field"><label for="fp-player-document-number">Número de documento</label><input id="fp-player-document-number" name="document_number" minlength="3" maxlength="40" required autocapitalize="characters" spellcheck="false"></div>
+          <div class="fp-field"><label for="fp-player-birth">Fecha de nacimiento</label><input id="fp-player-birth" name="birth_date" type="date" min="1900-01-01" max="2026-10-24" required><small id="fp-player-age" aria-live="polite"></small></div>
+          <div class="fp-field"><label for="fp-player-nationality">Nacionalidad</label><input id="fp-player-nationality" name="nationality" maxlength="80"></div>
+          <div class="fp-field"><label for="fp-player-jersey">Número de camiseta</label><input id="fp-player-jersey" name="jersey_number" type="number" min="0" max="999" step="1" inputmode="numeric"></div>
+          <div class="fp-field"><label for="fp-player-federation">Registro federativo declarado</label><select id="fp-player-federation" name="federation_status"><option value="pending">Pendiente / por confirmar</option><option value="declared">Inscripción declarada por el club</option><option value="not_applicable">No aplica / federación de origen</option></select><small>El estado será revisado con sus antecedentes.</small></div>
+          <div class="fp-field"><label for="fp-player-coverage">Medio de atención médica declarado</label><select id="fp-player-coverage" name="coverage_type"><option value="pending">Pendiente / por informar</option><option value="insurance">Seguro</option><option value="prevision">Previsión de salud</option><option value="other">Otro medio de atención</option></select></div>
+          <div class="fp-field"><label for="fp-player-insurance">Aseguradora, previsión o medio de atención</label><input id="fp-player-insurance" name="insurance_provider" maxlength="160" placeholder="Indica el nombre según corresponda"></div>
+          <div class="fp-field"><label for="fp-player-valid-until">Vigencia de cobertura hasta</label><input id="fp-player-valid-until" name="insurance_valid_until" type="date"><small>Si el documento indica una fecha de término.</small></div>
+          <div class="fp-field"><label for="fp-player-emergency">Contacto de emergencia</label><input id="fp-player-emergency" name="emergency_contact" maxlength="160"></div>
+          <div class="fp-field"><label for="fp-player-emergency-phone">Teléfono de emergencia</label><input id="fp-player-emergency-phone" name="emergency_phone" type="tel" maxlength="40" placeholder="Incluye código de país"></div>
+          <div class="fp-field fp-span-2"><label for="fp-player-notes">Observaciones de inscripción</label><textarea id="fp-player-notes" name="notes" rows="2" maxlength="1000"></textarea><small>Evita incluir diagnósticos o información clínica.</small></div>
+        </div>
+        <label class="fp-check"><input type="checkbox" name="signature_declared"><span>El jugador ya firmó la nómina o su declaración de conocimiento de riesgos. <strong>Adjuntaré el documento firmado en la sección Documentos.</strong></span></label>
+        <p id="fp-player-error" class="fp-message fp-message--error" role="alert" hidden></p>
+        <div class="fp-toolbar"><button class="fp-btn" type="submit" data-fp-write>Guardar jugador</button><button id="fp-player-cancel" class="fp-btn fp-btn--secondary" type="button">Cancelar</button></div>
+      </fieldset>
+    </form>
+  </dialog>
+  <section id="fp-print" class="fp-print" aria-hidden="true"></section>
+</body>
+</html>

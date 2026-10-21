@@ -3,6 +3,8 @@
    NUNCA agregar service_role/secret keys a este repositorio publico. */
 window.GIGANTES_SUPABASE_URL = "https://euuzsojkinbwcvtpwoau.supabase.co";
 window.GIGANTES_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Mv2-Dmoh24cSI_CYFFgA5w_cB26bEGP";
+// Copa FUFY: scoped club invitations and private rosters in the Control Center.
+(()=>{const script=document.currentScript;if(!script?.src)return;const root=new URL('./',script.src);const center=new URL('gestion/index.html',root);if(location.origin!==center.origin||![center.pathname,new URL('gestion/',root).pathname].includes(location.pathname))return;const add=()=>{if(document.querySelector('[data-fufy-clubs-shortcut]'))return;const a=document.createElement('a');a.href=new URL('gestion/fufy-clubes.html',root).href;a.textContent='🏉 Clubes invitados FUFY · Nóminas';a.dataset.fufyClubsShortcut='1';const menu=document.querySelector('.more-panel');if(menu)menu.prepend(a);const actions=document.querySelector('.top .actions');if(actions){const b=a.cloneNode(true);b.className='btn primary';actions.prepend(b)}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add,{once:true});else add()})();
 // Add benefits links without replacing existing screens or authentication logic.
 (()=>{const own=document.currentScript;if(!own?.src)return;const s=document.createElement('script');s.src=new URL('beneficios-access.js?v=1',own.src).href;s.defer=true;document.head.appendChild(s);})();
 // Private inventory documents: only attach to the Control Center page.
