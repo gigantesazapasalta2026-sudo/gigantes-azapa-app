@@ -157,7 +157,7 @@
   function renderStandings() {
     const table = league.standings(state.snapshot.teams, state.snapshot.matches);
     $('md-standings').innerHTML = table.rows.map(row => '<tr><td>' + row.pos + '</td><td>' + esc(row.name) + '</td>' + ['pj', 'pg', 'pe', 'pp', 'pf', 'pc', 'dif', 'tries', 'pts'].map(key => '<td>' + esc(row[key]) + '</td>').join('') + '</tr>').join('');
-    $('md-standings-note').textContent = table.played + ' de ' + table.total + ' actas finalizadas. Victoria 4 puntos · empate 2 · derrota 0.' + (table.needsTryReview ? ' Hay actas manuales sin tries completos; la organización debe revisar los desempates.' : '') + ' Los empates no resueltos por los criterios deportivos se revisan con el Comité Organizador.';
+    $('md-standings-note').textContent = table.played + ' de ' + table.total + ' actas finalizadas. Victoria 4 puntos · empate 2 · derrota 0.' + (table.unresolvedTies ? ' EMPATE FINAL: la premiación queda sujeta a resolución documentada del Comité Organizador.' : '') + ' No hay desempates automáticos por tries, diferencia o tarjetas.';
   }
   function auditHTML(entries, empty) {
     return entries.map(entry => '<div class="md-audit-item"><strong>' + esc(actionLabels[entry.action] || entry.action || 'Movimiento') + '</strong><p>' + esc(entry.operator_name || 'Organización') + ' · ' + esc(dateTime(entry.created_at)) + '</p>' + (entry.reason ? '<p>' + esc(entry.reason) + '</p>' : '') + '</div>').join('') || '<p class="md-small">' + esc(empty) + '</p>';
@@ -307,7 +307,7 @@
     const title = actionLabels[command] || 'Confirmar operación';
     const intro = 'Partido ' + match.match_no + ' · ' + teamName(match.home_team_id) + ' vs ' + teamName(match.away_team_id) + '.\n';
     let description, minReason = 0;
-    if (command === 'start') description = intro + 'Iniciar activa el acta digital y cierra las nóminas de todos los clubes desde el primer partido del campeonato. Los delegados no podrán modificarlas. Los cambios excepcionales se gestionan en Control Center. Classic: 20 minutos corridos, sin entretiempo.';
+    if (command === 'start') description = intro + 'Iniciar activa el acta digital y cierra las nóminas de todos los clubes desde el primer partido del campeonato. Los delegados no podrán modificarlas. Los cambios excepcionales se gestionan en Control Center. Classic +35: 2 tiempos de 10 minutos corridos y 10 minutos de entretiempo.';
     else if (command === 'finish') description = intro + 'Confirma con árbitro y mesa el marcador ' + score(match.home_score) + ' – ' + score(match.away_score) + '. El acta finalizada se incorporará a la tabla de posiciones.';
     else if (command === 'suspend') { description = intro + 'Se detiene el estado de juego y se conserva el marcador. Registra el motivo de la suspensión.'; minReason = 5; }
     else if (command === 'resume') description = intro + 'Reanudar devuelve el acta al estado En juego. Confirma la reanudación con el árbitro.';
