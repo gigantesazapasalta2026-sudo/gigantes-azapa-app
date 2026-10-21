@@ -44,7 +44,7 @@
 <div class="card"><h3>🤝 13:27–13:32 · Rony Duarte</h3><p>Reseña y protocolo sujetos a validación.</p></div>
 <div class="card"><h3>🇨🇱 13:32–13:37 · Cristian Riquelme</h3><p>Reconocimiento deportivo, presencia y material audiovisual por confirmar.</p></div>
 <div class="card"><h3>📸 13:37–13:47 · Cierre</h3><p>Fotografías autorizadas, agradecimientos y despeje seguro del área.</p></div>
-<div class="card"><h3>🍿 Ventas durante la jornada</h3><p>Rolls, empanadas, helados, bebidas, roscas y cabritas para recaudar fondos; precios por confirmar.</p></div></div>
+<div class="card"><h3>🥟 Ventas durante la jornada</h3><p>Empanadas, chaparritas, bebidas, roscas, helados y rolls de sushi. Precios y ofertas publicados en la sección de ventas.</p></div></div>
 <div class="note">Los horarios y protocolos requieren ratificación de la organización. No se anunciará asistencia de invitados ni se difundirán imágenes personales sin autorización.</div></div></section>
 <section class="section" id="equipos" style="background:#fff"><div class="wrap"><h2 class="title">Los cuatro participantes</h2><p class="sub" id="publicTeamsSummary">Cuatro equipos confirmados para disputar la liga internacional todos contra todos.</p><div class="grid" id="publicTeamsGrid">
 <div class="card"><h3>🇨🇱 Gigantes de Azapa</h3><p>Club organizador · Arica.</p></div><div class="card"><h3>🇨🇱 Bucaneros Classic</h3><p>Club participante; nómina definitiva en proceso.</p></div><div class="card"><h3>🇵🇪 Toros Rugby Arequipa</h3><p>Delegación internacional · Arequipa, Perú.</p></div><div class="card"><h3>🇨🇱 Provincia 7</h3><p>Participación confirmada.</p></div></div>
@@ -65,14 +65,14 @@
 <div class="time"><b>16:45–17:15 · Premiación</b><span>Campeón, subcampeón, tercero, cuarto lugar, premio Espíritu Fufy y agradecimientos.</span></div>
 <div class="time"><b>17:15 en adelante · Tercer tiempo reservado</b><span>Bar República, para jugadores y dirigentes.</span></div></div>
 <div class="grid"><div class="card"><h3>🏆 Premiación</h3><p>Reconocimientos a los cuatro equipos de la Copa y al espíritu deportivo.</p></div><div class="card"><h3>🍽️ Actividad reservada</h3><p>Bar República recibirá a jugadores y dirigentes. Los puestos de comida estarán disponibles durante el campeonato.</p></div></div></div></section>
-<section class="section" id="ventas" style="background:#fff"><div class="wrap"><h2 class="title">Ventas y recaudación · Copa FUFY</h2><p class="sub">¡Disfruta algo rico mientras acompañas los partidos y el festival infantil! Estas son las opciones que estarán a la venta durante el evento. Los precios se informarán en los puestos.</p>
+<section class="section" id="ventas" style="background:#fff"><div class="wrap"><h2 class="title">Ventas y recaudación · Copa FUFY</h2><p class="sub">¡Disfruta algo rico mientras acompañas los partidos y el festival infantil! Estas son las opciones y precios confirmados para el sábado 24 de octubre. Las cantidades disponibles corresponden a la planificación y pueden agotarse.</p>
 <div class="sales" id="publicSalesMenu">
-<div class="sale"><b>🍣 Rolls</b><span>Venta durante la jornada · precio por confirmar.</span></div>
-<div class="sale"><b>🥟 Empanadas</b><span>Venta durante la jornada · precio por confirmar.</span></div>
-<div class="sale"><b>🍦 Helados</b><span>Venta durante la jornada · precio por confirmar.</span></div>
-<div class="sale"><b>🥤 Bebidas</b><span>Venta durante la jornada · precio por confirmar.</span></div>
-<div class="sale"><b>🍩 Roscas</b><span>Venta durante la jornada · precio por confirmar.</span></div>
-<div class="sale"><b>🍿 Cabritas</b><span>Venta durante la jornada · precio por confirmar.</span></div>
+<div class="sale"><b>🥟 Empanadas</b><span>100 unidades · $2.500 c/u</span></div>
+<div class="sale"><b>🌭 Chaparritas</b><span>40 unidades · $2.000 c/u</span></div>
+<div class="sale"><b>🥤 Bebidas</b><span>$1.500 c/u · cantidad por confirmar</span></div>
+<div class="sale"><b>🍩 Roscas</b><span>200 unidades · 4 por $1.000</span></div>
+<div class="sale"><b>🍦 Helados</b><span>$1.000 c/u · cantidad por confirmar</span></div>
+<div class="sale"><b>🍣 Rolls de sushi</b><span>40 unidades · $2.500 c/u</span></div>
 </div>
 <p class="sub" style="margin-top:18px">Con cada compra apoyas las actividades deportivas del club. ¡Te esperamos!</p></div></section>
 <section class="section" id="seguridad" style="background:#fff"><div class="wrap"><h2 class="title">Salud y seguridad</h2><p class="sub">La operación médica se organiza con una zona médica visible, acceso libre para ambulancia y protocolo de respuesta documentado.</p><div class="grid">
@@ -111,13 +111,17 @@
      const products=salesSource.data?.sales_menu;
      const salesNode=document.getElementById('publicSalesMenu');
      if(!salesSource.error&&salesNode&&Array.isArray(products)&&products.length){
-       const itemIcons={'rolls':'🍣','empanadas':'🥟','helados':'🍦','bebidas':'🥤','roscas':'🍩','cabritas':'🍿'};
+       const itemIcons={'rolls':'🍣','empanadas':'🥟','chaparritas':'🌭','helados':'🍦','bebidas':'🥤','roscas':'🍩'};
        const safeLabel=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+       const money=n=>new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(Number(n));
        salesNode.innerHTML=products.map(p=>{
          const label=String(p.item||'').trim();
-         const icon=itemIcons[label.toLowerCase().replace(/[^a-záéíóúñ]/g,'')]||'🛍️';
-         const price=p.price!=null?new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(Number(p.price)):'Precio por confirmar';
-         return '<div class="sale"><b>'+icon+' '+safeLabel(label.replace(/🍿/g,'').trim())+'</b><span>Venta durante la jornada · '+safeLabel(price)+'.</span></div>';
+         const name=label.toLowerCase();
+         const icon=Object.entries(itemIcons).find(([key])=>name.startsWith(key))?.[1]||'🛍️';
+         const multiple=Math.max(1,Number(p.units_per_sale)||1);
+         const price=p.price!=null?(multiple>1?multiple+' por '+money(p.price):money(p.price)+' c/u'):'Precio por confirmar';
+         const stock=p.quantity!=null?Number(p.quantity)+' unidades':'Cantidad por confirmar';
+         return '<div class="sale"><b>'+icon+' '+safeLabel(label)+'</b><span>'+safeLabel(stock+' · '+price)+'</span></div>';
        }).join('');
      }
    }catch(e){console.warn('Se mantiene menú de ventas de respaldo',e);}
