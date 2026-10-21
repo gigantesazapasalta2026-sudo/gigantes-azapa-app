@@ -161,8 +161,8 @@
       if(/homenaje central a Álvaro/i.test(desc))return {...x,desc:'Homenaje a Álvaro «Fufy» Villanueva'};
       if(/homenaje a Rony Duarte/i.test(desc))return {...x,desc:'Homenaje a Rony Duarte'};
       if(/reconocimiento a Cristian Riquelme/i.test(desc))return {...x,desc:'Reconocimiento a Cristian Riquelme'};
-      if(/^premiación:/i.test(desc))return {...x,desc:'Reconocimientos durante el tercer tiempo en Bar República'};
-      if(/^tercer tiempo(?: y premiación)? en Bar República/i.test(desc))return {...x,desc:'Tercer tiempo y premiación en Bar República para jugadores y dirigentes'};
+      if(/^traslado a Bar República/i.test(desc))return {...x,desc:'Traslado y preparación para el tercer tiempo y premiación en Bar República'};
+      if(/^tercer tiempo.*Bar República/i.test(desc))return {...x,desc:'Tercer tiempo y premiación en Bar República para jugadores y dirigentes'};
       return null;
     }).filter(Boolean);
     if(highlights.length>=8)timeline.innerHTML=highlights.map(x=>'<div class="time"><b>'+escapeHtml(x.time)+'</b><span>'+escapeHtml(x.desc)+'</span></div>').join('');
