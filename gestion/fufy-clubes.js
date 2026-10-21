@@ -197,7 +197,7 @@
       ['Ciudad de la delegación', s.club_city || team.city || 'Pendiente'], ['País de la delegación', s.club_country || team.country || 'Pendiente'],
       ['Delegado', s.delegate_name || 'Pendiente'], ['Correo delegado', s.delegate_email || 'Pendiente'], ['Teléfono delegado', s.delegate_phone || 'Pendiente'],
       ['Mánager', s.manager_name || 'Pendiente'], ['Teléfono mánager', s.manager_phone || 'Pendiente'], ['Capitán', s.captain_name || 'Pendiente'],
-      ['Apoyo primeros auxilios', s.first_aid_name || 'Pendiente'], ['Teléfono de apoyo', s.first_aid_phone || 'Pendiente']
+      ['Apoyo ante situaciones de salud', s.first_aid_name || 'Pendiente'], ['Teléfono de apoyo', s.first_aid_phone || 'Pendiente']
     ]);
     $('declarations').innerHTML = pairs([
       ['Bases conocidas', yes(s.accepted_bases)], ['Veracidad de datos', yes(s.confirmed_accuracy)], ['Tratamiento de datos', yes(s.privacy_consent)],
