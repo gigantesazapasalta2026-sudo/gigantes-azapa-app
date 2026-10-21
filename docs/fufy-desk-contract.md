@@ -17,7 +17,7 @@ Snapshot: `{project:{id,name,event_date},session:{id,operator_name,started_at,ex
 
 Comandos: `start`, `resume`, `finish`, `suspend`, `reopen`, `add_event`, `void_event`.
 
-- `start`: partido programado, sin marcador previo distinto de cero. Activa el acta digital e inicia el partido. Classic dura 20 minutos corridos sin entretiempo, conforme a las bases. La interfaz confirma que el primer inicio cierra las nóminas de todo el torneo. No importa ni sobrescribe marcadores manuales existentes.
+- `start`: partido programado, sin marcador previo distinto de cero. Activa el acta digital e inicia el partido. Classic +35 dura dos tiempos de 10 minutos corridos y un entretiempo de 10 minutos, conforme a las bases definitivas del 21/10/2026. La interfaz confirma que el primer inicio cierra las nóminas de todo el torneo. No importa ni sobrescribe marcadores manuales existentes.
 - `resume`: suspensión → en juego. `finish`: acta en fase playing → finalizada (reanudar primero si está suspendida). Confirmación con el marcador visible.
 - `suspend`: pausa un partido en juego, mantiene el marcador. `reopen`: finalizada → en juego, requiere motivo de al menos 10 caracteres. `suspend` requiere motivo de al menos 5 caracteres.
 - `add_event`: solo acta digital en juego (admite cargar un hecho pendiente durante una pausa). `event:{team_id,player_id,kind,period,match_minute}`. Periodo fijo 1 (no se muestra selector); minuto opcional de 0 a 120 para permitir adicionales, sin simular un reloj oficial. Jugador obligatorio salvo try penal. El jugador debe pertenecer a la nómina activa del equipo; no se aceptan jugadores retirados o rechazados. Los pendientes de revisión se muestran como tales y no se consideran habilitados automáticamente.
