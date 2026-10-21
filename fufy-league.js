@@ -8,49 +8,29 @@ function isFinal(m){return m?.status==='final'&&Number.isInteger(m.home_score)&&
 function points(s1,s2){return s1>s2?4:s1===s2?2:0;}
 function makeStats(t){return {id:t.id,name:t.name,pj:0,pg:0,pe:0,pp:0,pf:0,pc:0,dif:0,tries:0,ambiguousTries:false,red:0,yellow:0,pts:0};}
 function standings(teams,matches){
- const rows=(teams||[]).map(makeStats),byId=new Map(rows.map(r=>[r.id,r]));
- const played=(matches||[]).filter(isFinal);
- for(const m of played){
-  const h=byId.get(m.home_team_id),a=byId.get(m.away_team_id);if(!h||!a)continue;
-  h.pj++;a.pj++;h.pf+=m.home_score;h.pc+=m.away_score;a.pf+=m.away_score;a.pc+=m.home_score;
-  const draw=m.home_score===m.away_score;h.pg+=!draw&&m.home_score>m.away_score?1:0;a.pg+=!draw&&m.away_score>m.home_score?1:0;
-  h.pe+=draw?1:0;a.pe+=draw?1:0;h.pp+=!draw&&m.home_score<m.away_score?1:0;a.pp+=!draw&&m.away_score<m.home_score?1:0;
-  h.pts+=points(m.home_score,m.away_score);a.pts+=points(m.away_score,m.home_score);
-  h.tries+=Number(m.home_tries||0);a.tries+=Number(m.away_tries||0);
-  h.ambiguousTries ||= m.home_tries===null||m.home_tries===undefined;
-  a.ambiguousTries ||= m.away_tries===null||m.away_tries===undefined;
-  h.red+=Number(m.home_red||0);a.red+=Number(m.away_red||0);
-  h.yellow+=Number(m.home_yellow||0);a.yellow+=Number(m.away_yellow||0);
- }
- rows.forEach(x=>x.dif=x.pf-x.pc);
- const grouped=new Map();
- for(const r of rows){if(!grouped.has(r.pts))grouped.set(r.pts,[]);grouped.get(r.pts).push(r);}
- const out=[];
- for(const total of [...grouped.keys()].sort((a,b)=>b-a)){
-  const group=grouped.get(total);
-  const mini=new Map(group.map(r=>[r.id,{pts:0,dif:0,tries:0}]));
-  if(group.length>1){
-   for(const m of played){if(!mini.has(m.home_team_id)||!mini.has(m.away_team_id))continue;
-    const h=mini.get(m.home_team_id),a=mini.get(m.away_team_id);
+  const rows=(teams||[]).map(makeStats),byId=new Map(rows.map(r=>[r.id,r]));
+  const played=(matches||[]).filter(isFinal);
+  for(const m of played){
+    const h=byId.get(m.home_team_id),a=byId.get(m.away_team_id);if(!h||!a)continue;
+    h.pj++;a.pj++;h.pf+=m.home_score;h.pc+=m.away_score;a.pf+=m.away_score;a.pc+=m.home_score;
+    const draw=m.home_score===m.away_score;h.pg+=!draw&&m.home_score>m.away_score?1:0;a.pg+=!draw&&m.away_score>m.home_score?1:0;
+    h.pe+=draw?1:0;a.pe+=draw?1:0;h.pp+=!draw&&m.home_score<m.away_score?1:0;a.pp+=!draw&&m.away_score<m.home_score?1:0;
     h.pts+=points(m.home_score,m.away_score);a.pts+=points(m.away_score,m.home_score);
-    h.dif+=m.home_score-m.away_score;a.dif+=m.away_score-m.home_score;
     h.tries+=Number(m.home_tries||0);a.tries+=Number(m.away_tries||0);
-   }
+    h.ambiguousTries ||= m.home_tries===null||m.home_tries===undefined;
+    a.ambiguousTries ||= m.away_tries===null||m.away_tries===undefined;
+    h.red+=Number(m.home_red||0);a.red+=Number(m.away_red||0);
+    h.yellow+=Number(m.home_yellow||0);a.yellow+=Number(m.away_yellow||0);
   }
-  group.sort((x,y)=>{
-   if(group.length>1){
-    const a=mini.get(x.id),b=mini.get(y.id);
-    if(group.length===2){if(a.pts!==b.pts)return b.pts-a.pts;}
-    else{for(const k of ['pts','dif','tries'])if(a[k]!==b[k])return b[k]-a[k];}
-   }
-   for(const k of ['dif','tries','pf'])if(x[k]!==y[k])return y[k]-x[k];
-   if(x.red!==y.red)return x.red-y.red;
-   if(x.yellow!==y.yellow)return x.yellow-y.yellow;
-   return x.name.localeCompare(y.name,'es');
-  });
-  out.push(...group);
- }
- return {rows:out.map((r,i)=>({...r,pos:i+1})),played:played.length,total:matches.length,needsTryReview:rows.some(r=>r.ambiguousTries)};
+  rows.forEach(r=>r.dif=r.pf-r.pc);
+  // Bases definitivas 21/10/2026: solo los puntos determinan el orden automaticamente.
+  // En empates, diferencia, tries, resultado directo y tarjetas NO desempatan.
+  rows.sort((a,b)=>b.pts-a.pts||a.name.localeCompare(b.name,'es'));
+  let rank=0,lastPts=null;
+  const sorted=rows.map((r,i)=>{if(r.pts!==lastPts){rank=i+1;lastPts=r.pts;}return {...r,pos:rank};});
+  const tie=sorted.some((r,i)=>i>0&&r.pts===sorted[i-1].pts);
+  return {rows:sorted,played:played.length,total:(matches||[]).length,
+    needsTryReview:false,unresolvedTies:tie&&played.length===matches.length&&matches.length>0};
 }
 function fixtureAudit(teams,matches){
  const ids=new Set(teams.map(t=>t.id)),pairs=new Set(),per=new Map(teams.map(t=>[t.id,0])),issues=[];
