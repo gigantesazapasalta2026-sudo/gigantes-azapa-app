@@ -633,7 +633,7 @@
         (player.jersey_number != null ? '<br>Camiseta: ' + esc(player.jersey_number) : '') +
         '</td><td>' + esc(player.document_type || '') + '<br>' + esc(player.document_number || 'Pendiente') +
         '</td><td>' + esc(dateText(player.birth_date)) + '</td><td>' +
-        esc(ae === null ? '—' : ae) + ' / ' + esc(ay === null ? '—' : ay) + (ay !== null && ay < 40 ? ' *' : '') +
+        esc(ae === null ? '—' : ae) + ' / ' + esc(ay === null ? '—' : ay) + (ay !== null && ay < 35 ? ' *' : '') +
         '</td><td>' + esc(coverageLabels[player.coverage_type] || coverageLabels.pending) +
         (player.insurance_provider ? '<br>' + esc(player.insurance_provider) : '') +
         '</td><td aria-label="Espacio para firma"></td></tr>';
@@ -649,12 +649,12 @@
       '</div><div><strong>Manager:</strong> ' + esc(data.manager_name || '________________________') +
       '</div><div><strong>Teléfono del manager:</strong> ' + esc(data.manager_phone || '________________________') +
       '</div><div><strong>Capitán:</strong> ' + esc(data.captain_name || '________________________') +
-      '</div><div><strong>Primeros auxilios:</strong> ' + esc(data.first_aid_name || '________________________') +
-      '</div><div><strong>Teléfono:</strong> ' + esc(data.first_aid_phone || '________________________') + '</div></div>' +
+      '</div><div><strong>Apoyo ante situaciones de salud:</strong> ' + esc(data.first_aid_name || '________________________') +
+      '</div><div><strong>Teléfono del apoyo:</strong> ' + esc(data.first_aid_phone || '________________________') + '</div></div>' +
       '<p class="fp-print-intro"><strong>Declaración de cada jugador.</strong> Al firmar junto a mi nombre, declaro haber leído las bases de la Copa FUFY 2026, conocer los riesgos propios de la práctica del rugby como deporte de contacto y confirmar que los datos de identidad consignados en esta nómina son correctos.</p>' +
       '<table class="fp-print-table"><thead><tr><th class="fp-col-number">N°</th><th class="fp-col-name">Nombre completo</th><th class="fp-col-document">Identidad</th><th class="fp-col-birth">Nacimiento</th><th class="fp-col-age">Edad torneo / 2026</th><th class="fp-col-coverage">Medio de atención declarado</th><th class="fp-col-sign">Firma del jugador</th></tr></thead><tbody>' +
       rosterRows + '</tbody></table>' +
-      '<p class="fp-print-footnote">Edad torneo: años cumplidos al 24/10/2026. Edad 2026: años que cumple durante el año. * Caso menor de 40 años sujeto a revisión por la organización. Los medios de atención corresponden a lo declarado por el club y deben respaldarse según corresponda.</p>' +
+      '<p class="fp-print-footnote">Edad torneo: años cumplidos al 24/10/2026. Edad 2026: años que cumple durante el año. * Menor de 35 años: no cumple la categoría Classic +35; consultar con la organización. Los medios de atención corresponden a lo declarado por el club y deben respaldarse según corresponda.</p>' +
       '<section class="fp-print-declaration"><h2>Declaración y firma del manager</h2><p>Yo, <strong>' +
       esc(data.manager_name || '________________________________________') + '</strong>, en representación de <strong>' +
       esc(team.name) + '</strong>, declaro que he verificado la identidad y la veracidad de los datos de los integrantes incluidos en esta nómina, y que he comunicado las bases del torneo y los riesgos propios de la práctica del rugby a la delegación. Me comprometo a respetar el criterio de edad ratificado y comunicado por la organización.</p>' +
