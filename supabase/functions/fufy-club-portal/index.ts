@@ -168,7 +168,7 @@ async function snapshot(t: Row, p: Row, admin = false): Promise<Row> {
   const missing: string[]=[], warnings: string[]=[];
   if(!effectiveTeam.city)missing.push('Ciudad del club.');
   if(!effectiveTeam.country)missing.push('País del club.');
-  const required:{[key:string]:string}={delegate_name:'Nombre del delegado',delegate_email:'Correo del delegado',delegate_phone:'Teléfono del delegado',manager_name:'Nombre del mánager',manager_phone:'Teléfono del mánager',captain_name:'Capitán',first_aid_name:'Responsable de primeros auxilios'};
+  const required:{[key:string]:string}={delegate_name:'Nombre del delegado',delegate_email:'Correo del delegado',delegate_phone:'Teléfono del delegado',manager_name:'Nombre del mánager',manager_phone:'Teléfono del mánager',captain_name:'Capitán',first_aid_name:'Persona de apoyo ante situaciones de salud'};
   for(const [key,label] of Object.entries(required))if(!dossier[key])missing.push(label+'.');
   if(!dossier.accepted_bases)missing.push('Aceptar la lectura de las bases.');
   if(!dossier.confirmed_accuracy)missing.push('Confirmar la veracidad de los datos.');
@@ -185,8 +185,8 @@ async function snapshot(t: Row, p: Row, admin = false): Promise<Row> {
   }
   const noCoverage=players.filter((j:Row)=>j.coverage_type==='pending');
   if(noCoverage.length)missing.push(`${noCoverage.length} jugador(es) deben declarar previsión, seguro u otros medios de atención médica.`);
-  const youth=players.filter((j:Row)=>2026-Number(j.birth_date.slice(0,4))<40);
-  if(youth.length)warnings.push(`${youth.length} jugador(es) no cumplen 40 años durante 2026. El Comité debe resolver la excepción de edad según las bases y su adenda ratificada.`);
+  const youth=players.filter((j:Row)=>2026-Number(j.birth_date.slice(0,4))<35);
+  if(youth.length)warnings.push(`${youth.length} jugador(es) no cumplen 35 años durante 2026 y no son elegibles para la categoría Classic +35 establecida en las bases definitivas.`);
   if(players.length>0&&players.length<15)warnings.push('Hay menos de 15 jugadores en la nómina. La organización debe revisar la disponibilidad para rugby XV.');
   const noInsuranceProof=players.filter((j:Row)=>j.coverage_type==='insurance'&&!current.some((d:Row)=>d.kind==='insurance'&&(!d.player_id||d.player_id===j.id)));
   if(noInsuranceProof.length)warnings.push(`${noInsuranceProof.length} seguro(s) declarado(s) sin certificado adjunto. No se ha verificado su vigencia.`);
