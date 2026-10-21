@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 
-// This endpoint authenticates club capabilities or real organizational JWTs.
+// This endpoint authenticates scoped club/admin capabilities or organizational JWTs.
 // The service key is read only at runtime and is never returned or logged.
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -24,7 +24,7 @@ const DOC_FIELDS = 'id,team_id,player_id,kind,file_name,mime_type,size_bytes,is_
 const PLAYER_FIELDS = 'id,team_id,full_name,document_type,document_number,birth_date,nationality,jersey_number,emergency_contact,emergency_phone,federation_status,coverage_type,insurance_provider,insurance_valid_until,signature_declared,notes,review_status,review_note,reviewed_at,removed_at,created_at,updated_at';
 const DOC_KINDS = ['signed_roster','manager_declaration','player_declaration','insurance','federation','identity','other'];
 const MAX_FILE = 5 * 1024 * 1024;
-const VERSION = '20261021-5';
+const VERSION = '20261021-6';
 class PortalError extends Error { constructor(public status: number, message: string) { super(message); } }
 type Row = Record<string, any>;
 
@@ -53,7 +53,7 @@ function date(value: unknown, label: string, required = false): string | null {
 }
 function checked<T>(result: { data: T; error: any }): T {
   if (result.error) {
-    if (/^PT(400|403|409|423)$/.test(result.error.code || '')) fail(Number(result.error.code.slice(2)),result.error.message);
+    if (/^PT(400|401|403|409|423)$/.test(result.error.code || '')) fail(Number(result.error.code.slice(2)),result.error.message);
     if (result.error.code === '23505') fail(409, 'Ese documento de identidad ya está en la nómina del club.');
     if (result.error.code === '23514' && /nómina cambió/.test(result.error.message || '')) fail(409, result.error.message);
     if (result.error.code === '23514' && /nómina|jugador|club/.test(result.error.message || '')) fail(400, result.error.message);
@@ -65,6 +65,21 @@ function checked<T>(result: { data: T; error: any }): T {
 }
 const hash = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))).map(x=>x.toString(16).padStart(2,'0')).join('');
 const randomToken = () => Array.from(crypto.getRandomValues(new Uint8Array(32))).map(x=>x.toString(16).padStart(2,'0')).join('');
+const KEY_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+function accessKey(value: string, kind: 'club' | 'admin'): string | null {
+  if(value.length>160)return null;
+  if(kind==='club'&&/^[a-f0-9]{64}$/i.test(value.trim()))return value.trim().toLowerCase();
+  const compact=value.replace(/[\s-]/g,'').toUpperCase();
+  const prefix=kind==='club'?'FUFY':'ADMIN',length=kind==='club'?16:20;
+  if(!compact.startsWith(prefix))return null;
+  const secret=compact.slice(prefix.length);
+  if(secret.length!==length||!new RegExp('^['+KEY_ALPHABET+']+$').test(secret))return null;
+  return prefix+'-'+secret.match(/.{4}/g)!.join('-');
+}
+function randomClubKey(): string {
+  const secret=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>KEY_ALPHABET[x&31]).join('');
+  return 'FUFY-'+secret.match(/.{4}/g)!.join('-');
+}
 const now = () => new Date().toISOString();
 function versionMatches(expected: unknown, actual: string) {
   if (typeof expected !== 'string' || expected !== actual) fail(409, 'La nómina cambió en otra sesión. Recarga y revisa la versión actual antes de guardar.');
@@ -74,7 +89,7 @@ function cors(origin: string | null): Record<string,string> {
   if (!allowed) fail(403,'Origen de solicitud no autorizado.');
   return {
     'Access-Control-Allow-Origin': origin || 'https://gigantesdeazapa.cl',
-    'Access-Control-Allow-Headers': 'authorization,apikey,content-type,x-fufy-token,x-client-info',
+    'Access-Control-Allow-Headers': 'authorization,apikey,content-type,x-fufy-token,x-fufy-admin-key,x-client-info',
     'Access-Control-Allow-Methods': 'POST,OPTIONS',
     'Vary':'Origin','Cache-Control':'no-store, max-age=0','Pragma':'no-cache',
     'Content-Type':'application/json; charset=utf-8','X-Content-Type-Options':'nosniff',
@@ -110,13 +125,21 @@ async function team(teamId: string, projectId: string): Promise<Row> {
   return item;
 }
 async function clubAuth(req: Request): Promise<string> {
-  const token=req.headers.get('x-fufy-token') || '';
-  if(!/^[a-f0-9]{64}$/.test(token))fail(401,'El enlace de acceso es inválido, venció o fue renovado. Solicita el enlace actual a la organización.');
-  const invite=checked(await db.from('fufy_club_invites').select('team_id,active,expires_at').eq('token_hash',await hash(token)).maybeSingle());
-  if(!invite?.active || new Date(invite.expires_at).getTime()<=Date.now())fail(401,'El enlace de acceso es inválido, venció o fue renovado. Solicita el enlace actual a la organización.');
+  const token=accessKey(req.headers.get('x-fufy-token') || '','club');
+  if(!token)fail(401,'La clave o el enlace no es válido. Revisa el acceso que te entregó la organización.');
+  const column=/^[a-f0-9]{64}$/.test(token)?'token_hash':'access_key_hash';
+  const invite=checked(await db.from('fufy_club_invites').select('team_id,active,expires_at,revoked_at').eq(column,await hash(token)).maybeSingle());
+  if(!invite?.active || invite.revoked_at || (invite.expires_at!==null && new Date(invite.expires_at).getTime()<=Date.now()))fail(401,'La clave o el enlace no está habilitado. Revisa el acceso que te entregó la organización.');
   return invite.team_id;
 }
 async function adminAuth(req: Request, projectId: string): Promise<string> {
+  if(req.headers.has('x-fufy-admin-key')){
+    const key=accessKey(req.headers.get('x-fufy-admin-key') || '','admin');
+    if(!key)fail(401,'La clave de superadministrador no es válida.');
+    const uid=checked(await db.rpc('fufy_club_admin_key_actor',{p_project_id:projectId,p_key_hash:await hash(key)}));
+    if(typeof uid!=='string')fail(401,'La clave de superadministrador no está habilitada.');
+    return uid;
+  }
   const auth=req.headers.get('authorization') || '';
   if(!/^Bearer\s+\S+$/i.test(auth))fail(401,'Ingresa al Control Center con tu cuenta autorizada.');
   const {data,error}=await db.auth.getUser(auth.replace(/^Bearer\s+/i,''));
@@ -224,8 +247,9 @@ Deno.serve(async(req: Request)=>{
     if(req.method!=='POST')fail(405,'Usa el formulario del portal.');
     const p=await project();
     // Verify credentials BEFORE reading a potentially large file body.
-    const hasClub=req.headers.has('x-fufy-token'),hasAdmin=req.headers.has('authorization');
-    if(hasClub&&hasAdmin)fail(400,'Usa un solo tipo de acceso.');
+    const hasClub=req.headers.has('x-fufy-token'),hasAdminKey=req.headers.has('x-fufy-admin-key'),hasJwt=req.headers.has('authorization');
+    if(Number(hasClub)+Number(hasAdminKey)+Number(hasJwt)>1)fail(400,'Usa un solo tipo de acceso.');
+    const hasAdmin=hasAdminKey||hasJwt;
     const clubId=hasClub?await clubAuth(req):null;
     const uid=hasAdmin?await adminAuth(req,p.id):null;
     const contentType=req.headers.get('content-type') || '';
@@ -245,7 +269,7 @@ Deno.serve(async(req: Request)=>{
       const teams=checked(await db.from('project_teams').select('id,name,city,country').eq('project_id',p.id).eq('active',true).in('status',ACTIVE_TEAMS).order('sort_order'));
       result={event:{name:p.name,date:p.event_date},teams};
     }else if(action.startsWith('admin_')){
-      if(!uid)fail(401,'Ingresa al Control Center con tu cuenta autorizada.');
+      if(!uid)fail(401,'Ingresa al Control Center con tu clave de superadministrador o tu cuenta autorizada.');
       if(action==='admin_lock_all'){
         const closed=checked(await db.rpc('fufy_admin_close_rosters',{p_project_id:p.id,p_actor_id:uid}));
         result={ok:true,closed_count:closed};
@@ -259,15 +283,14 @@ Deno.serve(async(req: Request)=>{
           db.from('fufy_club_invites').select('team_id,active,expires_at,created_at').in('team_id',ids)
         ]);
         const subs=checked(subResult)||[],players=checked(playerResult)||[],docs=checked(docResult)||[],invites=checked(inviteResult)||[];
-        result={teams:teams.map((t:Row)=>({...t,submission:subs.find((s:Row)=>s.team_id===t.id)||null,player_count:players.filter((j:Row)=>j.team_id===t.id).length,document_count:docs.filter((d:Row)=>d.team_id===t.id).length,invitation:invites.find((i:Row)=>i.team_id===t.id)||null})),can_manage:true,event:{name:p.name,date:p.event_date,first_match_at:p.roster_state?.first_match_at||null}};
+        result={teams:teams.map((t:Row)=>({...t,submission:subs.find((s:Row)=>s.team_id===t.id)||null,player_count:players.filter((j:Row)=>j.team_id===t.id).length,document_count:docs.filter((d:Row)=>d.team_id===t.id).length,invitation:invites.find((i:Row)=>i.team_id===t.id)||null})),can_manage:true,admin_access:{mode:hasAdminKey?'key':'account',label:hasAdminKey?'Superadministrador · Copa FUFY':'Organización · Copa FUFY'},event:{name:p.name,date:p.event_date,first_match_at:p.roster_state?.first_match_at||null}};
       }else{
         const t=await team(uuid(body.team_id),p.id);
         if(action==='admin_invite'){
-          const token=randomToken(),created=now(),expires=new Date(new Date(EVENT_DATE+'T12:00:00Z').getTime()+14*86400000).toISOString();
-          if(new Date(expires).getTime()<=Date.now())fail(400,'Finalizó el período de acceso de esta Copa.');
-          checked(await db.from('fufy_club_invites').upsert({team_id:t.id,token_hash:await hash(token),active:true,created_at:created,expires_at:expires,created_by:uid,revoked_at:null},{onConflict:'team_id'}));
+          const token=randomToken(),key=randomClubKey(),created=now();
+          checked(await db.from('fufy_club_invites').upsert({team_id:t.id,token_hash:await hash(token),access_key_hash:await hash(key),active:true,created_at:created,expires_at:null,created_by:uid,revoked_at:null},{onConflict:'team_id'}));
           await audit(t.id,'invite_rotated',uid);
-          result={url:'https://gigantesdeazapa.cl/fufy-clubes.html#acceso='+token,token,expires_at:expires,team_name:t.name};
+          result={url:'https://gigantesdeazapa.cl/fufy-clubes.html#acceso='+token,token,access_key:key,expires_at:null,team_name:t.name};
         }else if(action==='admin_revoke'){
           checked(await db.from('fufy_club_invites').update({active:false,revoked_at:now()}).eq('team_id',t.id));
           await audit(t.id,'invite_revoked',uid);result={ok:true};

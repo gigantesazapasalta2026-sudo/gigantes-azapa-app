@@ -1,33 +1,33 @@
 (function () {
   'use strict';
 
+  var F = window.FufyPortal;
   var STORAGE_KEY = 'fufy-club-token-v1';
-  var TOKEN_RE = /^[a-f0-9]{64}$/i;
+  var normalizeAccess = function (value) {
+    return F && typeof F.normalizeAccessKey === 'function' ? F.normalizeAccessKey(value, 'club') : '';
+  };
   var MAX_PLAYERS = 25;
   var MAX_FILE = 5 * 1024 * 1024;
   var pendingToken = '';
   var invalidFragment = false;
   if (typeof window.FUFY_INITIAL_ACCESS === 'string') {
-    pendingToken = window.FUFY_INITIAL_ACCESS.trim();
-    invalidFragment = !TOKEN_RE.test(pendingToken);
-    if (invalidFragment) pendingToken = '';
+    pendingToken = normalizeAccess(window.FUFY_INITIAL_ACCESS);
+    invalidFragment = !pendingToken;
     delete window.FUFY_INITIAL_ACCESS;
   }
 
   // Remove invitation credentials before any API call or external navigation.
   try {
     var fragment = new URLSearchParams(window.location.hash.slice(1));
-    if (fragment.has('acceso')) {
-      pendingToken = (fragment.get('acceso') || '').trim();
-      invalidFragment = !TOKEN_RE.test(pendingToken);
-      if (invalidFragment) pendingToken = '';
+    if (fragment.has('acceso') || fragment.has('access')) {
+      pendingToken = normalizeAccess(fragment.has('acceso') ? fragment.get('acceso') : fragment.get('access'));
+      invalidFragment = !pendingToken;
       window.history.replaceState(null, '', window.location.pathname + window.location.search);
     }
   } catch (ignore) {
     pendingToken = '';
   }
 
-  var F = window.FufyPortal;
   var $ = function (id) { return document.getElementById(id); };
   var state = {
     token: '', snapshot: null, busy: false, gridBusy: false, clubDirty: false,
@@ -66,7 +66,7 @@
     box.hidden = !message;
   }
 
-  if (!F || !window.FufyRosterGrid) {
+  if (!F || typeof F.normalizeAccessKey !== 'function' || !window.FufyRosterGrid) {
     setMessage('No se pudo cargar el acceso a las nóminas. Recarga esta página. Los enlaces informativos de Chile Rugby siguen disponibles abajo.', 'error');
     $('fp-access-form').querySelector('button').disabled = true;
     return;
@@ -398,15 +398,7 @@
   }
 
   function parseAccess(value) {
-    value = value.trim();
-    if (TOKEN_RE.test(value)) return value.toLowerCase();
-    try {
-      var url = new URL(value, window.location.origin);
-      var candidate = new URLSearchParams(url.hash.slice(1)).get('acceso') || '';
-      return TOKEN_RE.test(candidate) ? candidate.toLowerCase() : '';
-    } catch (ignore) {
-      return '';
-    }
+    return normalizeAccess(value);
   }
 
   function storeToken(token) {
@@ -678,7 +670,7 @@
     if (state.busy) return;
     var token = parseAccess($('fp-access-code').value);
     if (!token) {
-      setMessage('Pega el enlace completo de invitación o el código de acceso recibido por tu club.', 'error');
+      setMessage('Ingresa la clave FUFY de tu club o pega su enlace privado completo. Puedes escribir la clave con o sin guiones.', 'error');
       $('fp-access-code').focus();
       return;
     }
@@ -853,6 +845,7 @@
   if (!pendingToken && !invalidFragment) {
     try { pendingToken = sessionStorage.getItem(STORAGE_KEY) || ''; } catch (ignore) { /* Memory only. */ }
   }
-  if (TOKEN_RE.test(pendingToken)) enterClub(pendingToken.toLowerCase(), null);
-  else if (invalidFragment) setMessage('El enlace de invitación está incompleto. Pega el enlace completo recibido por tu club o solicita uno nuevo a la organización.', 'error');
+  pendingToken = normalizeAccess(pendingToken);
+  if (pendingToken) enterClub(pendingToken, null);
+  else if (invalidFragment) setMessage('La clave del enlace está incompleta o no es válida. Ingresa la clave del club o pega el enlace completo recibido de la organización.', 'error');
 })();

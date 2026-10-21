@@ -23,17 +23,21 @@ El proyecto se resuelve por `projects.code = 'FUFY2026'`. Son elegibles los equi
 
 Formato: `https://gigantesdeazapa.cl/fufy-clubes.html#acceso=<secreto>`.
 
-El secreto consta de 32 bytes aleatorios representados por 64 caracteres hexadecimales. La base de datos conserva solo su hash SHA-256. Permite gestionar un único equipo sin crear cuenta de socio ni cuenta Supabase al delegado.
+Cada club dispone de una clave legible `FUFY-XXXX-XXXX-XXXX-XXXX`, con 80 bits aleatorios representados en el alfabeto Crockford `0123456789ABCDEFGHJKMNPQRSTVWXYZ`. El portal admite mayúsculas o minúsculas y permite escribirla con o sin guiones y espacios; la normaliza antes de autenticar. También siguen admitiéndose los enlaces anteriores, cuyo secreto consta de 32 bytes aleatorios representados por 64 caracteres hexadecimales. La base de datos conserva únicamente hashes SHA-256: `access_key_hash` para la clave legible y `token_hash` para el enlace compatible. Cada acceso permite gestionar un único equipo sin crear cuenta de socio ni cuenta Supabase al delegado.
 
 El HTML retira `#acceso` del historial antes de cargar otros scripts. El frontend consume y elimina la variable temporal de arranque y conserva el secreto en memoria y, cuando está disponible, en `sessionStorage` bajo `fufy-club-token-v1`. «Cerrar acceso» limpia el acceso y los datos mostrados. Se utiliza `no-referrer`, `noindex, nofollow, noarchive`, y las rutas sensibles del service worker y las solicitudes evitan caché de expedientes.
 
-Existe una invitación por club. Renovarla sustituye su hash e invalida el enlace anterior de inmediato; revocarla desactiva el acceso sin borrar el expediente. El panel confirma estas acciones, muestra el enlace nuevo únicamente en el diálogo de generación, permite copiarlo y limpia el diálogo al cerrarlo. La API no envía correos ni mensajes.
+Existe una invitación por club. La incorporación inicial de la clave legible conserva el hash del enlace anterior. La renovación posterior desde Control Center sustituye ambos hashes e invalida tanto la clave como el enlace anteriores de inmediato; revocarla desactiva ambos accesos sin borrar el expediente. El panel confirma estas acciones, muestra la clave y el enlace nuevos únicamente en el diálogo de generación, permite copiar cada uno y limpia ambos al cerrarlo. La API no envía correos ni mensajes.
 
-La caducidad está fijada en `2026-11-07T12:00:00Z`: catorce días desde el mediodía UTC del torneo, no desde la generación del enlace. La API rechaza generar enlaces después de esa fecha.
+Los accesos solicitados son permanentes: `expires_at = NULL` significa sin vencimiento, y las renovaciones generan también accesos permanentes. Una fecha no nula se sigue comprobando para compatibilidad. Esta permanencia no modifica el cierre de edición de nóminas: después del primer partido el delegado puede seguir entrando para consultar, pero los cambios requieren el procedimiento administrativo excepcional.
 
 ### Autorización de organización
 
-El panel reutiliza la sesión Supabase existente mediante `GIGANTES_AUTH_STORAGE`. Antes de cada solicitud valida al usuario con `auth.getUser()` y obtiene de `auth.getSession()` el `access_token` sin transformarlo. El servidor vuelve a validar el JWT mediante `db.auth.getUser(token)` y exige `profiles.active = true`, junto con una de estas vías:
+El panel admite una clave propia `ADMIN-XXXX-XXXX-XXXX-XXXX-XXXX`, con 100 bits aleatorios Crockford, mediante `X-Fufy-Admin-Key`. Se guarda solo su hash SHA-256 en `fufy_club_admin_access`, asociado al proyecto y al `actor_user_id` real de un superadministrador. La API comprueba que el acceso esté activo y que ese perfil siga activo con rol `superadmin`; el cliente nunca decide el actor ni el alcance. Esta clave no vence y abre la gestión de los clubes de Copa FUFY; no crea ni suplanta una sesión JWT global de la aplicación. Las mutaciones conservan los controles de rol, cierre y auditoría de las RPC administrativas.
+
+La interfaz solicita únicamente la clave, sin correo ni OTP, y la conserva en memoria y `sessionStorage` bajo `fufy-admin-key-v1` después de validarla. «Cerrar sesión» borra la clave, los expedientes mostrados y los borradores. Si el acceso se hizo con clave, no cierra una cuenta Supabase que pudiera estar abierta en otra pantalla. Una respuesta `401` o `403` elimina ese acceso y vuelve al formulario; una consulta antigua terminada después del cierre no restaura el panel.
+
+También se conserva la entrada con cuenta: el panel reutiliza la sesión Supabase existente mediante `GIGANTES_AUTH_STORAGE`. Antes de cada solicitud con cuenta valida al usuario con `auth.getUser()` y obtiene de `auth.getSession()` el `access_token` sin transformarlo. El servidor vuelve a validar el JWT mediante `db.auth.getUser(token)` y exige `profiles.active = true`, junto con una de estas vías:
 
 - `profiles.role` igual a `superadmin` o `board`.
 - Una fila de `project_user_access` para el mismo usuario y proyecto con `access_role` igual a `editor` o `manager`.
@@ -49,12 +53,13 @@ Se utiliza `POST` con JSON `{action, ...payload}` y cabecera `apikey` publicable
 | Actor | Credencial adicional |
 | --- | --- |
 | `public_info` | Ninguna. Si se envía una credencial, se valida. |
-| Club | `X-Fufy-Token: <secreto>`; el servidor exige 64 caracteres hexadecimales en minúsculas. |
-| Acciones `admin_*` | `Authorization: Bearer <Supabase access token>`. |
+| Club | `X-Fufy-Token: <secreto>`; clave FUFY canónica o secreto compatible de 64 caracteres hexadecimales. |
+| Acciones `admin_*` con clave | `X-Fufy-Admin-Key: <clave ADMIN canónica>`. |
+| Acciones `admin_*` con cuenta | `Authorization: Bearer <Supabase access token>`. |
 
-Enviar ambas credenciales produce `400`. La autenticación ocurre antes de leer el cuerpo de un archivo. El equipo de una solicitud del club se obtiene exclusivamente de la invitación validada; un `team_id` enviado por el cliente no puede cambiar su pertenencia.
+Enviar más de una de estas credenciales produce `400`; el helper también rechaza combinarlas antes de hacer la solicitud. La autenticación ocurre antes de leer el cuerpo de un archivo. El equipo de una solicitud del club se obtiene exclusivamente de la invitación validada; un `team_id` enviado por el cliente no puede cambiar su pertenencia.
 
-Éxito: objeto JSON directo, sin envoltorio `data`. Error: `{error: "mensaje para la persona"}`. Las respuestas llevan `Cache-Control: no-store`; las respuestas normales añaden `Pragma: no-cache` y `X-Fufy-Portal-Version: 20261021-5`.
+Éxito: objeto JSON directo, sin envoltorio `data`. Error: `{error: "mensaje para la persona"}`. Las respuestas llevan `Cache-Control: no-store`; las respuestas normales añaden `Pragma: no-cache` y `X-Fufy-Portal-Version: 20261021-6`.
 
 | HTTP | Significado relevante |
 | --- | --- |
@@ -156,9 +161,9 @@ Los cambios y el envío requieren edición abierta. Consulta, impresión, CSV y 
 
 | Acción | Carga útil adicional | Resultado y condiciones |
 | --- | --- | --- |
-| `admin_list` | Ninguna. | `{teams:[...], can_manage:true}`: datos del equipo, resumen del expediente, `player_count`, `document_count`, `invitation` o `null`. |
+| `admin_list` | Ninguna. | `{teams:[...], can_manage:true, admin_access:{mode:'key'|'account',label}}`: datos del equipo, resumen del expediente, `player_count`, `document_count`, `invitation` o `null`. |
 | `admin_open` | `{team_id}` | `Snapshot` con comprobación adicional de identidades repetidas entre clubes. |
-| `admin_invite` | `{team_id}` | `{url, token, expires_at, team_name}`. El secreto se devuelve solo al crearlo o renovarlo. |
+| `admin_invite` | `{team_id}` | `{url, token, access_key, expires_at:null, team_name}`. La clave legible y el secreto compatible del enlace se devuelven solo al crearlos o renovarlos. |
 | `admin_revoke` | `{team_id}` | `{ok:true}`. |
 | `admin_document` | `{team_id, document_id}` | `{url, expires_in:120}`. |
 | `admin_review` | `{team_id, status:'observed'|'approved', review_note, expected_updated_at}` | `Snapshot`. CAS sobre expediente; solo revisa estados `submitted` u `observed`. |
@@ -226,7 +231,7 @@ Bucket privado: `fufy-clubs-private`, con nombres aleatorios dentro de la carpet
 
 Eliminar un documento marca `removed_at`, fija `is_current = false` y solicita retirar sus bytes de Storage. Si Storage devuelve error, la retirada lógica sigue aplicada y el servidor registra `storage_remove_failed` para atención operativa; no hay un reintento automático de borrado. Se conserva trazabilidad en metadatos y auditoría; deja de aparecer en snapshots y de admitir nuevas descargas del portal. Invalidar por un cambio de nómina conserva el archivo como versión anterior, hasta su retirada expresa.
 
-Las tablas `fufy_club_submissions`, `fufy_club_invites`, `fufy_club_players`, `fufy_club_documents`, `fufy_club_roster_changes` y `fufy_club_audit` tienen RLS, revocación de privilegios para `public`, `anon` y `authenticated`, y políticas restrictivas de denegación. Una política restrictiva del bucket bloquea el acceso directo de clientes aunque haya políticas amplias para otros buckets. Solo la API, tras autenticar y autorizar, utiliza la clave `service_role` del servidor. Los triggers están en `private` y no conceden ejecución a clientes; los dos triggers de captura de inicio son SECURITY DEFINER de alcance mínimo para sellar expedientes cuando un editor autorizado actualiza el fixture. Las RPC administrativas usan SECURITY INVOKER y ejecución exclusiva del servicio.
+Las tablas `fufy_club_submissions`, `fufy_club_invites`, `fufy_club_admin_access`, `fufy_club_players`, `fufy_club_documents`, `fufy_club_roster_changes` y `fufy_club_audit` tienen RLS, revocación de privilegios para `public`, `anon` y `authenticated`, y políticas restrictivas de denegación. Una política restrictiva del bucket bloquea el acceso directo de clientes aunque haya políticas amplias para otros buckets. Solo la API, tras autenticar y autorizar, utiliza la clave `service_role` del servidor. Los triggers están en `private` y no conceden ejecución a clientes; los dos triggers de captura de inicio son SECURITY DEFINER de alcance mínimo para sellar expedientes cuando un editor autorizado actualiza el fixture. Las RPC administrativas usan SECURITY INVOKER y ejecución exclusiva del servicio.
 
 Cada descarga exige equipo y documento autorizados y genera una URL firmada de 120 segundos. Identidades, teléfonos, correos y antecedentes no aparecen en `public_info`. El control de duplicados entre clubes solo aparece en snapshots administrativos y no expone datos ajenos a las delegaciones.
 
@@ -292,8 +297,9 @@ Abrir un enlace no modifica el estado federativo ni declara una póliza vigente.
 `window.FufyPortal` expone un objeto congelado:
 
 ```text
-request(action, payload = {}, auth = { token?, jwt? })
+request(action, payload = {}, auth = { token?, jwt?, adminKey? })
 upload(formData, auth = { token? })
+normalizeAccessKey(value, kind = 'club')
 esc(value)
 downloadCSV(filename, rows)
 formatDate(value)

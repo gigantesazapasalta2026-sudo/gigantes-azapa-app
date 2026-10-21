@@ -10,14 +10,14 @@
   <title>Clubes invitados · Copa FUFY 2026</title>
   <script>
     // Remove the capability from browser history before loading any other script.
-    (()=>{try{const p=new URLSearchParams(location.hash.slice(1));if(p.has('acceso')){window.FUFY_INITIAL_ACCESS=p.get('acceso')||'';history.replaceState(null,'',location.pathname+location.search);}}catch{}})();
+    (()=>{try{const p=new URLSearchParams(location.hash.slice(1));const k=p.has('acceso')?'acceso':p.has('access')?'access':null;if(k){window.FUFY_INITIAL_ACCESS=p.get(k)||'';history.replaceState(null,'',location.pathname+location.search);}}catch{}})();
   </script>
-  <link rel="stylesheet" href="fufy-clubes.css?v=20261021-4">
-  <link rel="stylesheet" href="fufy-roster-grid.css?v=20261021-4">
+  <link rel="stylesheet" href="fufy-clubes.css?v=20261021-6">
+  <link rel="stylesheet" href="fufy-roster-grid.css?v=20261021-6">
   <script src="config.js" defer></script>
-  <script src="fufy-portal-core.js?v=20261021-1" defer></script>
-  <script src="fufy-roster-grid.js?v=20261021-4" defer></script>
-  <script src="fufy-clubes.js?v=20261021-4" defer></script>
+  <script src="fufy-portal-core.js?v=20261021-6" defer></script>
+  <script src="fufy-roster-grid.js?v=20261021-6" defer></script>
+  <script src="fufy-clubes.js?v=20261021-6" defer></script>
 </head>
 <body>
   <a class="fp-skip" href="#fp-main">Ir al contenido</a>
@@ -49,19 +49,21 @@
       <div class="fp-grid fp-access-grid">
         <div class="fp-card fp-access-card">
           <span class="fp-eyebrow fp-orange">ACCESO DE TU CLUB</span>
-          <h2 id="fp-access-title">Ingresa con tu invitación</h2>
-          <p class="fp-muted">Abre el enlace privado que recibió tu delegado o pega aquí el enlace o código de acceso del club.</p>
+          <h2 id="fp-access-title">Ingresa con la clave de tu club</h2>
+          <p class="fp-muted">Cada club tiene su propia clave permanente. Escríbela aquí para entrar, sin crear una cuenta. También puedes pegar el enlace privado que recibió tu delegado.</p>
           <form id="fp-access-form">
             <fieldset>
               <div class="fp-field">
-                <label for="fp-access-code">Enlace o código de acceso</label>
-                <input id="fp-access-code" name="access_code" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="700" required aria-describedby="fp-access-help">
-                <small id="fp-access-help">Cada invitación permite gestionar solamente la nómina de su club. Solicita el enlace a la organización si aún no lo tienes.</small>
+                <label for="fp-access-code">Clave del club</label>
+                <input id="fp-access-code" name="access_code" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="700" placeholder="FUFY-XXXX-XXXX-XXXX-XXXX" required aria-describedby="fp-access-help">
+                <small id="fp-access-help">Puedes escribirla con o sin guiones y espacios. Cada clave abre únicamente la nómina de su club. Solicítala a la organización si aún no la tienes.</small>
               </div>
               <button type="submit" class="fp-btn">Entrar a mi club <span aria-hidden="true">→</span></button>
             </fieldset>
           </form>
+          <p class="fp-small fp-muted">La clave del club no vence. La edición de las nóminas se cierra al comenzar el campeonato; después puedes consultar y descargar tus antecedentes.</p>
           <p class="fp-small fp-muted">El acceso se conserva en esta pestaña. Usa «Cerrar acceso» cuando termines en un equipo compartido.</p>
+          <a class="fp-text-link" href="gestion/fufy-clubes.html">Control Center · Acceso con clave de administración →</a>
         </div>
         <div class="fp-card fp-intro-card">
           <h2>Una nómina, todo en orden</h2>

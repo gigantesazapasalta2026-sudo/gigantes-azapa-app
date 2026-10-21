@@ -3,12 +3,12 @@
   const $ = id => document.getElementById(id);
   const P = window.FufyPortal;
   const Grid = window.FufyRosterGrid;
-  if (!P || !Grid || !window.supabase) {
+  if (!P || !Grid || !P.normalizeAccessKey) {
     $('message').textContent = 'No se pudo cargar el portal. Revisa tu conexión y vuelve a abrir esta página.';
     $('message').className = 'notice error';
     return;
   }
-  const client = window.supabase.createClient(window.GIGANTES_SUPABASE_URL, window.GIGANTES_SUPABASE_PUBLISHABLE_KEY, {
+  const client = window.supabase?.createClient(window.GIGANTES_SUPABASE_URL, window.GIGANTES_SUPABASE_PUBLISHABLE_KEY, {
     auth: { storage: window.GIGANTES_AUTH_STORAGE, persistSession: true, autoRefreshToken: true }
   });
   const esc = P.esc;
@@ -20,6 +20,10 @@
   let teams = [], snapshots = new Map(), current = null, currentPlayer = null;
   let loadSerial = 0, viewSerial = 0, confirmAction = null, busyReview = false;
   let rosterGrid = null, busyRoster = false, busyView = false, busyTeams = false, moreContext = null, pendingException = null, busyException = false;
+  const ACCESS_STORAGE = 'fufy-admin-key-v1';
+  let adminKey = '', busyAccess = false, authEpoch = 0;
+  try { adminKey = P.normalizeAccessKey(sessionStorage.getItem(ACCESS_STORAGE) || '', 'admin'); }
+  catch { /* The key can still be used in memory when browser storage is unavailable. */ }
 
   const label = value => statusNames[value] || P.statusLabel(value) || 'Pendiente';
   const date = value => value ? P.formatDate(value) : 'Sin registro';
@@ -37,6 +41,7 @@
   function list(items, empty) { return items.length ? '<ul class="check-list">' + items.map(x => '<li>' + esc(itemText(x)) + '</li>').join('') + '</ul>' : '<p class="small compact">' + esc(empty) + '</p>'; }
 
   async function authToken() {
+    if (!client) { const error = new Error('No se pudo cargar el acceso con cuenta. Puedes entrar con tu clave de superadministrador.'); error.status = 401; throw error; }
     const { data: userData, error: userError } = await client.auth.getUser();
     if (userError || !userData?.user) {
       const error = new Error('Tu sesión no está disponible. Vuelve a iniciar sesión.'); error.status = 401; throw error;
@@ -47,13 +52,47 @@
     }
     return data.session.access_token;
   }
-  async function api(action, payload = {}) { return P.request(action, payload, { jwt: await authToken() }); }
+  async function authContext() { return adminKey ? { adminKey } : { jwt: await authToken() }; }
+  async function api(action, payload = {}) {
+    const epoch = authEpoch;
+    try {
+      const access = await authContext();
+      if (epoch !== authEpoch) throw cancelledOperation();
+      const result = await P.request(action, payload, access);
+      if (epoch !== authEpoch) throw cancelledOperation();
+      return result;
+    } catch (error) {
+      if (epoch !== authEpoch) throw cancelledOperation();
+      if (error?.status === 401 || error?.status === 403) handleError(error);
+      throw error;
+    }
+  }
+  function clearKey() {
+    authEpoch++;
+    adminKey = '';
+    try { sessionStorage.removeItem(ACCESS_STORAGE); } catch { /* Memory was already cleared. */ }
+    $('adminAccessKey').value = '';
+  }
+  function clearPrivateView() {
+    loadSerial++; viewSerial++;
+    current = null; currentPlayer = null; teams = []; snapshots.clear();
+    busyTeams = false; busyView = false;
+    document.querySelectorAll('dialog[open]').forEach(dialog => dialog.close());
+    rosterGrid?.reset();
+    for (const id of ['teamsBody', 'accessIdentity', 'dossierMeta', 'accessNotice', 'contacts', 'declarations', 'missingChecks', 'warningChecks', 'clubNotes', 'rosterHistory', 'documents', 'lastReview', 'reviewHelp', 'playerTitle', 'playerDetails', 'playerSubtitle', 'playerDataTitle', 'playerDataSubtitle', 'playerDataReview', 'exceptionSummary']) $(id).textContent = '';
+    for (const id of ['reviewNote', 'playerReviewNote', 'inviteKey', 'inviteUrl']) $(id).value = '';
+    for (const id of ['totalTeams', 'totalPlayers', 'pendingReviews', 'incompleteTeams', 'playerCount']) $(id).textContent = '—';
+    $('dossierTitle').textContent = 'Nómina del club';
+    $('app').hidden = true; $('dossier').hidden = true; $('authHelp').hidden = false; $('logout').hidden = true;
+    syncAdminControls();
+  }
   function handleError(error) {
+    if (error?.accessHandled || error?.cancelled) return;
     message(error?.status === 409 ? 'El club o la organización actualizó este expediente mientras lo revisabas. Actualiza el expediente y comprueba la versión vigente antes de guardar; esta operación no se aplicó.' : error?.message || 'No se pudo completar la operación. Inténtalo de nuevo.', 'error');
     if (error?.status === 401 || error?.status === 403) {
-      $('app').hidden = true; $('authHelp').hidden = false;
-      document.querySelectorAll('dialog[open]').forEach(dialog => dialog.close());
-      if (error.status === 403) $('authHelp').querySelector('p').textContent = 'Esta cuenta no tiene permisos para administrar los clubes invitados. Ingresa con una cuenta de organización autorizada.';
+      error.accessHandled = true;
+      clearKey(); clearPrivateView();
+      $('authDescription').textContent = 'Ingresa una clave vigente de superadministrador o utiliza tu cuenta autorizada de Control Center.';
     }
   }
 
@@ -69,10 +108,18 @@
       if (result.can_manage !== true) { const denied = new Error('Esta cuenta no tiene permisos para administrar los clubes invitados.'); denied.status = 403; throw denied; }
       teams = Array.isArray(result.teams) ? result.teams : [];
       $('app').hidden = false; $('authHelp').hidden = true; $('logout').hidden = false;
+      $('accessIdentity').textContent = result.admin_access?.label || (adminKey ? 'Superadministración · Copa FUFY' : 'Organización · Copa FUFY');
+      if (adminKey) {
+        try { sessionStorage.setItem(ACCESS_STORAGE, adminKey); } catch { /* The authenticated key stays in memory for this page. */ }
+        $('adminAccessKey').value = '';
+      }
       renderTeams();
-      const jwt = await authToken();
-      const results = await Promise.allSettled(teams.map(team => P.request('admin_open', { team_id: team.id }, { jwt })));
+      const access = await authContext();
       if (serial !== loadSerial) return;
+      const results = await Promise.allSettled(teams.map(team => P.request('admin_open', { team_id: team.id }, access)));
+      if (serial !== loadSerial) return;
+      const denied = results.find(result => result.status === 'rejected' && [401, 403].includes(result.reason?.status));
+      if (denied) throw denied.reason;
       let failed = 0;
       results.forEach((result, index) => {
         if (result.status === 'fulfilled') snapshots.set(teams[index].id, result.value);
@@ -95,7 +142,7 @@
       if (!snapshot) unread++;
       const invitation = team.invitation;
       const active = !!invitation?.active && (!invitation.expires_at || new Date(invitation.expires_at).getTime() > Date.now());
-      const inviteText = active ? 'Enlace activo' : invitation ? 'Sin enlace vigente' : 'Sin acceso creado';
+      const inviteText = active ? (invitation.expires_at ? 'Acceso activo' : 'Acceso sin vencimiento') : invitation ? 'Acceso desactivado' : 'Sin acceso creado';
       const currentDocs = docs.filter(d => d.is_current !== false).length;
       const closed = snapshot?.access?.read_only === true;
       const location = [submission?.club_city || snapshot?.team?.city || team.city, submission?.club_country || snapshot?.team?.country || team.country].filter(Boolean).join(' · ');
@@ -105,7 +152,7 @@
         '<td>' + (snapshot ? '<strong>' + counts.missing.length + ' pendientes</strong><small>' + counts.warnings.length + ' alertas de revisión</small>' : '<span class="small">Consultar expediente</span>') + '</td>' +
         '<td><span class="badge ' + (active ? 'green' : '') + '">' + inviteText + '</span>' + (invitation?.expires_at ? '<small>Vence: ' + esc(dateTime(invitation.expires_at)) + '</small>' : '') + '</td>' +
         '<td><div class="row-actions"><button class="btn small-btn" data-action="open" data-team="' + esc(team.id) + '">Abrir expediente</button>' +
-        '<button class="btn secondary small-btn" data-action="invite" data-team="' + esc(team.id) + '">' + (active ? 'Renovar enlace' : 'Crear enlace') + '</button>' +
+        '<button class="btn secondary small-btn" data-action="invite" data-team="' + esc(team.id) + '">' + (active ? 'Renovar clave' : 'Crear clave') + '</button>' +
         (active ? '<button class="btn danger small-btn" data-action="revoke" data-team="' + esc(team.id) + '">Revocar</button>' : '') + '</div></td></tr>';
     }).join('') || '<tr><td colspan="6">No hay clubes participantes disponibles.</td></tr>';
     $('totalTeams').textContent = teams.length;
@@ -324,28 +371,29 @@
   function invite(team) {
     const replacing = !!team.invitation;
     ask({ title: (replacing ? 'Renovar acceso: ' : 'Crear acceso: ') + team.name,
-      description: replacing ? 'Se generará un nuevo enlace privado y el anterior dejará de funcionar inmediatamente. La nómina y los documentos se conservarán. Deberás entregar el nuevo enlace al delegado.' : 'Se generará un enlace privado para que el delegado ingrese su nómina y documentos. El enlace se mostrará una sola vez para copiarlo.',
-      button: replacing ? 'Renovar enlace' : 'Crear enlace',
+      description: replacing ? 'Se generarán una clave y un enlace sin vencimiento. La clave y el enlace anteriores dejarán de funcionar inmediatamente. La nómina y los documentos se conservarán. Entrega los nuevos datos de acceso al delegado.' : 'Se generarán una clave y un enlace sin vencimiento para que el delegado ingrese su nómina y documentos. Podrás copiarlos en la siguiente ventana.',
+      button: replacing ? 'Renovar clave y enlace' : 'Crear clave y enlace',
       action: async () => {
         const result = await api('admin_invite', { team_id: team.id });
         const url = new URL(result.url);
         const token = new URLSearchParams(url.hash.slice(1)).get('acceso');
-        if (url.protocol !== 'https:' || !['gigantesdeazapa.cl', 'www.gigantesdeazapa.cl', location.hostname].includes(url.hostname) || !/^[a-f0-9]{64}$/i.test(token || '')) throw new Error('El enlace recibido no es válido. Actualiza y vuelve a generarlo.');
+        const key = P.normalizeAccessKey(result.access_key || '', 'club');
+        if (url.protocol !== 'https:' || !['gigantesdeazapa.cl', 'www.gigantesdeazapa.cl', location.hostname].includes(url.hostname) || url.pathname !== '/fufy-clubes.html' || !P.normalizeAccessKey(token || '', 'club') || !key.startsWith('FUFY-')) throw new Error('Los datos de acceso recibidos no son válidos. Actualiza y vuelve a generarlos.');
         $('confirmDialog').close();
         $('inviteTitle').textContent = 'Acceso privado · ' + (result.team_name || team.name);
-        $('inviteDescription').textContent = 'Vigente hasta ' + dateTime(result.expires_at) + ' (hora de Chile). Este enlace no se envió automáticamente.';
-        $('inviteUrl').value = url.href; $('copyFeedback').textContent = '';
+        $('inviteDescription').textContent = result.expires_at ? 'Vigente hasta ' + dateTime(result.expires_at) + ' (hora de Chile).' : 'Clave y enlace sin vencimiento.';
+        $('inviteKey').value = key; $('inviteUrl').value = url.href; $('copyFeedback').textContent = '';
         $('inviteDialog').showModal();
         await loadTeams({ quiet: true });
-        message('Acceso del club generado. Copia el enlace desde la ventana abierta.', 'success');
+        message('Acceso del club generado. Copia la clave y el enlace desde la ventana abierta.', 'success');
       }
     });
   }
   function revoke(team) {
-    ask({ title: 'Revocar acceso de ' + team.name, description: 'Su enlace dejará de funcionar. Se conservarán todos los datos y documentos del club; podrás crear un nuevo acceso cuando sea necesario.', button: 'Revocar enlace', action: async () => {
+    ask({ title: 'Revocar acceso de ' + team.name, description: 'Su clave y su enlace dejarán de funcionar. Se conservarán todos los datos y documentos del club; podrás crear un nuevo acceso cuando sea necesario.', button: 'Revocar acceso', action: async () => {
       await api('admin_revoke', { team_id: team.id });
       $('confirmDialog').close(); await loadTeams({ quiet: true });
-      message('Se revocó el enlace del club. Su expediente se conserva.', 'success');
+      message('Se revocó el acceso del club. Su expediente se conserva.', 'success');
     } });
   }
   function lock() {
@@ -367,11 +415,11 @@
       message('Se cerró la edición de las cuatro delegaciones. Cada cambio posterior de jugador exige su autorización específica desde Control Center.', 'success');
     } });
   }
-  async function copyInvite() {
-    const input = $('inviteUrl');
+  async function copyInvite(inputId = 'inviteUrl') {
+    const input = $(inputId), kind = inputId === 'inviteKey' ? 'Clave' : 'Enlace';
     if (!input.value) return;
-    try { await navigator.clipboard.writeText(input.value); $('copyFeedback').textContent = 'Enlace copiado. Compártelo únicamente con el delegado del club.'; }
-    catch { input.focus(); input.select(); $('copyFeedback').textContent = 'El navegador no permitió copiar automáticamente. El enlace está seleccionado: usa Copiar o Ctrl+C.'; }
+    try { await navigator.clipboard.writeText(input.value); $('copyFeedback').textContent = kind + (inputId === 'inviteKey' ? ' copiada' : ' copiado') + ' para entregar al delegado del club.'; }
+    catch { input.focus(); input.select(); $('copyFeedback').textContent = 'El navegador no permitió copiar automáticamente. El texto está seleccionado: usa Copiar o Ctrl+C.'; }
   }
 
   async function openDocument(documentId, button) {
@@ -488,8 +536,10 @@
     catch (error) { $('confirmFeedback').textContent = error.message || 'No se pudo completar la operación.'; }
     finally { $('acceptConfirm').disabled = false; $('cancelConfirm').disabled = false; }
   });
-  $('copyInvite').addEventListener('click', copyInvite); $('closeInvite').addEventListener('click', () => $('inviteDialog').close());
-  $('inviteDialog').addEventListener('close', () => { $('inviteUrl').value = ''; $('copyFeedback').textContent = ''; });
+  $('copyInvite').addEventListener('click', () => copyInvite('inviteUrl'));
+  $('copyInviteKey').addEventListener('click', () => copyInvite('inviteKey'));
+  $('closeInvite').addEventListener('click', () => $('inviteDialog').close());
+  $('inviteDialog').addEventListener('close', () => { $('inviteKey').value = ''; $('inviteUrl').value = ''; $('copyFeedback').textContent = ''; });
   $('cancelPlayer').addEventListener('click', () => $('playerDialog').close());
   $('playerDialog').addEventListener('close', () => { currentPlayer = null; $('playerReviewNote').value = ''; });
   $('playerReviewForm').addEventListener('submit', savePlayerReview);
@@ -508,8 +558,34 @@
     if (busyRoster || busyReview || busyView) return;
     if (rosterGrid.hasUnsavedChanges() && !window.confirm('Hay filas con cambios sin guardar. ¿Descartarlos y cerrar sesión?')) return;
     $('logout').disabled = true;
-    try { await client.auth.signOut({ scope: 'local' }); }
-    finally { current = null; snapshots.clear(); location.replace('login.html?next=fufy-clubes.html'); }
+    const wasKeyAccess = !!adminKey;
+    clearKey(); clearPrivateView();
+    try { if (!wasKeyAccess && client) await client.auth.signOut({ scope: 'local' }); }
+    finally {
+      $('logout').disabled = false;
+      $('authDescription').textContent = 'Ingresa tu clave de Copa FUFY para revisar y administrar los cuatro clubes.';
+      message('Acceso cerrado. Puedes volver a ingresar con tu clave.');
+      $('adminAccessKey').focus();
+    }
   });
-  loadTeams();
+  $('adminKeyForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    if (busyAccess || busyTeams) return;
+    const key = P.normalizeAccessKey($('adminAccessKey').value, 'admin');
+    if (!key) { message('Revisa la clave de superadministrador: comienza con ADMIN y tiene cinco grupos de cuatro caracteres.', 'error'); $('adminAccessKey').focus(); return; }
+    busyAccess = true; $('adminKeySubmit').disabled = true;
+    authEpoch++; adminKey = key;
+    try { await loadTeams(); }
+    finally { busyAccess = false; $('adminKeySubmit').disabled = false; }
+  });
+  async function initializeAccess() {
+    if (adminKey) { await loadTeams(); return; }
+    try {
+      const result = client ? await client.auth.getSession() : null;
+      if (result?.data?.session?.access_token) { await loadTeams(); return; }
+    } catch { /* A key does not require an existing account session. */ }
+    $('authHelp').hidden = false;
+    message('Ingresa tu clave para consultar y controlar los cuatro clubes.');
+  }
+  initializeAccess();
 })();
