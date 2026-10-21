@@ -1,6 +1,6 @@
 # Portal de clubes Copa FUFY · Contrato de implementación
 
-Estado documentado: 21 de octubre de 2026. Describe la implementación del portal de nóminas Classic del 24 de octubre de 2026. No modifica las bases ni registra una ratificación de la Adenda V1.3.
+Estado actualizado: 21 de octubre de 2026. Vigencia de bases oficiales definitivas Classic +35 publicada en el sitio y para cuatro delegaciones. La Adenda V1.3 y la versión V1.2 quedan solo como antecedentes históricos.
 
 ## 1. Componentes y acceso
 
@@ -249,20 +249,21 @@ Se escapan entradas antes de insertarlas en HTML, incluida la impresión. El CSV
 - Jugadores con cobertura `pending`.
 - Solo para organización: identidad coincidente con un jugador no retirado de otro club. Compara tipo, número normalizado y país; para RUT utiliza `CL`. No consulta un registro oficial.
 
-`checks.warnings` señala quienes no cumplen 40 durante 2026, planteles con menos de 15 jugadores, seguros sin respaldo actual, cobertura declarada que vence antes del torneo y trámites federativos pendientes. También avisa si un expediente marcado revisado presenta faltantes.
+`checks.warnings` señala quienes no cumplen 35 durante 2026, planteles con menos de 15 jugadores, seguros sin respaldo actual, cobertura declarada que vence antes del torneo y trámites federativos pendientes. También avisa si un expediente marcado revisado presenta faltantes.
 
-La nómina consolidada puede satisfacer las firmas aunque no se marque la casilla individual; la casilla sola no satisface el requisito. Organización debe revisar visualmente los documentos. Las alertas de edad no bloquean el guardado ni eligen una de las reglas en conflicto. Aprobar con advertencias requiere registrar la resolución o criterio del Comité. Ningún estado concede habilitación médica, federativa o de seguro.
+La nómina consolidada puede satisfacer las firmas aunque no se marque la casilla individual; la casilla sola no satisface el requisito. Organización debe revisar visualmente los documentos. Las alertas de edad no bloquean la carga provisional de información, pero los menores de 35 años no cumplen la categoría Classic +35. Aprobar con advertencias requiere revisión y registro de la organización. Ningún estado concede habilitación médica, federativa o de seguro.
 
 ## 10. Fuentes y decisiones de contenido
 
 Fuentes revisadas:
 
-- [Bases oficiales Copa FUFY 2026 V1.2](https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/01_BASES_OFICIALES_COPA_FUFY_2026_V1.2.pdf), PDF de nueve páginas, fechado el 14 de septiembre de 2026.
+- [Bases oficiales definitivas Classic +35, 21/10/2026](../bases-fufy.html) y [PDF vigente descargable](../copa-fufy-2026-bases-definitivas.pdf).
+- [Bases históricas Copa FUFY 2026 V1.2](https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/01_BASES_OFICIALES_COPA_FUFY_2026_V1.2.pdf), PDF de nueve páginas, fechado el 14 de septiembre de 2026.
 - [Adenda V1.3 de organización](https://docs.google.com/document/d/19UWqBIAwGuURvt4flXwkL3zQSXeT1GfKn6vugr0j93U/edit), «COPA FUFY 2026 - ADENDA V1.3 BASES Y REGLAMENTO - Liga 4 equipos (borrador)». Al revisarla figura como borrador para ratificación.
 
 | Requisito o dato confirmado | Fuente y tratamiento |
 | --- | --- |
-| Máximo 25 jugadores; mánager, capitán y apoyo de primeros auxilios. | V1.2, p. 2, sección 3. Límite aplicado en API/SQL y responsables en delegación. |
+| Máximo 25 jugadores; mánager, capitán y apoyo ante situaciones de salud. | Bases definitivas, sección 3. Primeros auxilios corresponden a la organización. |
 | Nombre, identidad, nacimiento; nómina definitiva antes del inicio y sin incorporaciones tras el primer partido salvo excepción del Comité. | V1.2, p. 3, sección 5. Guardado por etapas y cierre con correcciones justificadas. |
 | Club, país, ciudad, mánager y teléfono; datos de jugadores, excepción, firmas y recepción de mesa. | V1.2, pp. 7–8, anexo de nómina. Recogidos en formulario e impresión. |
 | Firma de cada participante y conocimiento de riesgos. | V1.2, p. 5, sección 13. Impresión y carga consolidada o declaraciones individuales más mánager. |
@@ -274,15 +275,13 @@ Correo del delegado, contacto de emergencia y autorización de entrega de datos 
 
 ### Impresión para firmas
 
-La impresión usa datos guardados: club, ciudad, país, delegado, mánager y teléfono, capitán y primeros auxilios; identidad, nacimiento, edad al torneo y durante 2026, cobertura declarada y firma por jugador. Añade declaración y firma del mánager, lugar/fecha y recepción de mesa con nombre/firma y fecha/hora. Un asterisco identifica a quienes no cumplen 40 durante 2026 para revisión.
+La impresión usa datos guardados: club, ciudad, país, delegado, mánager y teléfono, capitán y persona de apoyo ante situaciones de salud; identidad, nacimiento, edad al torneo y durante 2026, cobertura declarada y firma por jugador. Añade declaración y firma del mánager, lugar/fecha y recepción de mesa con nombre/firma y fecha/hora. Un asterisco identifica a quienes no cumplen 35 durante 2026 para revisión.
 
 El jugador declara lectura de bases, veracidad de identidad y conocimiento de riesgos propios del rugby. El mánager declara verificación de datos y comunicación de bases/riesgos, y se compromete a respetar el criterio de edad ratificado y comunicado por organización. No se añade renuncia de derechos ni exención general de responsabilidad. La impresión prepara un documento para firmar y adjuntar; no certifica automáticamente los antecedentes.
 
-### Diferencia pendiente sobre edades
+### Criterio vigente de edad Classic +35
 
-V1.2, p. 2, sección 4, permite hasta tres jugadores menores de 35 años. La Adenda V1.3 y la app describen hasta tres de 35 a 39 años. La adenda sigue como borrador: la organización debe ratificar y comunicar el criterio antes de aplicarlo a todas las delegaciones.
-
-V1.2 considera +40 a quienes cumplen 40 durante el año calendario 2026. Se muestran años cumplidos al 24/10/2026 y edad que se cumple durante 2026; las alertas usan la segunda. El panel enlaza ambas fuentes y explica la diferencia. No se rechaza automáticamente por edad ni se modifican las reglas actuales de la app. Estas reglas Classic no se extienden al festival infantil.
+Las bases definitivas del 21/10/2026 sustituyen todas las excepciones históricas de 35 a 39 años. Es elegible quien cumpla 35 años o más durante el año 2026, sin cupo limitado para esos jugadores ni brazalete distintivo. Se muestran años cumplidos al 24/10/2026 y la edad que se cumple durante 2026; la alerta aplica a quienes no cumplan 35 años. Las reglas Classic no se extienden al festival infantil.
 
 ### Chile Rugby y seguro
 
