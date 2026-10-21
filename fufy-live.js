@@ -154,7 +154,7 @@
       }).join('') + '<td><strong>' + row.pts + '</strong></td></tr>';
     }).join('') : '<tr><td colspan="10">Los equipos se publicarán cuando la organización los confirme.</td></tr>';
     setText('publicTableStatus', table.played + ' de ' + this.matches.length + ' partidos finalizados. La tabla incorpora únicamente resultados finales; los marcadores en juego aún no suman puntos.' +
-      (table.needsTryReview ? ' La mesa revisará los tries pendientes para los desempates.' : ''));
+      (table.unresolvedTies ? ' Empate de tabla: posición sujeta a resolución oficial del Comité Organizador, sin desempate automático.' : ''));
   };
 
   Live.prototype.renderScorers = function () {
