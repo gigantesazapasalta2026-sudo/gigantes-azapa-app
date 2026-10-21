@@ -3,7 +3,7 @@
   'use strict';
   const constants=Object.freeze({
     eventDate:'2026-10-24',
-    basesUrl:'https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/01_BASES_OFICIALES_COPA_FUFY_2026_V1.2.pdf',
+    basesUrl:'https://gigantesdeazapa.cl/copa-fufy-2026-bases-definitivas.pdf',
     rugbyRegister:'https://bd.chile.rugby/registro',
     rugbyLogin:'https://bd.chile.rugby/users/login',
     rugbyInfo:'https://chile.rugby/bd-chile-rugby/'
