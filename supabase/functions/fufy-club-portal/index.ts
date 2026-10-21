@@ -24,7 +24,7 @@ const DOC_FIELDS = 'id,team_id,player_id,kind,file_name,mime_type,size_bytes,is_
 const PLAYER_FIELDS = 'id,team_id,full_name,document_type,document_number,birth_date,nationality,jersey_number,emergency_contact,emergency_phone,federation_status,coverage_type,insurance_provider,insurance_valid_until,signature_declared,notes,review_status,review_note,reviewed_at,removed_at,created_at,updated_at';
 const DOC_KINDS = ['signed_roster','manager_declaration','player_declaration','insurance','federation','identity','other'];
 const MAX_FILE = 5 * 1024 * 1024;
-const VERSION = '20261021-3';
+const VERSION = '20261021-5';
 class PortalError extends Error { constructor(public status: number, message: string) { super(message); } }
 type Row = Record<string, any>;
 
@@ -53,6 +53,7 @@ function date(value: unknown, label: string, required = false): string | null {
 }
 function checked<T>(result: { data: T; error: any }): T {
   if (result.error) {
+    if (/^PT(400|403|409|423)$/.test(result.error.code || '')) fail(Number(result.error.code.slice(2)),result.error.message);
     if (result.error.code === '23505') fail(409, 'Ese documento de identidad ya está en la nómina del club.');
     if (result.error.code === '23514' && /nómina cambió/.test(result.error.message || '')) fail(409, result.error.message);
     if (result.error.code === '23514' && /nómina|jugador|club/.test(result.error.message || '')) fail(400, result.error.message);
@@ -100,7 +101,8 @@ async function readBody(req: Request, max: number): Promise<Uint8Array> {
 async function project(): Promise<Row> {
   const item=checked(await db.from('projects').select('id,name,event_date').eq('code','FUFY2026').single());
   if(!item)fail(503,'La Copa no está disponible en este momento.');
-  return item;
+  const rosterState=checked(await db.rpc('fufy_close_started_rosters',{p_project_id:item.id}));
+  return {...item,roster_state:rosterState};
 }
 async function team(teamId: string, projectId: string): Promise<Row> {
   const item=checked(await db.from('project_teams').select('id,name,city,country,status,project_id,active').eq('id',teamId).eq('project_id',projectId).eq('active',true).in('status',ACTIVE_TEAMS).maybeSingle());
@@ -137,10 +139,9 @@ async function snapshot(t: Row, p: Row, admin = false): Promise<Row> {
   const documents=(dossier.fufy_club_documents || []).filter((x:Row)=>!x.removed_at).sort((a:Row,b:Row)=>b.created_at.localeCompare(a.created_at));
   delete dossier.fufy_club_players; delete dossier.fufy_club_documents; delete dossier.reviewed_by;
   const effectiveTeam={...t,city:dossier.club_city||t.city,country:dossier.club_country||t.country};
-  const matches=checked(await db.from('fufy_matches').select('starts_at,status').eq('project_id',p.id).or(`home_team_id.eq.${t.id},away_team_id.eq.${t.id}`).neq('status','cancelled')) || [];
-  const started=matches.some((m:Row)=>['in_progress','final'].includes(m.status) || (m.starts_at && new Date(m.starts_at).getTime()<=Date.now()));
-  const unlocked=dossier.unlock_until && new Date(dossier.unlock_until).getTime()>Date.now();
-  const readOnly=(!!dossier.locked_at || !!started) && !unlocked;
+  const firstMatch=p.roster_state?.first_match_at || null;
+  const started=!!p.roster_state?.tournament_started || !!(firstMatch&&new Date(firstMatch).getTime()<=Date.now());
+  const readOnly=!!dossier.locked_at || started;
   const missing: string[]=[], warnings: string[]=[];
   if(!effectiveTeam.city)missing.push('Ciudad del club.');
   if(!effectiveTeam.country)missing.push('País del club.');
@@ -175,7 +176,8 @@ async function snapshot(t: Row, p: Row, admin = false): Promise<Row> {
     if(players.some((j:Row)=>keys.has(identity(j))))missing.push('Hay una identificación repetida en la nómina de otro club. Resolver el registro antes de revisar el expediente como completo.');
   }
   if(dossier.status==='approved' && missing.length)warnings.push('El expediente requiere una nueva revisión porque tiene pendientes.');
-  return {team:publicTeam(effectiveTeam),submission:dossier,players,documents,checks:{missing,warnings,complete:missing.length===0},event:{name:p.name,date:p.event_date},access:{read_only:readOnly,reason:readOnly?(dossier.locked_at?'La organización cerró esta nómina.':'La nómina se cerró al comenzar el primer partido programado del equipo.'):(unlocked?'Correcciones autorizadas temporalmente por la organización.':'')}};
+  const changes=admin?(checked(await db.from('fufy_club_roster_changes').select('id,action,player_id,player_name,is_exception,reason,organization_authorizer,approval_reference,club_approvals,created_at').eq('team_id',t.id).order('created_at',{ascending:false}).limit(50))||[]):undefined;
+  return {team:publicTeam(effectiveTeam),submission:dossier,players,documents,checks:{missing,warnings,complete:missing.length===0},event:{name:p.name,date:p.event_date},access:{read_only:readOnly,exception_required:readOnly,first_match_at:firstMatch,tournament_started:started,reason:readOnly?(started?'Las nóminas se cerraron al comenzar el primer partido del campeonato. Las excepciones se registran únicamente desde Control Center, con acuerdo de la organización y autorización de todos los clubes.':'La organización cerró esta nómina. Una excepción se registra únicamente desde Control Center, con autorización de la organización y todos los clubes.'):''},...(admin?{roster_changes:changes}:{})};
 }
 function editable(s: Row) { if(s.access.read_only)fail(423,'La nómina está cerrada. Solicita una corrección al Comité Organizador.'); }
 function submissionData(value: unknown): Row {
@@ -244,7 +246,10 @@ Deno.serve(async(req: Request)=>{
       result={event:{name:p.name,date:p.event_date},teams};
     }else if(action.startsWith('admin_')){
       if(!uid)fail(401,'Ingresa al Control Center con tu cuenta autorizada.');
-      if(action==='admin_list'){
+      if(action==='admin_lock_all'){
+        const closed=checked(await db.rpc('fufy_admin_close_rosters',{p_project_id:p.id,p_actor_id:uid}));
+        result={ok:true,closed_count:closed};
+      }else if(action==='admin_list'){
         const teams=checked(await db.from('project_teams').select('id,name,city,country,status').eq('project_id',p.id).eq('active',true).in('status',ACTIVE_TEAMS).order('sort_order')) || [];
         const ids=teams.map((t:Row)=>t.id);
         const [subResult,playerResult,docResult,inviteResult]=await Promise.all([
@@ -254,7 +259,7 @@ Deno.serve(async(req: Request)=>{
           db.from('fufy_club_invites').select('team_id,active,expires_at,created_at').in('team_id',ids)
         ]);
         const subs=checked(subResult)||[],players=checked(playerResult)||[],docs=checked(docResult)||[],invites=checked(inviteResult)||[];
-        result={teams:teams.map((t:Row)=>({...t,submission:subs.find((s:Row)=>s.team_id===t.id)||null,player_count:players.filter((j:Row)=>j.team_id===t.id).length,document_count:docs.filter((d:Row)=>d.team_id===t.id).length,invitation:invites.find((i:Row)=>i.team_id===t.id)||null})),can_manage:true};
+        result={teams:teams.map((t:Row)=>({...t,submission:subs.find((s:Row)=>s.team_id===t.id)||null,player_count:players.filter((j:Row)=>j.team_id===t.id).length,document_count:docs.filter((d:Row)=>d.team_id===t.id).length,invitation:invites.find((i:Row)=>i.team_id===t.id)||null})),can_manage:true,event:{name:p.name,date:p.event_date,first_match_at:p.roster_state?.first_match_at||null}};
       }else{
         const t=await team(uuid(body.team_id),p.id);
         if(action==='admin_invite'){
@@ -270,6 +275,18 @@ Deno.serve(async(req: Request)=>{
         else{
           const s=await snapshot(t,p,true);
           if(action==='admin_open')result=s;
+          else if(action==='admin_save_player'||action==='admin_delete_player'){
+            const removing=action==='admin_delete_player';
+            const player=removing?{id:uuid(body.player_id)}:{...playerData(body.player,t),...(body.player?.id?{id:uuid(body.player.id)}:{})};
+            const existing=player.id?s.players.find((j:Row)=>j.id===player.id):null;
+            if(player.id&&!existing)fail(404,'El jugador no está disponible en la nómina de este club.');
+            if(existing)versionMatches(body.expected_updated_at,existing.updated_at);
+            checked(await db.rpc('fufy_admin_roster_change',{
+              p_team_id:t.id,p_actor_id:uid,p_action:removing?'delete':'save',p_player:player,
+              p_expected_updated_at:existing?existing.updated_at:null,p_exception:body.exception??null
+            }));
+            result=await snapshot(t,p,true);
+          }
           else if(action==='admin_review'){
             versionMatches(body.expected_updated_at,s.submission.updated_at);
             const status=choice(body.status,['observed','approved'],'el estado de revisión');
@@ -295,9 +312,7 @@ Deno.serve(async(req: Request)=>{
             checked(await db.from('fufy_club_submissions').update({locked_at:now(),unlock_until:null,unlock_reason:null}).eq('team_id',t.id));
             await audit(t.id,'roster_locked',uid);result=await snapshot(t,p,true);
           }else if(action==='admin_unlock'){
-            const reason=str(body.reason,1200,'el motivo de la corrección',10);
-            checked(await db.from('fufy_club_submissions').update({unlock_until:new Date(Date.now()+2*3600000).toISOString(),unlock_reason:reason}).eq('team_id',t.id));
-            await audit(t.id,'roster_correction_authorized',uid,{reason});result=await snapshot(t,p,true);
+            fail(400,'La edición de las delegaciones permanece cerrada. Registra cada incorporación o corrección desde Control Center con la autorización de la organización y todos los clubes.');
           }else fail(400,'La acción no está disponible.');
         }
       }
@@ -332,9 +347,11 @@ Deno.serve(async(req: Request)=>{
             await audit(t.id,'player_added',null,{player_id:saved.id});
           }
         }else if(action==='delete_player'){
-          const id=uuid(body.player_id);
-          if(!s.players.some((j:Row)=>j.id===id))fail(404,'El jugador no está disponible.');
-          checked(await db.from('fufy_club_players').update({removed_at:now()}).eq('id',id).eq('team_id',t.id).is('removed_at',null));
+          const id=uuid(body.player_id),old=s.players.find((j:Row)=>j.id===id);
+          if(!old)fail(404,'El jugador no está disponible.');
+          versionMatches(body.expected_updated_at,old.updated_at);
+          const removed=checked(await db.from('fufy_club_players').update({removed_at:now()}).eq('id',id).eq('team_id',t.id).eq('updated_at',old.updated_at).is('removed_at',null).select('id').maybeSingle());
+          if(!removed)fail(409,'La ficha cambió. Recarga antes de retirar al jugador.');
           await audit(t.id,'player_removed',null,{player_id:id});
         }else if(action==='submit'){
           versionMatches(body.expected_updated_at,s.submission.updated_at);

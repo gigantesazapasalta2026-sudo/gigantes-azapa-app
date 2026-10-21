@@ -12,6 +12,8 @@ Estado documentado: 21 de octubre de 2026. Describe la implementación del porta
 | API | [`supabase/functions/fufy-club-portal/index.ts`](../supabase/functions/fufy-club-portal/index.ts) | Autenticación, autorización por equipo, validaciones, archivos y auditoría. |
 | Persistencia | [`supabase/migrations/20261021202749_fufy_club_portal.sql`](../supabase/migrations/20261021202749_fufy_club_portal.sql) | Tablas privadas, RLS, versiones y controles atómicos. |
 | Ubicación y declaración impresa | [`supabase/migrations/20261021203925_fufy_club_location.sql`](../supabase/migrations/20261021203925_fufy_club_location.sql) | Ciudad y país del expediente; cierre e invalidación al cambiar datos impresos de la delegación. |
+| Tabla compartida | `fufy-roster-grid.js`, `fufy-roster-grid.css` | 25 filas preparadas, borradores en memoria, guardado por fila y control de versión en ambas interfaces. |
+| Cierre global y excepciones | `supabase/migrations/20261021211726_fufy_control_center_rosters.sql` | Sella las nóminas de todos los clubes al comenzar el torneo y exige autorización unánime para cada cambio administrativo posterior. |
 
 La página pública de la Copa enlaza el portal y su ayuda `/fufy-clubes.html#fp-rugby`. La gestión de la Copa y los accesos del Control Center enlazan `/gestion/fufy-clubes.html`.
 
@@ -52,7 +54,7 @@ Se utiliza `POST` con JSON `{action, ...payload}` y cabecera `apikey` publicable
 
 Enviar ambas credenciales produce `400`. La autenticación ocurre antes de leer el cuerpo de un archivo. El equipo de una solicitud del club se obtiene exclusivamente de la invitación validada; un `team_id` enviado por el cliente no puede cambiar su pertenencia.
 
-Éxito: objeto JSON directo, sin envoltorio `data`. Error: `{error: "mensaje para la persona"}`. Las respuestas llevan `Cache-Control: no-store`; las respuestas normales añaden `Pragma: no-cache` y `X-Fufy-Portal-Version: 20261021-3`.
+Éxito: objeto JSON directo, sin envoltorio `data`. Error: `{error: "mensaje para la persona"}`. Las respuestas llevan `Cache-Control: no-store`; las respuestas normales añaden `Pragma: no-cache` y `X-Fufy-Portal-Version: 20261021-5`.
 
 | HTTP | Significado relevante |
 | --- | --- |
@@ -83,7 +85,8 @@ Snapshot = {
   documents: [...],
   checks: { missing: string[], warnings: string[], complete: boolean },
   event: { name, date },
-  access: { read_only: boolean, reason: string }
+  access: { read_only, exception_required, first_match_at, tournament_started, reason },
+  roster_changes: [...] // solo organización; últimos 50 cambios
 }
 ```
 
@@ -141,7 +144,7 @@ El formulario limpia y bloquea la selección de jugador para los dos tipos de cl
 | `open` | Ninguna. | `Snapshot` del club autorizado. |
 | `save_submission` | `{data:{...campos editables del expediente}, expected_updated_at}` | `Snapshot`. CAS sobre expediente. Guarda borrador y limpia revisión general; conserva `review_note` como referencia. |
 | `save_player` | `{player:{id?, ...campos editables}, expected_updated_at?}` | `Snapshot`. Alta sin versión; edición con versión obligatoria del jugador. El servidor asigna el ID del alta. |
-| `delete_player` | `{player_id}` | `Snapshot`. Retirada lógica con `removed_at` e invalidación de respaldos afectados. |
+| `delete_player` | `{player_id, expected_updated_at}` | `Snapshot`. Retirada lógica con `removed_at` e invalidación de respaldos afectados. |
 | `submit` | `{expected_updated_at}` | `Snapshot`. Requiere al menos un jugador, nombre/correo/teléfono del delegado y `privacy_consent = true`; permite pendientes documentales. |
 | `upload_document` | Multipart: `action=upload_document`, `kind`, `player_id` si procede, `file`, `expected_updated_at`. | `Snapshot`. La versión es la del expediente al iniciar la carga. |
 | `get_document` | `{document_id}` | `{url, expires_in:120}` del archivo de ese equipo. |
@@ -160,14 +163,17 @@ Los cambios y el envío requieren edición abierta. Consulta, impresión, CSV y 
 | `admin_document` | `{team_id, document_id}` | `{url, expires_in:120}`. |
 | `admin_review` | `{team_id, status:'observed'|'approved', review_note, expected_updated_at}` | `Snapshot`. CAS sobre expediente; solo revisa estados `submitted` u `observed`. |
 | `admin_review_player` | `{team_id, player_id, review_status:'pending'|'observed'|'reviewed', review_note, expected_updated_at}` | `Snapshot`. CAS sobre jugador; disponible aunque la edición del club esté cerrada. |
-| `admin_lock` | `{team_id}` | `Snapshot`. Fija `locked_at`, elimina `unlock_until` y `unlock_reason` y cierra una excepción vigente. |
-| `admin_unlock` | `{team_id, reason}` | `Snapshot`. Autoriza dos horas de correcciones conservando `locked_at`; registra el motivo. |
+| `admin_lock` | `{team_id}` | `Snapshot`. Cierra la nómina del club. |
+| `admin_lock_all` | Ninguna. | `{ok:true,closed_count}`. Cierra todas las nóminas de participantes del campeonato. |
+| `admin_save_player` | `{team_id,player,expected_updated_at?,exception?}` | `Snapshot`. Agrega o modifica un jugador. Una edición existente exige CAS; tras el cierre exige la autorización detallada abajo. |
+| `admin_delete_player` | `{team_id,player_id,expected_updated_at,exception?}` | `Snapshot`. Retira un jugador con CAS y, tras el cierre, autorización excepcional. |
+| `admin_unlock` | Cualquier carga. | Retirado: devuelve `400`. Las delegaciones no se reabren. |
 
 Las filas de `admin_list` contienen `id`, `name`, `city`, `country`, `status`, `submission`, `player_count`, `document_count` e `invitation`. El resumen de expediente incluye `team_id`, `status`, `updated_at`, `submitted_at`, `reviewed_at`, `review_note`, `locked_at`, `unlock_until`. La invitación contiene `team_id`, `active`, `expires_at`, `created_at`; nunca el hash ni el secreto. Los conteos excluyen retirados; el conteo inicial de documentos incluye desactualizados. El panel abre snapshots para calcular documentos actuales y faltantes.
 
 `admin_review` con `approved` exige `checks.missing` vacío. Observar un expediente, o marcarlo revisado cuando hay advertencias, exige nota de al menos 5 caracteres, máximo 2500. La interfaz etiqueta `approved` como «Expediente revisado». `admin_review_player` con `observed` exige nota de al menos 5 caracteres, máximo 1500. El estado individual `pending` no bloquea por sí solo la aprobación general: esta requiere revisión humana de los antecedentes.
 
-`admin_unlock.reason` exige entre 10 y 1200 caracteres. La interfaz confirma el cierre y solicita motivo obligatorio para la excepción. Invitaciones, retiradas, `admin_lock` y `admin_unlock` no reciben CAS; no deben describirse como escrituras condicionadas a `expected_updated_at`.
+La interfaz confirma el cierre y, para cada alta, modificación o retirada posterior, solicita `exception`: `reason` (10–1200 caracteres), `organization_authorizer` (3–160), `organization_agreed:true`, `approval_reference` (5–1000), y `club_approvals` con exactamente todos los clubes participantes actuales. Cada autorización contiene `team_id`, `representative_name` (3–160) y `approved:true`. No se reutilizan nombres ni casillas de otra operación. La organización registra así los acuerdos obtenidos y la referencia de su respaldo; el sistema no envía solicitudes ni mensajes a representantes.
 
 ## 6. Versiones y vigencia de respaldos
 
@@ -176,7 +182,8 @@ Las filas de `admin_list` contienen `id`, `name`, `city`, `country`, `status`, `
 | Operación | Versión exigida |
 | --- | --- |
 | `save_submission`, `submit`, `admin_review` | `expected_updated_at = snapshot.submission.updated_at`. |
-| `save_player` con `player.id`, `admin_review_player` | `expected_updated_at = player.updated_at` de la ficha editada o revisada. |
+| `save_player` con `player.id`, `delete_player`, `admin_review_player` | `expected_updated_at = player.updated_at` de la ficha editada o revisada. |
+| `admin_save_player` con `player.id`, `admin_delete_player` | `expected_updated_at = player.updated_at`; se comprueba también bajo lock en la RPC SQL. |
 | `upload_document` | Campo multipart `expected_updated_at = snapshot.submission.updated_at`. |
 
 La API compara la versión recibida y condiciona las actualizaciones de expediente o jugador con `.eq('updated_at', version)`. Una fila que cambió devuelve `409` sin aplicar esa escritura. Los clientes indican actualizar y revisar la versión vigente; no anuncian una aprobación ni sobrescriben silenciosamente.
@@ -201,15 +208,17 @@ Las dos interfaces muestran «Reemplazar por versión actual» para los desactua
 
 ## 7. Cierre y excepciones
 
-La edición se cierra si existe `locked_at`, o si un partido no cancelado del equipo está `in_progress` / `final` o ya alcanzó su `starts_at` guardado en la base de datos. No depende de que alguien haya iniciado manualmente el marcador.
+La edición se cierra si existe `locked_at`, o si cualquier partido no cancelado del mismo campeonato está `in_progress` / `final` o ya alcanzó su `starts_at` guardado en la base de datos. El primer partido cierra los cuatro clubes, incluidos los que juegan más tarde. No depende de que alguien haya iniciado manualmente el marcador.
 
 ```text
-read_only = (cierre_manual || primer_partido_ya_iniciado) && !excepción_vigente
+read_only = cierre_manual || primer_partido_del_campeonato_ya_iniciado
 ```
 
-La excepción está vigente mientras `unlock_until` sea futuro. `admin_unlock` lo fija dos horas desde la solicitud, conserva el `locked_at` original y guarda el motivo en expediente y auditoría. Al vencer, vuelve a aplicarse el cierre manual incluso si ningún partido comenzó. Sin cierre manual, sigue rigiendo el inicio del primer partido.
+El cierre se persiste. Los triggers de partidos capturan tanto el estado anterior como el nuevo al modificar, reprogramar, cancelar o retirar un encuentro; mover después la hora no reabre las nóminas. Los campos antiguos `unlock_until` y `unlock_reason` quedan sin efecto.
 
-API y triggers SQL vuelven a comprobar la edición autorizada; una pantalla anterior al cierre no puede eludirlo. Se cierran cambios de delegación, jugadores, documentos y envío. La organización conserva consulta y revisión. La excepción es una corrección autorizada por el Comité, no una ampliación general del plazo.
+Las excepciones se ejecutan únicamente mediante `fufy_admin_roster_change`, disponible al servicio y con validación adicional del actor administrativo. Se bloquea el expediente, se compara la versión, se exige el acuerdo de la organización y exactamente todos los representantes, se aplica una sola alta/cambio/baja y se registra todo en `fufy_club_roster_changes` y la auditoría de manera atómica. El contexto temporal se restaura antes de retornar. No permite cambios de delegación ni documentos desde el club. Los cambios siguen invalidando firmas y respaldos que correspondían a la versión anterior, y dejan el expediente pendiente de revisión.
+
+API y triggers SQL vuelven a comprobar la edición autorizada; una pantalla anterior al cierre no puede eludirlo. Se cierran cambios de delegación, jugadores, documentos y envío. La organización conserva consulta y revisión. La clave de la mesa digital no otorga permisos de modificación de nóminas. Ver `fufy-desk-contract.md` para resultados en vivo, turnos y trazabilidad de anotaciones.
 
 ## 8. Archivos y privacidad
 
@@ -217,7 +226,7 @@ Bucket privado: `fufy-clubs-private`, con nombres aleatorios dentro de la carpet
 
 Eliminar un documento marca `removed_at`, fija `is_current = false` y solicita retirar sus bytes de Storage. Si Storage devuelve error, la retirada lógica sigue aplicada y el servidor registra `storage_remove_failed` para atención operativa; no hay un reintento automático de borrado. Se conserva trazabilidad en metadatos y auditoría; deja de aparecer en snapshots y de admitir nuevas descargas del portal. Invalidar por un cambio de nómina conserva el archivo como versión anterior, hasta su retirada expresa.
 
-Las tablas `fufy_club_submissions`, `fufy_club_invites`, `fufy_club_players`, `fufy_club_documents` y `fufy_club_audit` tienen RLS, revocación de privilegios para `public`, `anon` y `authenticated`, y políticas restrictivas de denegación. Una política restrictiva del bucket bloquea el acceso directo de clientes aunque haya políticas amplias para otros buckets. Solo la API, tras autenticar y autorizar, utiliza la clave `service_role` del servidor. Los triggers están en `private`, usan `security invoker` y no conceden ejecución a clientes.
+Las tablas `fufy_club_submissions`, `fufy_club_invites`, `fufy_club_players`, `fufy_club_documents`, `fufy_club_roster_changes` y `fufy_club_audit` tienen RLS, revocación de privilegios para `public`, `anon` y `authenticated`, y políticas restrictivas de denegación. Una política restrictiva del bucket bloquea el acceso directo de clientes aunque haya políticas amplias para otros buckets. Solo la API, tras autenticar y autorizar, utiliza la clave `service_role` del servidor. Los triggers están en `private` y no conceden ejecución a clientes; los dos triggers de captura de inicio son SECURITY DEFINER de alcance mínimo para sellar expedientes cuando un editor autorizado actualiza el fixture. Las RPC administrativas usan SECURITY INVOKER y ejecución exclusiva del servicio.
 
 Cada descarga exige equipo y documento autorizados y genera una URL firmada de 120 segundos. Identidades, teléfonos, correos y antecedentes no aparecen en `public_info`. El control de duplicados entre clubes solo aparece en snapshots administrativos y no expone datos ajenos a las delegaciones.
 

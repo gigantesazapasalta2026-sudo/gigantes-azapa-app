@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#111b2a">
+  <title>Mesa de control · Copa FUFY 2026</title>
+  <link rel="stylesheet" href="fufy-mesa.css?v=20261021-1">
+  <script src="config.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js" defer></script>
+  <script src="fufy-league.js?v=20261009-1" defer></script>
+  <script src="fufy-mesa.js?v=20261021-1" defer></script>
+</head>
+<body>
+  <a class="md-skip" href="#md-main">Ir a la mesa de control</a>
+  <header class="md-header"><div class="md-wrap md-header-row">
+    <img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/Logo_Oficial_Copa_FUFY_2026.png" width="70" height="76" alt="Copa FUFY">
+    <div><span class="md-eyebrow">COPA FUFY 2026 · ARICA</span><h1>Mesa de control</h1><p>Classic · 20 minutos corridos · sin entretiempo</p></div>
+    <nav class="md-header-links" aria-label="Navegación"><a class="md-button md-button--header" href="fufy.html">Ver la Copa</a><a class="md-button md-button--header" href="gestion/fufy-liga.html">Control Center</a><a class="md-button md-button--header" href="#md-admin">Administrar clave</a></nav>
+  </div></header>
+  <main id="md-main" class="md-wrap">
+    <noscript><p class="md-notice md-notice--error">Activa JavaScript para iniciar un turno y registrar el partido.</p></noscript>
+    <div id="md-message" class="md-notice" role="status" aria-live="polite" hidden></div>
+    <section id="md-access" class="md-access-grid" aria-labelledby="md-access-title">
+      <div class="md-panel"><span class="md-eyebrow md-eyebrow--orange">ACCESO DE LA MESA</span><h2 id="md-access-title">Iniciar turno</h2><p class="md-muted">Ingresa con la clave entregada por la organización y tu nombre. Los movimientos quedan asociados a este turno.</p>
+        <form id="md-login-form"><fieldset id="md-login-fields" class="md-fieldset">
+          <label class="md-field" for="md-operator">Nombre del operador<input id="md-operator" name="operator_name" minlength="3" maxlength="80" autocomplete="off" required></label>
+          <label class="md-field" for="md-password">Clave de la mesa<input id="md-password" name="password" type="password" maxlength="72" autocomplete="off" autocapitalize="none" spellcheck="false" required></label>
+          <button class="md-button" type="submit" id="md-login">Iniciar mi turno</button>
+        </fieldset></form><p class="md-small">La clave no se conserva. Termina el turno cuando entregues la mesa a otra persona.</p>
+      </div>
+      <div class="md-panel md-intro"><h2>El acta, jugada por jugada</h2><ol><li>Selecciona el encuentro del fixture.</li><li>Inicia el partido y registra puntos y tarjetas con el jugador de la nómina.</li><li>Si hay un error, anula el evento con su motivo; el historial se conserva.</li><li>Revisa el marcador antes de finalizar el acta.</li></ol><div class="md-notice md-notice--warning">El primer inicio cierra las nóminas de todos los clubes. La mesa consulta jugadores; las excepciones de nómina se gestionan desde Control Center.</div></div>
+    </section>
+    <div id="md-workspace" hidden>
+      <section class="md-session md-panel" aria-label="Turno activo"><div><span class="md-eyebrow md-eyebrow--orange">TURNO EN CURSO</span><h2 id="md-session-name"></h2><p id="md-session-time" class="md-small"></p></div><div class="md-actions"><span id="md-sync" class="md-sync" role="status"></span><button id="md-refresh" class="md-button md-button--secondary" type="button">Actualizar</button><button id="md-logout" class="md-button md-button--secondary" type="button">Terminar / cambiar turno</button></div></section>
+      <section id="md-recovery" class="md-notice md-notice--warning" hidden aria-labelledby="md-recovery-title"><h2 id="md-recovery-title">Operación por confirmar</h2><p id="md-recovery-description"></p><p>Reintenta la misma operación para comprobar su resultado sin duplicarla. Espera la confirmación antes de registrar otra acción.</p><div class="md-actions"><button id="md-retry" class="md-button" type="button">Reintentar la misma operación</button><button id="md-recovery-refresh" class="md-button md-button--secondary" type="button">Consultar marcador actual</button></div></section>
+      <div class="md-desk-grid">
+        <aside class="md-panel md-fixture-panel"><div class="md-section-heading"><div><span class="md-eyebrow md-eyebrow--orange">SEIS ENCUENTROS</span><h2>Fixture</h2></div></div><div id="md-fixtures" class="md-fixtures" role="navigation" aria-label="Seleccionar partido"></div></aside>
+        <section id="md-match" class="md-panel md-match-panel" aria-labelledby="md-match-title">
+          <div id="md-no-match" class="md-empty"><h2>Selecciona un partido</h2><p>El marcador y los controles aparecerán aquí.</p></div>
+          <div id="md-match-content" hidden>
+            <div class="md-section-heading"><div><span id="md-match-meta" class="md-eyebrow md-eyebrow--orange"></span><h2 id="md-match-title" tabindex="-1">Acta del partido</h2></div><span id="md-phase" class="md-badge"></span></div>
+            <div id="md-match-warning" class="md-notice md-notice--warning" hidden></div>
+            <div class="md-scoreboard">
+              <div class="md-score-team"><span class="md-small">LOCAL</span><h3 id="md-home-name"></h3><strong id="md-home-score">—</strong><p id="md-home-stats" class="md-small"></p></div>
+              <span class="md-score-separator" aria-hidden="true">:</span>
+              <div class="md-score-team"><span class="md-small">VISITA</span><h3 id="md-away-name"></h3><strong id="md-away-score">—</strong><p id="md-away-stats" class="md-small"></p></div>
+            </div>
+            <div class="md-phase-actions md-actions"><button id="md-start" class="md-button" type="button">Iniciar partido</button><button id="md-suspend" class="md-button md-button--secondary" type="button">Suspender</button><button id="md-resume" class="md-button" type="button">Reanudar</button><button id="md-finish" class="md-button md-button--dark" type="button">Finalizar acta</button><button id="md-reopen" class="md-button md-button--secondary" type="button">Reabrir para corregir</button></div>
+            <div id="md-event-buttons" class="md-event-teams" aria-label="Registrar un evento del partido"></div>
+            <div class="md-section-heading md-feed-heading"><div><h3>Eventos del partido</h3><p class="md-small">Las anulaciones permanecen identificadas y dejan de sumar al marcador.</p></div><button id="md-view-rosters" class="md-button md-button--secondary" type="button">Consultar nóminas</button></div>
+            <div id="md-events" class="md-event-feed"></div>
+            <details class="md-audit"><summary>Historial de operaciones de la mesa</summary><div id="md-match-audit"></div></details>
+          </div>
+        </section>
+      </div>
+      <section class="md-panel" aria-labelledby="md-standings-title"><div class="md-section-heading"><div><span class="md-eyebrow md-eyebrow--orange">CLASIFICACIÓN</span><h2 id="md-standings-title">Tabla de posiciones</h2><p class="md-small">Se calcula con las actas finalizadas y los criterios registrados de la Copa.</p></div></div><div class="md-table-scroll" tabindex="0" role="region" aria-label="Tabla de posiciones"><table><thead><tr><th>#</th><th>Club</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>PF</th><th>PC</th><th>Dif.</th><th>Tries</th><th>Pts.</th></tr></thead><tbody id="md-standings"></tbody></table></div><p id="md-standings-note" class="md-small"></p></section>
+    </div>
+    <details id="md-admin" class="md-panel md-admin"><summary>Administración de la clave · Organización</summary><p class="md-muted">Usa tu sesión autorizada del Control Center para consultar turnos y renovar la clave de la mesa.</p><div class="md-actions"><button id="md-admin-load" class="md-button md-button--secondary" type="button">Ver administración</button><a class="md-button md-button--secondary" href="gestion/login.html">Iniciar sesión en Control Center</a></div><p id="md-admin-message" class="md-small" role="status" aria-live="polite"></p>
+      <div id="md-admin-content" hidden><div class="md-admin-access"><div><h3>Acceso compartido de la mesa</h3><p id="md-access-state" class="md-small"></p></div><button id="md-rotate" class="md-button" type="button">Renovar clave</button></div><h3>Turnos registrados</h3><div class="md-table-scroll" tabindex="0" role="region" aria-label="Turnos de operadores"><table><thead><tr><th>Operador</th><th>Inicio</th><th>Vencimiento</th><th>Estado</th></tr></thead><tbody id="md-sessions"></tbody></table></div><details class="md-audit"><summary>Historial de administración</summary><div id="md-admin-audit"></div></details></div>
+    </details>
+    <p class="md-footer-note">Los marcadores y los eventos deportivos se muestran en la página de la Copa. La mesa conserva de forma privada el turno, el operador y los motivos de corrección.</p>
+  </main>
+  <dialog id="md-event-dialog" aria-labelledby="md-event-title"><div class="md-dialog-inner"><span class="md-eyebrow md-eyebrow--orange">REGISTRAR EVENTO</span><h2 id="md-event-title"></h2><p id="md-event-subtitle" class="md-muted"></p><form id="md-event-form"><fieldset id="md-event-fields" class="md-fieldset"><label class="md-field" for="md-event-player">Jugador de la nómina<select id="md-event-player" required></select><small id="md-player-help">El estado de revisión se muestra como antecedente; la participación se verifica con organización.</small></label><label class="md-field" for="md-event-minute">Minuto del partido <span class="md-muted">(opcional)</span><input id="md-event-minute" type="number" min="0" max="120" step="1" inputmode="numeric"></label></fieldset><div id="md-event-feedback" class="md-dialog-message" role="status" aria-live="polite"></div><div class="md-dialog-actions"><button id="md-cancel-event" class="md-button md-button--secondary" type="button">Cancelar</button><button id="md-save-event" class="md-button" type="submit">Registrar evento</button></div></form></div></dialog>
+  <dialog id="md-confirm-dialog" aria-labelledby="md-confirm-title"><div class="md-dialog-inner"><h2 id="md-confirm-title"></h2><p id="md-confirm-description" class="md-muted"></p><form id="md-confirm-form"><label id="md-reason-field" class="md-field" for="md-reason" hidden>Motivo<textarea id="md-reason" maxlength="1200" rows="3"></textarea></label><div id="md-confirm-feedback" class="md-dialog-message" role="status" aria-live="polite"></div><div class="md-dialog-actions"><button id="md-cancel-confirm" class="md-button md-button--secondary" type="button">Cancelar</button><button id="md-confirm-action" class="md-button" type="submit">Confirmar</button></div></form></div></dialog>
+  <dialog id="md-roster-dialog" aria-labelledby="md-roster-title"><div class="md-dialog-inner"><div class="md-section-heading"><div><h2 id="md-roster-title">Nóminas del encuentro</h2><p class="md-small">Consulta de nombres, dorsales y revisión. Los cambios de nómina corresponden al Control Center.</p></div><button id="md-close-rosters" class="md-button md-button--secondary" type="button">Cerrar</button></div><div id="md-rosters"></div></div></dialog>
+  <dialog id="md-secret-dialog" aria-labelledby="md-secret-title"><div class="md-dialog-inner"><h2 id="md-secret-title">Clave nueva de la mesa</h2><div class="md-notice md-notice--warning">Se muestra una sola vez. Cópiala para entregarla al operador autorizado. Los turnos anteriores finalizaron y deben volver a ingresar.</div><label class="md-field" for="md-new-password">Clave generada<input id="md-new-password" readonly autocomplete="off" spellcheck="false"></label><p id="md-copy-feedback" class="md-small" role="status"></p><div class="md-dialog-actions"><button id="md-close-secret" class="md-button md-button--secondary" type="button">Cerrar</button><button id="md-copy-secret" class="md-button" type="button">Copiar clave</button></div></div></dialog>
+</body>
+</html>

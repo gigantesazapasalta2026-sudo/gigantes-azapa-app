@@ -251,10 +251,11 @@ begin
     raise exception 'Organizational review was blocked by roster closure';
   end if;
   update public.fufy_club_submissions set unlock_until=now()+interval '2 hours',unlock_reason='Corrección de prueba autorizada' where team_id=team_a;
-  update public.fufy_club_players set notes='Edición durante corrección autorizada' where id=player_a;
-  if not exists(select 1 from public.fufy_club_players where id=player_a and notes='Edición durante corrección autorizada') then
-    raise exception 'A valid correction window did not allow the edit';
-  end if;
+  begin
+    update public.fufy_club_players set notes='Intento con ventana antigua de corrección' where id=player_a;
+    raise exception 'A legacy correction window reopened delegate editing';
+  exception when check_violation then null;
+  end;
   update public.fufy_club_submissions set unlock_until=now()-interval '1 minute' where team_id=team_a;
   begin
     update public.fufy_club_players set notes='Edición luego de vencer la excepción' where id=player_a;

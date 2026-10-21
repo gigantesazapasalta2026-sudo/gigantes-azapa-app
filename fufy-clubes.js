@@ -30,19 +30,15 @@
   var F = window.FufyPortal;
   var $ = function (id) { return document.getElementById(id); };
   var state = {
-    token: '', snapshot: null, busy: false, clubDirty: false,
-    playerDirty: false, editingId: null, editUpdatedAt: null
+    token: '', snapshot: null, busy: false, gridBusy: false, clubDirty: false,
+    playerDirty: false, rowDirtyCount: 0, playerContext: null
   };
   var delegationFields = [
     'club_city', 'club_country', 'delegate_name', 'delegate_email', 'delegate_phone', 'manager_name',
     'manager_phone', 'captain_name', 'first_aid_name', 'first_aid_phone', 'club_notes'
   ];
   var delegationFlags = ['accepted_bases', 'confirmed_accuracy', 'privacy_consent'];
-  var playerFields = [
-    'full_name', 'document_type', 'document_number', 'birth_date', 'nationality',
-    'jersey_number', 'emergency_contact', 'emergency_phone', 'federation_status',
-    'coverage_type', 'insurance_provider', 'insurance_valid_until', 'notes'
-  ];
+  var playerFields = ['emergency_contact', 'emergency_phone', 'notes'];
   var documentLabels = {
     signed_roster: 'Nómina y declaraciones firmadas',
     manager_declaration: 'Declaración del manager',
@@ -70,7 +66,7 @@
     box.hidden = !message;
   }
 
-  if (!F) {
+  if (!F || !window.FufyRosterGrid) {
     setMessage('No se pudo cargar el acceso a las nóminas. Recarga esta página. Los enlaces informativos de Chile Rugby siguen disponibles abajo.', 'error');
     $('fp-access-form').querySelector('button').disabled = true;
     return;
@@ -78,6 +74,7 @@
 
   var esc = F.esc;
   var dialog = $('fp-player-dialog');
+  var rosterGrid = null;
 
   function players() {
     return state.snapshot && Array.isArray(state.snapshot.players) ? state.snapshot.players : [];
@@ -103,25 +100,26 @@
       setMessage(closeReason(), 'warning');
       return false;
     }
-    return !state.busy;
+    return !state.busy && !state.gridBusy;
   }
 
   function updateDirty() {
-    $('fp-unsaved').textContent = state.clubDirty
-      ? 'Tienes cambios sin guardar.'
-      : 'Sin cambios pendientes.';
-    $('fp-unsaved').className = state.clubDirty ? 'fp-small fp-age-alert' : 'fp-small fp-muted';
+    var messages = [];
+    if (state.clubDirty) messages.push('Datos de la delegación sin guardar.');
+    if (state.rowDirtyCount) messages.push(state.rowDirtyCount + (state.rowDirtyCount === 1 ? ' fila de jugador sin guardar.' : ' filas de jugadores sin guardar.'));
+    $('fp-unsaved').textContent = messages.length ? messages.join(' ') : 'Sin cambios pendientes.';
+    $('fp-unsaved').className = messages.length ? 'fp-small fp-age-alert' : 'fp-small fp-muted';
   }
 
   function syncDocumentTarget() {
     var wholeClub = ['signed_roster', 'manager_declaration'].includes($('fp-document-kind').value);
     var selector = $('fp-document-player');
     if (wholeClub) selector.value = '';
-    selector.disabled = wholeClub || state.busy || isReadOnly();
+    selector.disabled = wholeClub || state.busy || state.gridBusy || isReadOnly();
   }
 
   function syncActions() {
-    var locked = state.busy || isReadOnly();
+    var locked = state.busy || state.gridBusy || isReadOnly();
     document.querySelectorAll('[data-fp-write]').forEach(function (button) {
       button.disabled = locked;
     });
@@ -131,23 +129,29 @@
     $('fp-add-player').disabled = locked || players().length >= MAX_PLAYERS;
     $('fp-add-player').textContent = players().length >= MAX_PLAYERS
       ? 'Plantel completo · 25/25'
-      : '+ Agregar jugador';
-    $('fp-csv').disabled = state.busy || !players().length;
-    $('fp-print-roster').disabled = state.busy || !players().length;
+      : 'Ir a una fila vacía';
+    $('fp-csv').disabled = state.busy || state.gridBusy || !players().length;
+    $('fp-print-roster').disabled = state.busy || state.gridBusy || !players().length;
+    $('fp-reload').disabled = state.busy || state.gridBusy;
+    $('fp-logout').disabled = state.busy || state.gridBusy;
     var status = state.snapshot && state.snapshot.submission && state.snapshot.submission.status;
     $('fp-submit').textContent = status === 'submitted' || status === 'observed'
       ? 'Volver a enviar a revisión'
       : 'Enviar nómina a revisión';
     $('fp-read-only').hidden = !isReadOnly();
     $('fp-read-only').textContent = isReadOnly() ? closeReason() : '';
+    if (rosterGrid && (rosterGrid.disabled !== state.busy || rosterGrid.readOnly !== isReadOnly())) {
+      rosterGrid.setData({ disabled: state.busy, readOnly: isReadOnly() });
+    }
     syncDocumentTarget();
     updateDirty();
   }
 
   async function runOperation(fn, options) {
-    if (state.busy) return null;
+    if (state.busy || state.gridBusy) return null;
     options = options || {};
     state.busy = true;
+    if (rosterGrid) rosterGrid.setData({ disabled: true });
     document.body.classList.add('fp-loading');
     $('fp-main').setAttribute('aria-busy', 'true');
     var controls = Array.from(document.querySelectorAll('button, fieldset')).map(function (el) {
@@ -295,37 +299,41 @@
   }
 
   function renderPlayers() {
-    var list = $('fp-player-list');
-    if (!players().length) {
-      list.innerHTML = '<div class="fp-empty"><strong>Tu nómina comienza aquí</strong><p>Agrega al primer jugador. Cada ficha puede guardarse con antecedentes pendientes.</p></div>';
-      return;
+    if (!rosterGrid) {
+      rosterGrid = window.FufyRosterGrid.create($('fp-player-list'), {
+        players: players(), team: state.snapshot.team, readOnly: isReadOnly(), disabled: state.busy,
+        onSave: async function (player, expectedUpdatedAt) {
+          if (state.busy || isReadOnly()) throw new Error(closeReason());
+          var payload = { player: player };
+          if (expectedUpdatedAt) payload.expected_updated_at = expectedUpdatedAt;
+          return call('save_player', payload);
+        },
+        onDelete: async function (player) {
+          if (state.busy || isReadOnly()) throw new Error(closeReason());
+          return call('delete_player', { player_id: player.id, expected_updated_at: player.updated_at });
+        },
+        onMore: openPlayerDetails,
+        onDocuments: function (player) {
+          if (isReadOnly()) $('fp-documents').scrollIntoView({ block: 'start', behavior: 'smooth' });
+          else preparePlayerDocument(player.id);
+        },
+        onSnapshot: function (snapshot) {
+          applySnapshot(snapshot);
+          setMessage('Nómina guardada. Revisa los antecedentes y las firmas que deban actualizarse. Las demás filas conservan sus cambios pendientes.', 'success');
+        },
+        onDirtyChange: function (count) {
+          state.rowDirtyCount = count;
+          updateDirty();
+        },
+        onBusyChange: function (busy) {
+          state.gridBusy = busy;
+          syncActions();
+        },
+        onError: function (message) { setMessage(message, 'error'); }
+      });
+    } else {
+      rosterGrid.setData({ players: players(), team: state.snapshot.team, readOnly: isReadOnly(), disabled: state.busy });
     }
-    list.innerHTML = '<div class="fp-player-cards">' + players().map(function (player, index) {
-      var birthdayAge = ageYear(player.birth_date);
-      var documentText = player.document_number
-        ? (player.document_type || 'Documento') + ' ' + player.document_number
-        : 'Documento por informar';
-      var jerseyText = player.jersey_number != null ? ' · Camiseta ' + player.jersey_number : '';
-      var review = player.review_note
-        ? '<div class="fp-player-review"><strong>Organización:</strong> ' + esc(player.review_note) + '</div>'
-        : '';
-      var disabled = isReadOnly() ? ' disabled' : '';
-      return '<article class="fp-player-card">' +
-        '<div><h3><span class="fp-player-number">' + (index + 1) + '.</span> ' + esc(player.full_name || 'Sin nombre') + '</h3>' +
-        '<p class="fp-player-id">' + esc(documentText + jerseyText) + '</p></div>' +
-        '<div class="fp-player-actions">' + statusBadge(player.review_status || 'pending') +
-        '<button type="button" class="fp-btn fp-btn--secondary fp-btn--small" data-action="edit-player" data-player-id="' + esc(player.id) + '">' +
-        (isReadOnly() ? 'Ver ficha' : 'Editar') + '</button>' +
-        '<button type="button" class="fp-btn fp-btn--quiet fp-btn--small" data-fp-write data-action="player-document" data-player-id="' + esc(player.id) + '"' + disabled + '>Adjuntar</button>' +
-        '<button type="button" class="fp-btn fp-btn--danger fp-btn--small" data-fp-write data-action="delete-player" data-player-id="' + esc(player.id) + '"' + disabled + '>Quitar</button></div>' +
-        '<div class="fp-player-meta">' +
-        '<div class="fp-meta-item"><small>Edad</small><span class="' + (birthdayAge !== null && birthdayAge < 40 ? 'fp-age-alert' : '') + '">' + esc(ageText(player.birth_date)) + '</span></div>' +
-        '<div class="fp-meta-item"><small>Registro federativo</small>' + esc(federationLabels[player.federation_status] || federationLabels.pending) + '</div>' +
-        '<div class="fp-meta-item"><small>Atención médica</small>' + esc(coverageLabels[player.coverage_type] || coverageLabels.pending) +
-        (player.insurance_provider ? ' · ' + esc(player.insurance_provider) : '') + '</div>' +
-        '<div class="fp-meta-item"><small>Firma declarada</small>' + (player.signature_declared ? 'Sí · requiere documento' : 'Pendiente') + '</div>' +
-        '</div>' + review + '</article>';
-    }).join('') + '</div>';
   }
 
   function bytesText(bytes) {
@@ -436,8 +444,11 @@
     state.snapshot = null;
     state.clubDirty = false;
     state.playerDirty = false;
-    state.editingId = null;
-    state.editUpdatedAt = null;
+    state.playerContext = null;
+    state.gridBusy = false;
+    state.rowDirtyCount = 0;
+    if (rosterGrid) rosterGrid.destroy();
+    rosterGrid = null;
     if (dialog.open) dialog.close();
     $('fp-delegation-form').reset();
     $('fp-player-form').reset();
@@ -466,52 +477,47 @@
     return snapshot;
   }
 
-  function updatePlayerAge() {
-    var value = $('fp-player-birth').value;
-    var age = ageYear(value);
-    $('fp-player-age').textContent = value ? ageText(value) + (age !== null && age < 40 ? ' · Revisión de categoría por la organización.' : '') : '';
-    $('fp-player-age').className = age !== null && age < 40 ? 'fp-age-alert' : '';
-  }
-
-  function openPlayer(playerId) {
-    if (!state.snapshot || state.busy) return;
-    var player = playerId ? players().find(function (p) { return p.id === playerId; }) : null;
-    if (playerId && !player) return;
-    if (!player && (!canWrite() || players().length >= MAX_PLAYERS)) return;
+  function openPlayerDetails(player, context) {
+    if (!state.snapshot || state.busy || state.gridBusy) return;
     var form = $('fp-player-form');
     form.reset();
-    state.editingId = player ? player.id : null;
-    state.editUpdatedAt = player ? player.updated_at : null;
-    getField(form, 'id').value = player ? player.id : '';
+    state.playerContext = context;
     playerFields.forEach(function (name) {
       var field = getField(form, name);
-      if (player) field.value = player[name] == null ? '' : String(player[name]);
+      field.value = player[name] == null ? '' : String(player[name]);
     });
-    if (!player) {
-      getField(form, 'nationality').value = state.snapshot.team.country || '';
-      var country = String(state.snapshot.team.country || '').toLowerCase();
-      getField(form, 'document_type').value = country === 'chile' || country === 'cl' ? 'RUT' : 'DNI';
-      getField(form, 'federation_status').value = 'pending';
-      getField(form, 'coverage_type').value = 'pending';
-    }
-    getField(form, 'signature_declared').checked = Boolean(player && player.signature_declared);
+    getField(form, 'signature_declared').checked = player.signature_declared === true;
     state.playerDirty = false;
     $('fp-player-error').hidden = true;
     $('fp-player-error').textContent = '';
-    $('fp-player-dialog-title').textContent = isReadOnly() ? 'Ficha de jugador' : (player ? 'Editar jugador' : 'Agregar jugador');
+    $('fp-player-dialog-title').textContent = 'Más datos · Fila ' + context.rowNumber;
+    $('fp-player-summary').textContent = [player.full_name || 'Jugador por completar',
+      player.document_number ? (player.document_type || 'Documento') + ' ' + player.document_number : '',
+      player.birth_date ? ageText(player.birth_date) : ''].filter(Boolean).join(' · ');
+    form.hidden = context.readOnly;
+    var details = $('fp-player-readonly');
+    details.hidden = !context.readOnly;
+    details.innerHTML = context.readOnly ? '<dl><dt>Contacto de emergencia</dt><dd>' + esc(player.emergency_contact || 'Por informar') +
+      '</dd><dt>Teléfono de emergencia</dt><dd>' + esc(player.emergency_phone || 'Por informar') +
+      '</dd><dt>Observaciones de inscripción</dt><dd>' + esc(player.notes || 'Sin observaciones') +
+      '</dd><dt>Firma declarada</dt><dd>' + (player.signature_declared ? 'Sí · requiere documento firmado' : 'Pendiente') +
+      '</dd><dt>Revisión de la organización</dt><dd>' + esc(F.statusLabel(player.review_status || 'pending')) +
+      (player.review_note ? ' · ' + esc(player.review_note) : '') + '</dd></dl>' : '';
+    if (!context.readOnly && player.review_note) {
+      $('fp-player-error').textContent = 'Observación de la organización: ' + player.review_note;
+      $('fp-player-error').hidden = false;
+    }
     syncActions();
-    updatePlayerAge();
     dialog.showModal();
-    if (isReadOnly()) $('fp-player-close').focus();
-    else $('fp-player-name').focus();
+    if (context.readOnly) $('fp-player-close').focus();
+    else $('fp-player-emergency').focus();
   }
 
   function closePlayer() {
-    if (state.busy) return;
-    if (state.playerDirty && !window.confirm('¿Cerrar la ficha sin guardar los cambios de este jugador?')) return;
+    if (state.busy || state.gridBusy) return;
+    if (state.playerDirty && !window.confirm('¿Cerrar sin aplicar estos datos a la fila? Los demás cambios de la tabla se conservarán.')) return;
     state.playerDirty = false;
-    state.editingId = null;
-    state.editUpdatedAt = null;
+    state.playerContext = null;
     dialog.close();
     $('fp-player-form').reset();
   }
@@ -522,21 +528,8 @@
     playerFields.forEach(function (name) {
       data[name] = getField(form, name).value.trim();
     });
-    if (state.editingId) data.id = state.editingId;
-    data.jersey_number = data.jersey_number === '' ? null : Number(data.jersey_number);
-    data.birth_date = data.birth_date || null;
-    data.insurance_valid_until = data.insurance_valid_until || null;
     data.signature_declared = getField(form, 'signature_declared').checked;
     return data;
-  }
-
-  async function removePlayer(id, button) {
-    if (!canWrite()) return;
-    var player = players().find(function (p) { return p.id === id; });
-    if (!player || !window.confirm('¿Quitar a ' + player.full_name + ' de esta nómina? Si ya reuniste firmas, revisa qué documentos deben actualizarse.')) return;
-    await runOperation(async function () {
-      applySnapshot(await call('delete_player', { player_id: id }));
-    }, { button: button, success: 'Jugador retirado de la nómina. Revisa la lista de documentos pendientes.' });
   }
 
   function preparePlayerDocument(id) {
@@ -549,7 +542,7 @@
   }
 
   async function openDocument(id, button) {
-    if (state.busy || !state.snapshot) return;
+    if (state.busy || state.gridBusy || !state.snapshot) return;
     var previewWindow = window.open('about:blank', '_blank');
     if (previewWindow) {
       previewWindow.opener = null;
@@ -591,8 +584,24 @@
       .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 70) || 'club';
   }
 
+  function hasRowDrafts() {
+    return Boolean(rosterGrid && rosterGrid.hasUnsavedChanges());
+  }
+
+  function requireSavedRoster(action) {
+    if (!state.clubDirty && !hasRowDrafts()) return true;
+    if (isReadOnly()) {
+      setMessage('La nómina está cerrada. Esta descarga contiene la versión guardada; los cambios pendientes de esta pestaña no se incluyen.', 'warning');
+      return true;
+    }
+    setMessage('Guarda los cambios de la delegación y cada fila pendiente antes de ' + action + ' la nómina.', 'warning');
+    if (hasRowDrafts()) $('fp-players').scrollIntoView({ block: 'start' });
+    else $('fp-delegation-form').querySelector('button[type=submit]').focus();
+    return false;
+  }
+
   function exportCSV() {
-    if (!state.snapshot || !players().length) return;
+    if (!state.snapshot || !players().length || !requireSavedRoster('descargar')) return;
     var rows = [[
       'Club', 'Ciudad del club', 'País del club', 'N°', 'Nombre completo', 'Tipo de documento', 'Documento',
       'Fecha de nacimiento', 'Edad al 24/10/2026', 'Edad que cumple en 2026', 'Nacionalidad',
@@ -620,12 +629,7 @@
   }
 
   function printRoster() {
-    if (!state.snapshot || !players().length) return;
-    if (state.clubDirty) {
-      setMessage('Guarda los cambios de la delegación antes de imprimir para que la nómina y sus responsables coincidan.', 'warning');
-      $('fp-delegation-form').querySelector('button[type=submit]').focus();
-      return;
-    }
+    if (!state.snapshot || !players().length || !requireSavedRoster('imprimir')) return;
     var team = state.snapshot.team;
     var data = state.snapshot.submission || {};
     var clubLogo = document.querySelector('.fp-club-logo').src;
@@ -682,18 +686,16 @@
   });
 
   $('fp-logout').addEventListener('click', function () {
-    if (state.busy) return;
-    if ((state.clubDirty || state.playerDirty) && !window.confirm('Tienes cambios sin guardar. ¿Cerrar el acceso y descartarlos?')) return;
+    if (state.busy || state.gridBusy) return;
+    if ((state.clubDirty || state.playerDirty || hasRowDrafts()) && !window.confirm('Tienes cambios sin guardar. ¿Cerrar el acceso y descartarlos?')) return;
     resetAccess();
   });
 
   $('fp-reload').addEventListener('click', async function (event) {
-    if (state.clubDirty && !window.confirm('Al actualizar se reemplazarán los cambios de la delegación que no hayas guardado. ¿Continuar?')) return;
     await runOperation(async function () {
       var snapshot = await call('open');
-      state.clubDirty = false;
-      applySnapshot(snapshot, { forceDelegation: true });
-    }, { button: event.currentTarget, success: 'Nómina actualizada.' });
+      applySnapshot(snapshot);
+    }, { button: event.currentTarget, success: 'Nómina actualizada. Se conservaron los cambios sin guardar de esta pestaña.' });
   });
 
   $('fp-delegation-form').addEventListener('input', function () {
@@ -713,7 +715,9 @@
     });
   });
 
-  $('fp-add-player').addEventListener('click', function () { openPlayer(null); });
+  $('fp-add-player').addEventListener('click', function () {
+    if (canWrite() && rosterGrid) rosterGrid.focusEmptyRow();
+  });
   $('fp-player-close').addEventListener('click', closePlayer);
   $('fp-player-cancel').addEventListener('click', closePlayer);
   dialog.addEventListener('cancel', function (event) {
@@ -726,25 +730,18 @@
   $('fp-player-form').addEventListener('change', function () {
     state.playerDirty = true;
   });
-  $('fp-player-birth').addEventListener('input', updatePlayerAge);
-  $('fp-player-form').addEventListener('submit', async function (event) {
+  $('fp-player-form').addEventListener('submit', function (event) {
     event.preventDefault();
-    if (!canWrite() || !$('fp-player-form').reportValidity()) return;
-    var payload = { player: collectPlayer() };
-    if (state.editingId && state.editUpdatedAt) payload.expected_updated_at = state.editUpdatedAt;
-    await runOperation(async function () {
-      var snapshot = await call('save_player', payload);
-      state.playerDirty = false;
-      state.editingId = null;
-      state.editUpdatedAt = null;
-      dialog.close();
-      $('fp-player-form').reset();
-      applySnapshot(snapshot);
-    }, {
-      button: event.submitter, working: 'Guardando…',
-      success: 'Jugador guardado. Revisa los antecedentes pendientes y las firmas que deban actualizarse.',
-      errorTarget: $('fp-player-error')
-    });
+    if (!canWrite() || !state.playerContext || !$('fp-player-form').reportValidity()) return;
+    var context = state.playerContext;
+    if (!context.update(collectPlayer())) {
+      $('fp-player-error').textContent = 'No se pudieron aplicar los datos. Cierra esta ventana y vuelve a abrir los datos de la fila.';
+      $('fp-player-error').hidden = false;
+      return;
+    }
+    state.playerDirty = false;
+    closePlayer();
+    setMessage('Datos aplicados a la fila ' + context.rowNumber + '. Pulsa Guardar fila en la tabla para guardarlos en la nómina.', 'warning');
   });
 
   $('fp-document-kind').addEventListener('change', syncDocumentTarget);
@@ -786,6 +783,11 @@
 
   $('fp-submit').addEventListener('click', async function (event) {
     if (!canWrite()) return;
+    if (hasRowDrafts()) {
+      setMessage('Hay filas de jugadores sin guardar. Pulsa Guardar fila en cada una antes de enviar la nómina.', 'warning');
+      $('fp-players').scrollIntoView({ block: 'start' });
+      return;
+    }
     if (!$('fp-delegation-form').reportValidity()) {
       $('fp-delegation').scrollIntoView({ block: 'start' });
       return;
@@ -798,17 +800,13 @@
         expected_updated_at: (state.snapshot.submission || {}).updated_at || null
       }));
       $('fp-review').scrollIntoView({ block: 'start' });
-    }, { button: event.currentTarget, working: 'Enviando…', success: 'Nómina enviada a revisión. Los antecedentes que falten permanecen visibles en tu lista de pendientes.' });
+    }, { button: event.currentTarget, working: 'Enviando…', success: 'Nómina enviada a revisión. Consulta aquí las observaciones de la organización antes de la acreditación.' });
   });
 
   $('fp-workspace').addEventListener('click', function (event) {
     var button = event.target.closest('button[data-action]');
-    if (!button || button.disabled || state.busy) return;
+    if (!button || button.disabled || state.busy || state.gridBusy) return;
     var action = button.dataset.action;
-    var id = button.dataset.playerId;
-    if (action === 'edit-player') openPlayer(id);
-    if (action === 'delete-player') removePlayer(id, button);
-    if (action === 'player-document') preparePlayerDocument(id);
     if (action === 'open-document') openDocument(button.dataset.documentId, button);
     if (action === 'delete-document') removeDocument(button.dataset.documentId, button);
   });
@@ -816,7 +814,7 @@
   $('fp-print-roster').addEventListener('click', printRoster);
   window.addEventListener('afterprint', function () { $('fp-print').textContent = ''; });
   window.addEventListener('beforeunload', function (event) {
-    if (state.clubDirty || state.playerDirty) {
+    if (state.clubDirty || state.playerDirty || hasRowDrafts()) {
       event.preventDefault();
       event.returnValue = '';
     }

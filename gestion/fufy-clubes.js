@@ -2,7 +2,8 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const P = window.FufyPortal;
-  if (!P || !window.supabase) {
+  const Grid = window.FufyRosterGrid;
+  if (!P || !Grid || !window.supabase) {
     $('message').textContent = 'No se pudo cargar el portal. Revisa tu conexión y vuelve a abrir esta página.';
     $('message').className = 'notice error';
     return;
@@ -15,8 +16,10 @@
   const federationNames = { pending: 'Pendiente', declared: 'Inscripción declarada', not_applicable: 'No aplica / por revisar' };
   const coverageNames = { pending: 'Pendiente', insurance: 'Seguro', prevision: 'Previsión', other: 'Otros medios de atención' };
   const documentNames = { signed_roster: 'Nómina y declaraciones firmadas', manager_declaration: 'Declaración del mánager', player_declaration: 'Declaración del jugador', insurance: 'Cobertura / seguro', federation: 'Chile Rugby', identity: 'Identificación', other: 'Otro respaldo' };
+  const playerFields = ['full_name', 'document_type', 'document_number', 'birth_date', 'nationality', 'jersey_number', 'emergency_contact', 'emergency_phone', 'federation_status', 'coverage_type', 'insurance_provider', 'insurance_valid_until', 'signature_declared', 'notes'];
   let teams = [], snapshots = new Map(), current = null, currentPlayer = null;
   let loadSerial = 0, viewSerial = 0, confirmAction = null, busyReview = false;
+  let rosterGrid = null, busyRoster = false, busyView = false, busyTeams = false, moreContext = null, pendingException = null, busyException = false;
 
   const label = value => statusNames[value] || P.statusLabel(value) || 'Pendiente';
   const date = value => value ? P.formatDate(value) : 'Sin registro';
@@ -55,7 +58,9 @@
   }
 
   async function loadTeams({ quiet = false } = {}) {
+    if (busyRoster || busyReview) return;
     const serial = ++loadSerial;
+    busyTeams = true;
     $('refresh').disabled = true;
     if (!quiet) message('Cargando accesos, nóminas y antecedentes pendientes…');
     try {
@@ -76,7 +81,7 @@
       renderTeams();
       if (!quiet || failed) message(failed ? 'Se cargaron los clubes, pero faltó consultar ' + failed + ' expediente(s). Usa Actualizar o abre el club para reintentar.' : 'Accesos y expedientes actualizados. Los datos permanecen privados.', failed ? 'warning' : 'success');
     } catch (error) { handleError(error); }
-    finally { if (serial === loadSerial) $('refresh').disabled = false; }
+    finally { if (serial === loadSerial) { busyTeams = false; syncAdminControls(); } }
   }
   function renderTeams() {
     let total = 0, review = 0, incomplete = 0, unread = 0;
@@ -107,10 +112,14 @@
     $('totalPlayers').textContent = total;
     $('pendingReviews').textContent = review;
     $('incompleteTeams').textContent = unread ? incomplete + ' · ' + unread + ' por consultar' : incomplete;
+    syncAdminControls();
   }
 
   async function openTeam(teamId, { focus = true } = {}) {
+    if (busyRoster || busyReview || busyView) return;
+    if (current?.team.id !== teamId && rosterGrid?.hasUnsavedChanges() && !window.confirm('Hay filas con cambios sin guardar. ¿Descartarlos y abrir otro club?')) return;
     const serial = ++viewSerial;
+    busyView = true; rosterGrid?.setData({ disabled: true });
     $('refreshDossier').disabled = true;
     try {
       message('Consultando el expediente del club…');
@@ -121,7 +130,7 @@
       if (focus) { $('dossier').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('dossierTitle').focus({ preventScroll: true }); }
       message('Expediente cargado. Revisa sus datos, documentos y observaciones.', 'success');
     } catch (error) { if (serial === viewSerial) handleError(error); }
-    finally { if (serial === viewSerial) $('refreshDossier').disabled = false; }
+    finally { if (serial === viewSerial) { busyView = false; $('refreshDossier').disabled = false; rosterGrid?.setData({ disabled: busyReview }); syncAdminControls(); } }
   }
   function acceptSnapshot(snapshot) {
     if (!snapshot?.team?.id) throw new Error('El servidor no entregó un expediente válido. Actualiza la página.');
@@ -135,10 +144,8 @@
     const pending = checks(current);
     $('dossierTitle').textContent = team.name;
     $('dossierMeta').textContent = [s.club_city || team.city, s.club_country || team.country, label(s.status || 'draft'), 'Última actualización: ' + dateTime(s.updated_at)].filter(Boolean).join(' · ');
-    $('accessNotice').textContent = access.read_only ? 'Edición del club cerrada. ' + (access.reason || 'La organización debe autorizar cualquier corrección.') : 'El delegado puede actualizar la nómina. ' + (access.reason || 'El cierre se aplica al inicio de su primer partido o cuando lo indique la organización.');
+    $('accessNotice').textContent = access.read_only ? 'Edición del delegado cerrada. ' + (access.reason || '') + ' Cada cambio de jugador desde Control Center requiere registrar la condición especial y el acuerdo de organización y de los cuatro clubes.' : 'El delegado y la organización pueden preparar la nómina. Todas las delegaciones se cierran al inicio del primer partido del campeonato o cuando lo indique la organización.';
     $('accessNotice').className = 'notice no-print' + (access.read_only ? ' warning' : '');
-    $('lockRoster').disabled = access.read_only === true;
-    $('unlockRoster').disabled = access.read_only !== true;
     $('contacts').innerHTML = pairs([
       ['Ciudad de la delegación', s.club_city || team.city || 'Pendiente'], ['País de la delegación', s.club_country || team.country || 'Pendiente'],
       ['Delegado', s.delegate_name || 'Pendiente'], ['Correo delegado', s.delegate_email || 'Pendiente'], ['Teléfono delegado', s.delegate_phone || 'Pendiente'],
@@ -155,17 +162,8 @@
     $('warningsBox').classList.toggle('revisit', pending.warnings.length > 0);
     $('clubNotesBox').hidden = !s.club_notes; $('clubNotes').textContent = s.club_notes || '';
     $('playerCount').textContent = players.length + ' / 25 jugadores';
-    $('playersBody').innerHTML = players.map(player => {
-      const age = P.ageOnEvent(player.birth_date), yearly = yearAge(player.birth_date);
-      const marked = yearly !== null && yearly < 40;
-      return '<tr><td><strong>' + esc(player.full_name) + '</strong><small>' + (player.jersey_number != null ? 'Camiseta ' + esc(player.jersey_number) + ' · ' : '') + esc(player.nationality || '') + '</small></td>' +
-        '<td>' + esc(player.document_type || '') + '<small>' + esc(player.document_number || 'Pendiente') + '</small></td>' +
-        '<td>' + esc(date(player.birth_date)) + '<small class="' + (marked ? 'underage' : '') + '">' + esc(age == null ? 'Edad por revisar' : age + ' al evento') + ' · ' + esc(yearly == null ? '—' : yearly + ' en 2026') + '</small>' + (marked ? '<small>Excepción: revisar criterio</small>' : '') + '</td>' +
-        '<td>' + esc(federationNames[player.federation_status] || 'Pendiente') + '</td>' +
-        '<td>' + esc(coverageNames[player.coverage_type] || 'Pendiente') + '<small>' + esc(player.insurance_provider || '') + '</small>' + (player.insurance_valid_until ? '<small>Vigencia declarada: ' + esc(date(player.insurance_valid_until)) + '</small>' : '') + '</td>' +
-        '<td>' + esc(yes(player.signature_declared)) + '</td><td>' + badge(player.review_status || 'pending') + (player.review_note ? '<small class="preline">' + esc(player.review_note) + '</small>' : '') + '</td>' +
-        '<td><button type="button" class="btn secondary small-btn" data-player="' + esc(player.id) + '">Revisar</button></td></tr>';
-    }).join('') || '<tr><td colspan="8">El club aún no ha registrado jugadores.</td></tr>';
+    rosterGrid?.setData({ players, team, readOnly: false, disabled: busyReview || busyView });
+    renderRosterHistory(current.roster_changes || []);
     $('documents').innerHTML = documents.map(doc => {
       const player = players.find(p => p.id === doc.player_id);
       const stale = doc.is_current === false;
@@ -180,15 +178,148 @@
     $('observeSubmission').disabled = busyReview || !canReview;
     $('approveSubmission').disabled = busyReview || !canReview || pending.missing.length > 0 || !players.length;
     $('reviewHelp').textContent = !canReview ? (s.status === 'approved' ? 'El expediente ya fue revisado. Si el club modifica antecedentes, será necesario revisar nuevamente su envío.' : 'El club debe enviar su nómina para iniciar la revisión.') : pending.missing.length ? 'Puedes enviar observaciones. Para marcar el expediente revisado, primero deben completarse los antecedentes pendientes.' : pending.warnings.length ? 'Hay alertas pendientes de criterio: indica en la observación cómo se resolvieron antes de marcar el expediente revisado.' : 'Agrega las observaciones que correspondan y registra la revisión de los documentos.';
+    syncAdminControls();
   }
 
-  function ask({ title, description, button = 'Confirmar', reason = false, action }) {
+  function syncAdminControls() {
+    const blocked = busyRoster || busyReview || busyView;
+    $('refresh').disabled = blocked || busyTeams;
+    $('refreshDossier').disabled = blocked || !current;
+    $('closeDossier').disabled = blocked;
+    $('exportRoster').disabled = blocked || !current;
+    $('printDossier').disabled = blocked || !current;
+    $('addPlayer').disabled = blocked || !current || (current.players || []).length >= 25;
+    $('lockRoster').disabled = blocked || !current || current.access?.read_only === true;
+    $('lockAllRosters').disabled = blocked || busyTeams || teams.length !== 4 || teams.every(team => snapshots.get(team.id)?.access?.read_only === true);
+    document.querySelectorAll('#teamsBody button').forEach(button => { button.disabled = blocked || busyTeams; });
+    const canReview = !!current && ['submitted', 'observed'].includes(current.submission?.status);
+    $('observeSubmission').disabled = blocked || !canReview;
+    $('approveSubmission').disabled = blocked || !canReview || checks(current).missing.length > 0 || !(current?.players || []).length;
+  }
+  function renderRosterHistory(changes) {
+    const labels = { added: 'Jugador agregado', updated: 'Jugador actualizado', removed: 'Jugador retirado', add: 'Jugador agregado', create: 'Jugador agregado', player_added: 'Jugador agregado', update: 'Jugador actualizado', player_updated: 'Jugador actualizado', remove: 'Jugador retirado', delete: 'Jugador retirado', player_removed: 'Jugador retirado' };
+    $('rosterHistory').innerHTML = (Array.isArray(changes) ? changes : []).slice(0, 50).map(change => {
+      const approvals = Array.isArray(change.club_approvals) ? change.club_approvals : [];
+      const details = [['Tipo de registro', change.is_exception === true ? 'Excepción declarada por organización' : 'Movimiento antes del cierre']];
+      if (change.reason) details.push(['Condición especial / motivo', change.reason]);
+      if (change.organization_authorizer) details.push(['Autoriza por organización', change.organization_authorizer]);
+      if (change.approval_reference) details.push(['Referencia del acuerdo', change.approval_reference]);
+      return '<details class="change-entry"><summary>' + esc(labels[change.action] || 'Movimiento de nómina') + ' · ' + esc(change.player_name || 'Jugador') + ' · ' + esc(dateTime(change.created_at)) + '</summary><dl class="kv">' + pairs(details) + '</dl>' +
+        (approvals.length ? '<p class="small" style="margin-top:12px">Representantes y autorizaciones declaradas:</p><ul>' + approvals.map(approval => '<li>' + esc(approval.team_name || teams.find(team => team.id === approval.team_id)?.name || 'Club registrado') + ': ' + esc(approval.representative_name || 'Sin nombre registrado') + ' · ' + esc(approval.approved === true ? 'autorización declarada' : 'sin autorización declarada') + '</li>').join('') + '</ul>' : '') + '</details>';
+    }).join('') || '<p class="small">No hay movimientos administrativos registrados para este club.</p>';
+  }
+  function cancelledOperation() { const error = new Error('Cambio cancelado. La fila conserva sus datos sin guardar.'); error.cancelled = true; return error; }
+  function mutationError(error) {
+    if (error?.cancelled) return;
+    handleError(error);
+  }
+  async function runRosterMutation(action, payload, playerName) {
+    const teamId = payload.team_id;
+    const context = { action, payload, playerName, teamName: current?.team.id === teamId ? current.team.name : teams.find(team => team.id === teamId)?.name || 'Club', isException: current?.team.id === teamId && (current.access?.read_only === true || current.access?.exception_required === true) };
+    let snapshot;
+    if (context.isException) snapshot = await requestException(context);
+    else {
+      try { snapshot = await api(action, payload); }
+      catch (error) {
+        if (error.status !== 423) throw error;
+        const fresh = await api('admin_open', { team_id: teamId });
+        if (current?.team.id === teamId) acceptSnapshot(fresh); else snapshots.set(teamId, fresh);
+        if (fresh.access?.read_only !== true && fresh.access?.exception_required !== true) throw error;
+        const playerId = payload.player_id || payload.player?.id;
+        if (playerId && (fresh.players || []).find(player => player.id === playerId)?.updated_at !== payload.expected_updated_at) {
+          const conflict = new Error('La ficha cambió antes de registrar la autorización. Actualiza y revisa los datos vigentes; tu borrador se conserva.'); conflict.status = 409; throw conflict;
+        }
+        context.isException = true;
+        snapshot = await requestException(context);
+      }
+    }
+    if (snapshot?.team?.id !== teamId) throw new Error('El servidor no devolvió el expediente esperado. Actualiza para comprobar el resultado.');
+    const changed = action === 'admin_delete_player' ? 'Jugador retirado de la nómina.' : payload.player?.id ? 'Datos del jugador actualizados.' : 'Jugador agregado a la nómina.';
+    message(changed + (context.isException ? ' La autorización específica quedó registrada y la edición del delegado sigue cerrada.' : '') + ' Comprueba las firmas y los respaldos pendientes del expediente.', 'success');
+    return snapshot;
+  }
+  async function saveRosterPlayer(player, expectedUpdatedAt) {
+    if (!current || busyReview || busyView) throw new Error('Espera a que termine la operación actual antes de guardar la fila.');
+    const data = Object.fromEntries(playerFields.map(key => [key, player[key]]));
+    if (player.id) data.id = player.id;
+    const payload = { team_id: current.team.id, player: data };
+    if (data.id) payload.expected_updated_at = expectedUpdatedAt;
+    return runRosterMutation('admin_save_player', payload, data.full_name || 'Nuevo jugador');
+  }
+  async function removeRosterPlayer(player) {
+    if (!current || busyReview || busyView) throw new Error('Espera a que termine la operación actual antes de retirar la fila.');
+    return runRosterMutation('admin_delete_player', { team_id: current.team.id, player_id: player.id, expected_updated_at: player.updated_at }, player.full_name || 'Jugador');
+  }
+  function requestException(context) {
+    if (pendingException) return Promise.reject(new Error('Termina o cancela la autorización abierta antes de registrar otro cambio.'));
+    const clubs = teams.map(team => ({ id: team.id, name: team.name }));
+    if (clubs.length !== 4 || new Set(clubs.map(team => team.id)).size !== 4 || !clubs.some(team => team.id === context.payload.team_id)) return Promise.reject(new Error('Actualiza la lista de los cuatro clubes antes de registrar una excepción. La fila conserva los datos pendientes.'));
+    return new Promise((resolve, reject) => {
+      pendingException = { ...context, clubs, resolve, reject };
+      $('exceptionForm').reset(); $('exceptionFields').disabled = false; $('cancelException').disabled = false; $('saveException').disabled = false;
+      const actionLabel = context.action === 'admin_delete_player' ? 'Retirar de la nómina' : context.payload.player?.id ? 'Modificar datos del jugador' : 'Agregar a la nómina';
+      $('exceptionSummary').textContent = context.teamName + ' · ' + actionLabel + ': ' + context.playerName + '. Esta autorización se registra exclusivamente para esta operación.';
+      $('saveException').textContent = context.action === 'admin_delete_player' ? 'Registrar autorización y retirar' : 'Registrar autorización y guardar';
+      $('clubApprovals').innerHTML = clubs.map((club, index) => '<fieldset class="approval-club"><legend>' + esc(club.name) + '</legend><label class="field" for="representative' + index + '">Nombre del representante que autorizó<input id="representative' + index + '" minlength="3" maxlength="160" autocomplete="off" required></label><label class="check-field"><input id="representativeAgreed' + index + '" type="checkbox" required><span>Confirmo que este representante autorizó el cambio específico por ' + esc(club.name) + '.</span></label></fieldset>').join('');
+      $('exceptionFeedback').textContent = '';
+      $('exceptionDialog').showModal(); $('exceptionReason').focus();
+    });
+  }
+  async function saveException(event) {
+    event.preventDefault();
+    if (!pendingException || busyException || !$('exceptionForm').reportValidity()) return;
+    const pending = pendingException;
+    const exception = {
+      reason: $('exceptionReason').value.trim(), organization_authorizer: $('organizationAuthorizer').value.trim(), organization_agreed: $('organizationAgreed').checked,
+      approval_reference: $('approvalReference').value.trim(), club_approvals: pending.clubs.map((club, index) => ({ team_id: club.id, representative_name: $('representative' + index).value.trim(), approved: $('representativeAgreed' + index).checked }))
+    };
+    if (exception.reason.length < 10 || exception.reason.length > 1200 || exception.organization_authorizer.length < 3 || exception.organization_authorizer.length > 160 || exception.approval_reference.length < 5 || exception.approval_reference.length > 1000 || !exception.organization_agreed || exception.club_approvals.some(approval => approval.representative_name.length < 3 || approval.representative_name.length > 160 || !approval.approved)) {
+      $('exceptionFeedback').textContent = 'Completa el motivo, la referencia y los nombres reales de organización y de los cuatro representantes, y confirma cada autorización.'; return;
+    }
+    busyException = true; $('exceptionFields').disabled = true; $('cancelException').disabled = true; $('saveException').disabled = true; $('exceptionFeedback').textContent = 'Registrando la autorización y el cambio…';
+    let conflict = false;
+    try {
+      const snapshot = await api(pending.action, { ...pending.payload, exception });
+      pendingException = null; $('exceptionDialog').close(); pending.resolve(snapshot);
+    } catch (error) {
+      conflict = error.status === 409;
+      $('exceptionFeedback').textContent = conflict ? 'La ficha cambió en otra sesión. Esta operación no se aplicó. Cancela, actualiza la nómina y revisa la versión vigente antes de registrar una nueva autorización.' : error.message || 'No se pudo registrar el cambio. Comprueba el expediente antes de repetir una operación incierta.';
+      if (error.status === 401 || error.status === 403) handleError(error);
+    } finally { busyException = false; $('exceptionFields').disabled = false; $('cancelException').disabled = false; $('saveException').disabled = conflict; }
+  }
+  function openPlayerData(player, context) {
+    if (busyRoster || busyReview || busyView) return;
+    moreContext = context;
+    const form = $('playerDataForm'); form.reset();
+    for (const key of ['emergency_contact', 'emergency_phone', 'notes']) form.elements.namedItem(key).value = player[key] || '';
+    form.elements.namedItem('signature_declared').checked = player.signature_declared === true;
+    $('playerDataTitle').textContent = player.full_name || 'Datos de la fila ' + context.rowNumber;
+    $('playerDataSubtitle').textContent = (current?.team.name || '') + ' · Datos adicionales de inscripción';
+    $('playerDataFields').disabled = context.readOnly === true; $('applyPlayerData').hidden = context.readOnly === true;
+    $('playerDataReview').textContent = player.review_note ? 'Última observación de organización: ' + player.review_note : 'La revisión de antecedentes se registra por separado desde «Revisar».';
+    $('playerDataDialog').showModal();
+  }
+  function applyPlayerData(event) {
+    event.preventDefault();
+    if (!moreContext || moreContext.readOnly || !$('playerDataForm').reportValidity()) return;
+    const form = $('playerDataForm');
+    moreContext.update({ emergency_contact: form.elements.namedItem('emergency_contact').value.trim(), emergency_phone: form.elements.namedItem('emergency_phone').value.trim(), notes: form.elements.namedItem('notes').value.trim(), signature_declared: form.elements.namedItem('signature_declared').checked });
+    $('playerDataDialog').close();
+  }
+  function showPlayerDocuments(player) {
+    $('documents').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const ids = new Set((current?.documents || []).filter(document => !document.player_id || document.player_id === player.id).map(document => document.id));
+    const first = Array.from($('documents').querySelectorAll('button[data-document]')).find(button => ids.has(button.dataset.document));
+    if (first) first.focus({ preventScroll: true });
+    else message('El jugador aún no tiene documentos propios ni un respaldo del club disponible. Los antecedentes pendientes siguen indicados en el expediente.', 'warning');
+  }
+
+  function ask({ title, description, button = 'Confirmar', action }) {
     confirmAction = action;
     $('confirmTitle').textContent = title; $('confirmDescription').textContent = description;
     $('acceptConfirm').textContent = button; $('acceptConfirm').disabled = false; $('cancelConfirm').disabled = false;
-    $('reasonField').hidden = !reason; $('exceptionReason').value = ''; $('confirmFeedback').textContent = '';
+    $('confirmFeedback').textContent = '';
     $('confirmDialog').showModal();
-    if (reason) $('exceptionReason').focus();
   }
   function invite(team) {
     const replacing = !!team.invitation;
@@ -218,23 +349,22 @@
     } });
   }
   function lock() {
-    if (!current) return;
+    if (!current || busyRoster || busyReview || busyView) return;
     const id = current.team.id;
-    ask({ title: 'Cerrar nómina de ' + current.team.name, description: 'El delegado podrá consultar sus antecedentes, pero ya no podrá modificar jugadores ni documentos. Las correcciones posteriores requieren una excepción de la organización.', button: 'Cerrar edición', action: async () => {
+    ask({ title: 'Cerrar nómina de ' + current.team.name, description: 'El delegado conservará la consulta de sus antecedentes y dejará de poder modificarlos. Este cierre no se reabre para el delegado. Cada cambio posterior de jugador deberá registrarse desde Control Center con una condición especial y las autorizaciones de organización y los cuatro clubes.', button: 'Cerrar edición del delegado', action: async () => {
       const snapshot = await api('admin_lock', { team_id: id });
       $('confirmDialog').close(); if (current?.team.id === id) acceptSnapshot(snapshot); else snapshots.set(id, snapshot);
       message('Edición de la nómina cerrada para el club.', 'success');
     } });
   }
-  function unlock() {
-    if (!current) return;
-    const id = current.team.id;
-    ask({ title: 'Autorizar correcciones de ' + current.team.name, description: 'El delegado podrá corregir la nómina durante 2 horas. Usa esta opción cuando el Comité haya autorizado la excepción; su motivo quedará registrado.', reason: true, button: 'Autorizar por 2 horas', action: async () => {
-      const reason = $('exceptionReason').value.trim();
-      if (reason.length < 10 || reason.length > 1200) throw new Error('Indica el motivo y la autorización de esta excepción usando entre 10 y 1.200 caracteres.');
-      const snapshot = await api('admin_unlock', { team_id: id, reason });
-      $('confirmDialog').close(); if (current?.team.id === id) acceptSnapshot(snapshot); else snapshots.set(id, snapshot);
-      message('Correcciones autorizadas por 2 horas. El motivo quedó registrado.', 'success');
+  function lockAll() {
+    if (busyRoster || busyReview || busyView || teams.length !== 4) return;
+    ask({ title: 'Cerrar todas las nóminas', description: 'Se cerrará la edición de los delegados de los cuatro clubes. El cierre es definitivo para ellos: conservarán la consulta y no se podrá reabrir su edición. Cada cambio posterior de jugador se registrará únicamente desde Control Center, con condición especial y autorizaciones de organización y de los cuatro clubes.', button: 'Cerrar las cuatro nóminas', action: async () => {
+      await api('admin_lock_all');
+      $('confirmDialog').close(); await loadTeams({ quiet: true });
+      const snapshot = current && snapshots.get(current.team.id);
+      if (snapshot) acceptSnapshot(snapshot);
+      message('Se cerró la edición de las cuatro delegaciones. Cada cambio posterior de jugador exige su autorización específica desde Control Center.', 'success');
     } });
   }
   async function copyInvite() {
@@ -259,13 +389,14 @@
     } catch (error) { if (tab) tab.close(); handleError(error); }
     finally { button.disabled = false; }
   }
-  function editPlayer(id) {
-    if (!current) return;
+  function reviewPlayer(id) {
+    if (!current || busyRoster || busyReview || busyView) return;
+    if (rosterGrid?.hasUnsavedChanges()) { message('Guarda o descarta los cambios de la tabla antes de revisar los antecedentes del jugador.', 'warning'); return; }
     const player = (current.players || []).find(p => p.id === id);
     if (!player) return;
     currentPlayer = { teamId: current.team.id, id, updatedAt: player.updated_at };
     $('playerTitle').textContent = player.full_name;
-    $('playerSubtitle').textContent = current.team.name + ' · ' + (player.document_type || '') + ' ' + (player.document_number || '');
+    $('playerSubtitle').textContent = current.team.name + ' · Datos guardados · ' + (player.document_type || '') + ' ' + (player.document_number || '');
     $('playerDetails').innerHTML = '<dl class="kv">' + pairs([
       ['Contacto de emergencia', player.emergency_contact || 'Pendiente'], ['Teléfono emergencia', player.emergency_phone || 'Pendiente'],
       ['Cobertura declarada', coverageNames[player.coverage_type] || 'Pendiente'], ['Prestador', player.insurance_provider || 'Sin especificar'],
@@ -276,26 +407,27 @@
     $('savePlayerReview').disabled = false; $('playerDialog').showModal();
   }
   async function savePlayerReview(event) {
-    event.preventDefault(); if (!currentPlayer) return;
+    event.preventDefault(); if (!currentPlayer || busyReview || busyRoster) return;
     const { teamId, id, updatedAt } = currentPlayer;
     const reviewStatus = $('playerReviewStatus').value, note = $('playerReviewNote').value.trim();
     if (note.length > 1500 || (reviewStatus === 'observed' && note.length < 5)) { $('playerFeedback').textContent = 'Describe qué antecedente debe corregirse usando entre 5 y 1.500 caracteres para una observación.'; $('playerReviewNote').focus(); return; }
-    $('savePlayerReview').disabled = true;
+    busyReview = true; rosterGrid?.setData({ disabled: true }); syncAdminControls(); $('savePlayerReview').disabled = true;
     try {
       const snapshot = await api('admin_review_player', { team_id: teamId, player_id: id, review_status: reviewStatus, review_note: note, expected_updated_at: updatedAt });
       $('playerDialog').close();
       if (current?.team.id === teamId) acceptSnapshot(snapshot); else snapshots.set(teamId, snapshot);
       message('Revisión del jugador guardada.', 'success');
     } catch (error) { $('playerFeedback').textContent = error.status === 409 ? 'Los antecedentes cambiaron. Esta revisión no se guardó. Cierra esta ventana, actualiza el expediente y revisa la versión vigente.' : error.message || 'No se pudo guardar la revisión.'; }
-    finally { $('savePlayerReview').disabled = false; }
+    finally { busyReview = false; $('savePlayerReview').disabled = false; rosterGrid?.setData({ disabled: busyView }); syncAdminControls(); }
   }
   async function reviewSubmission(status) {
-    if (!current || busyReview) return;
+    if (!current || busyReview || busyRoster || busyView) return;
+    if (rosterGrid?.hasUnsavedChanges()) { message('Guarda o descarta las filas pendientes antes de revisar el expediente. La revisión debe corresponder a los datos guardados.', 'warning'); return; }
     const teamId = current.team.id, note = $('reviewNote').value.trim(), updatedAt = current.submission?.updated_at;
     if (note.length > 2500 || (note.length < 5 && (status === 'observed' || checks(current).warnings.length > 0))) {
       message('Escribe la observación o el criterio con que resolviste las alertas usando entre 5 y 2.500 caracteres antes de guardar.', 'warning'); $('reviewNote').focus(); return;
     }
-    busyReview = true; $('observeSubmission').disabled = true; $('approveSubmission').disabled = true;
+    busyReview = true; rosterGrid?.setData({ disabled: true }); syncAdminControls();
     try {
       const snapshot = await api('admin_review', { team_id: teamId, status, review_note: note, expected_updated_at: updatedAt });
       if (current?.team.id === teamId) acceptSnapshot(snapshot); else snapshots.set(teamId, snapshot);
@@ -305,31 +437,49 @@
   }
   function exportRoster() {
     if (!current) return;
+    if (rosterGrid?.hasUnsavedChanges()) { message('Guarda o descarta las filas pendientes antes de exportar la nómina.', 'warning'); return; }
     const rows = [['Club', 'Nombre completo', 'Documento', 'Número documento', 'Fecha nacimiento', 'Edad al evento', 'Cumple en 2026', 'Nacionalidad', 'Camiseta', 'Contacto emergencia', 'Teléfono emergencia', 'Chile Rugby declarado', 'Cobertura declarada', 'Prestador', 'Vigencia declarada', 'Firma declarada', 'Revisión organización', 'Observación revisión', 'Observación club'],
       ...(current.players || []).map(p => [current.team.name, p.full_name, p.document_type, p.document_number, p.birth_date, P.ageOnEvent(p.birth_date), yearAge(p.birth_date), p.nationality, p.jersey_number, p.emergency_contact, p.emergency_phone, federationNames[p.federation_status] || 'Pendiente', coverageNames[p.coverage_type] || 'Pendiente', p.insurance_provider, p.insurance_valid_until, p.signature_declared ? 'Sí' : 'Pendiente', label(p.review_status || 'pending'), p.review_note, p.notes])];
     const safeName = String(current.team.name).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 70);
     P.downloadCSV('Copa_FUFY_2026_Nomina_' + safeName + '.csv', rows);
   }
 
+  rosterGrid = Grid.create($('rosterGrid'), {
+    onSave: saveRosterPlayer,
+    onDelete: removeRosterPlayer,
+    onMore: openPlayerData,
+    onReview: player => reviewPlayer(player.id),
+    onDocuments: showPlayerDocuments,
+    onSnapshot: snapshot => acceptSnapshot(snapshot),
+    onDirtyChange: count => { $('rosterDirty').textContent = count ? count + (count === 1 ? ' fila tiene cambios sin guardar.' : ' filas tienen cambios sin guardar.') : 'Sin filas pendientes de guardar.'; },
+    onBusyChange: busy => { busyRoster = busy; syncAdminControls(); },
+    onError: (text, error) => mutationError(error || new Error(text))
+  });
+
   $('teamsBody').addEventListener('click', event => {
     const button = event.target.closest('button[data-action]'); if (!button) return;
+    if (button.disabled || busyRoster || busyReview || busyView) return;
     const team = teams.find(t => t.id === button.dataset.team); if (!team) return;
     if (button.dataset.action === 'open') openTeam(team.id);
     if (button.dataset.action === 'invite') invite(team);
     if (button.dataset.action === 'revoke') revoke(team);
   });
-  $('playersBody').addEventListener('click', event => { const button = event.target.closest('button[data-player]'); if (button) editPlayer(button.dataset.player); });
+  $('addPlayer').addEventListener('click', () => { if (!busyRoster && !busyReview && !busyView) rosterGrid.focusEmptyRow(); });
   $('documents').addEventListener('click', event => { const button = event.target.closest('button[data-document]'); if (button) openDocument(button.dataset.document, button); });
   $('refresh').addEventListener('click', () => loadTeams());
   $('refreshDossier').addEventListener('click', () => { if (current) openTeam(current.team.id, { focus: false }); });
-  $('closeDossier').addEventListener('click', () => { viewSerial++; current = null; $('dossier').hidden = true; $('overview').scrollIntoView({ behavior: 'smooth' }); });
+  $('closeDossier').addEventListener('click', () => {
+    if (busyRoster || busyReview || busyView) return;
+    if (rosterGrid.hasUnsavedChanges() && !window.confirm('Hay filas con cambios sin guardar. ¿Descartarlos y cerrar este expediente?')) return;
+    viewSerial++; current = null; rosterGrid.reset(); $('dossier').hidden = true; $('overview').scrollIntoView({ behavior: 'smooth' }); syncAdminControls();
+  });
   $('exportRoster').addEventListener('click', exportRoster);
-  $('printDossier').addEventListener('click', () => window.print());
-  $('lockRoster').addEventListener('click', lock); $('unlockRoster').addEventListener('click', unlock);
+  $('printDossier').addEventListener('click', () => { if (rosterGrid.hasUnsavedChanges()) message('Guarda o descarta las filas pendientes antes de imprimir la nómina.', 'warning'); else window.print(); });
+  $('lockRoster').addEventListener('click', lock); $('lockAllRosters').addEventListener('click', lockAll);
   $('observeSubmission').addEventListener('click', () => reviewSubmission('observed'));
   $('approveSubmission').addEventListener('click', () => reviewSubmission('approved'));
   $('cancelConfirm').addEventListener('click', () => $('confirmDialog').close());
-  $('confirmDialog').addEventListener('close', () => { confirmAction = null; $('exceptionReason').value = ''; });
+  $('confirmDialog').addEventListener('close', () => { confirmAction = null; });
   $('confirmDialog').addEventListener('cancel', event => { if ($('acceptConfirm').disabled) event.preventDefault(); });
   $('acceptConfirm').addEventListener('click', async () => {
     if (!confirmAction || $('acceptConfirm').disabled) return;
@@ -343,7 +493,20 @@
   $('cancelPlayer').addEventListener('click', () => $('playerDialog').close());
   $('playerDialog').addEventListener('close', () => { currentPlayer = null; $('playerReviewNote').value = ''; });
   $('playerReviewForm').addEventListener('submit', savePlayerReview);
+  $('cancelPlayerData').addEventListener('click', () => $('playerDataDialog').close());
+  $('playerDataDialog').addEventListener('close', () => { moreContext = null; $('playerDataForm').reset(); });
+  $('playerDataForm').addEventListener('submit', applyPlayerData);
+  $('exceptionForm').addEventListener('submit', saveException);
+  $('cancelException').addEventListener('click', () => { if (!busyException) $('exceptionDialog').close(); });
+  $('exceptionDialog').addEventListener('cancel', event => { if (busyException) event.preventDefault(); });
+  $('exceptionDialog').addEventListener('close', () => {
+    const pending = pendingException; pendingException = null; $('exceptionForm').reset(); $('clubApprovals').textContent = ''; $('exceptionFeedback').textContent = '';
+    if (pending) pending.reject(cancelledOperation());
+  });
+  window.addEventListener('beforeunload', event => { if (rosterGrid.hasUnsavedChanges() || busyRoster) { event.preventDefault(); event.returnValue = ''; } });
   $('logout').addEventListener('click', async () => {
+    if (busyRoster || busyReview || busyView) return;
+    if (rosterGrid.hasUnsavedChanges() && !window.confirm('Hay filas con cambios sin guardar. ¿Descartarlos y cerrar sesión?')) return;
     $('logout').disabled = true;
     try { await client.auth.signOut({ scope: 'local' }); }
     finally { current = null; snapshots.clear(); location.replace('login.html?next=fufy-clubes.html'); }
