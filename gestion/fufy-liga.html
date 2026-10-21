@@ -35,25 +35,25 @@ ul{line-height:1.6}.smallnote{font-size:.84rem;color:#667085;line-height:1.5}
 </style></head>
 <body><header><div class="wrap">
 <img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/Logo_Oficial_Copa_FUFY_2026.png" alt="Logo Copa FUFY">
-<div><h1>🏆 Liga Copa FUFY 2026</h1><p>Control Center · Todos contra todos · Rugby XV Classic +40</p></div>
+<div><h1>🏆 Liga Copa FUFY 2026</h1><p>Control Center · Todos contra todos · Rugby XV Classic +35</p></div>
 <div class="links"><a class="btn secondary" href="fufy.html?area=E&amp;view=area">← Competencia</a><a class="btn secondary" href="../fufy-mesa.html">Mesa de control</a><a class="btn secondary" href="../fufy.html">🌐 Sitio público</a></div>
 </div></header>
 <main><div class="wrap">
 <div id="notice" class="notice">Verificando permisos y cargando los seis encuentros...</div>
 <div class="metrics"><div class="metric"><span>Equipos</span><strong id="metricTeams">—</strong></div><div class="metric"><span>Partidos programados</span><strong id="metricMatches">—</strong></div><div class="metric"><span>Actas cerradas</span><strong id="metricPlayed">—</strong></div><div class="metric"><span>Rondas</span><strong>3</strong></div></div>
 <div class="panel">
-<div class="head"><div><h2>📍 Dirección deportiva</h2><p>Seis partidos de 20 minutos. Cada club disputa tres encuentros y el campeón se define por la tabla, sin finales.</p></div>
+<div class="head"><div><h2>📍 Dirección deportiva</h2><p>Seis partidos Classic de dos tiempos de 10 minutos y entretiempo de 10 minutos (bloques de 35 minutos). Cada club disputa tres encuentros; no hay finales.</p></div>
 <div class="actions"><button class="btn secondary" id="reload">↻ Actualizar</button><button class="btn secondary" id="print">🖨️ Imprimir</button><button class="btn secondary" id="csv">⬇️ Exportar CSV</button></div></div>
-<div class="notice no-print" style="margin:12px 0 0"><strong>Programación tentativa:</strong> equipos y horarios previstos para planificación. El sorteo de cruces, la reunión técnica y la Adenda V1.3 deben ratificarse antes de considerarlos oficiales. No modificar marcadores sin acta firmada por árbitro y mesa.</div>
+<div class="notice no-print" style="margin:12px 0 0"><strong>Programación tentativa:</strong> equipos y horarios previstos para planificación. Las bases +35 son definitivas y están publicadas. El fixture registrado debe seguir el proceso de validación deportiva y acreditación antes del evento. No modificar marcadores sin acta firmada por árbitro y mesa.</div>
 </div>
 <section class="panel" id="teams"><h2>🏉 Cuatro clubes participantes</h2><div id="teamCards" class="fixture"></div><div class="smallnote" style="margin-top:12px">Retirados: Arica Classic y Koalas. Sus antecedentes siguen disponibles en <a href="fufy.html?view=teams">Equipos e historial</a>. Bucaneros había informado 13 jugadores; comprobar habilitación de 15 para Rugby XV antes del inicio.</div></section>
 <section class="panel" id="fixture"><div class="head"><div><h2>🕘 Fixture y actas</h2><p>Abre un partido para ajustar el fixture y sus observaciones. Cuando el acta digital está activa, los puntos, tries, tarjetas y estados se registran en la <a href="../fufy-mesa.html">mesa de control</a>; aquí se mantienen el horario y las observaciones.</p></div></div><div id="fixtureGrid" class="fixture"></div><div id="fixtureAudit" class="smallnote" style="margin-top:14px"></div></section>
 <section class="panel" id="tabla"><h2>🏅 Tabla de posiciones</h2><p>Victoria 4 puntos · empate 2 · derrota 0 · sin bonus. Se actualiza al marcar un encuentro como finalizado.</p><div class="tablewrap"><table><thead><tr><th>#</th><th>Club</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>PF</th><th>PC</th><th>Dif</th><th>Tries</th><th>PTS</th></tr></thead><tbody id="tableBody"></tbody></table></div><div id="tableNote" class="smallnote"></div></section>
 <section class="panel"><h2>📋 Documentos y pasos de cierre</h2><div class="tools">
-<a class="btn secondary" target="_blank" rel="noopener" href="https://docs.google.com/document/d/19UWqBIAwGuURvt4flXwkL3zQSXeT1GfKn6vugr0j93U/edit">📘 Revisar Adenda V1.3</a>
+<a class="btn secondary" target="_blank" rel="noopener" href="../bases-fufy.html">📘 Leer bases definitivas</a>
 <a class="btn secondary" target="_blank" rel="noopener" href="https://docs.google.com/document/d/1lQUh8rutbnjrItuPH2qWmvP7nCZllPFtpPO2ZiPFZX8/edit">📅 Plan deportivo y horario</a>
 <a class="btn secondary" href="fufy.html?area=E&amp;view=tasks">✅ Resolver tareas del área</a>
-</div><p>Prioridades: confirmar nóminas y cobertura de salud, asegurar ambulancia y recinto, aprobar sorteo/fixture, validar desempates y preparar actas, mesa de control y premiación. La versión V1.2 permanece como antecedente histórico; no sustituirla públicamente por un borrador sin ratificación.</p></section>
+</div><p>Prioridades: confirmar nóminas y cobertura de salud, asegurar ambulancia y recinto, aprobar sorteo/fixture, documentar para el Comité los empates de tabla que incidan en la premiación y preparar actas y mesa de control. La premiación tendrá lugar durante el tercer tiempo en Bar República.</p></section>
 </div></main>
 <div class="modal" id="editor" role="dialog" aria-modal="true" aria-label="Editar partido"><div class="dialog">
 <h2 id="editorTitle">Acta de partido</h2><p class="smallnote" id="editorInfo"></p>
@@ -88,7 +88,7 @@ function msg(text,bad){const el=$('notice');el.textContent=text;el.className='no
 function localClock(x){return clock.format(new Date(x.starts_at))}
 function standings(){return league.standings(teams,matches)}
 function checkRest(candidate){const ordered=[...candidate].sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));const last={};
- for(const m of ordered){const t=new Date(m.starts_at).getTime();for(const id of [m.home_team_id,m.away_team_id]){if(last[id]!==undefined&&t-last[id]<60*60*1000)return 'El descanso entre partidos de un mismo equipo debe ser de al menos 40 minutos después de los 20 minutos de juego.';last[id]=t;}}return null}
+ for(const m of ordered){const t=new Date(m.starts_at).getTime();for(const id of [m.home_team_id,m.away_team_id]){if(last[id]!==undefined&&t-last[id]<75*60*1000)return 'Debe haber al menos 40 minutos de descanso tras el bloque completo de 35 minutos: mínimo 75 minutos entre inicios de partidos del mismo club.';last[id]=t;}}return null}
 async function load(){
  const [tr,mr]=await Promise.all([sb.from('project_teams').select('id,name,status,participant_count,active').eq('project_id',projectId).order('sort_order'),sb.from('fufy_matches').select('*').eq('project_id',projectId).order('match_no')]);
  if(tr.error||mr.error){msg('Error al consultar Control Center: '+(tr.error?.message||mr.error?.message),true);return}
@@ -102,7 +102,7 @@ function render(){
  $('fixtureGrid').innerHTML=matches.map(m=>'<div class="game"><div><div class="meta">RONDA '+m.round_no+' · PARTIDO '+m.match_no+' · '+league.time(m)+'</div><strong>'+htmlName(m.home_team_id)+' <span class="muted">vs</span> '+htmlName(m.away_team_id)+'</strong><small>'+ (league.isFinal(m)?m.home_score+' – '+m.away_score:'Resultado pendiente')+' · '+label(m.status)+'</small></div><div class="actions"><span class="status '+esc(m.status)+'">'+label(m.status)+'</span>'+(editEnabled?'<button type="button" class="btn" data-edit="'+esc(m.id)+'">✎ Acta</button>':'')+'</div></div>').join('');
  $('fixtureAudit').textContent=league.fixtureAudit(teams,matches).concat(checkRest(matches)?[checkRest(matches)]:[]).join(' | ')||'✓ Los seis cruces cubren a los cuatro equipos una sola vez. Descansos mínimos respetados en el fixture registrado.';
  $('tableBody').innerHTML=st.rows.map(r=>'<tr><td>'+r.pos+'</td><td>'+esc(r.name)+'</td><td>'+r.pj+'</td><td>'+r.pg+'</td><td>'+r.pe+'</td><td>'+r.pp+'</td><td>'+r.pf+'</td><td>'+r.pc+'</td><td>'+r.dif+'</td><td>'+r.tries+'</td><td><strong>'+r.pts+'</strong></td></tr>').join('');
- $('tableNote').textContent=(st.played===st.total&&st.total===6?'Seis actas cerradas. Clasificación por verificar con mesa técnica.':'Tabla provisoria: '+st.played+' de 6 encuentros finalizados.')+(st.needsTryReview?' ATENCIÓN: faltan tries en actas finalizadas, necesarios para los desempates.':'')+' Ante empates no resueltos por criterios deportivos, decide el Comité Organizador.';
+ $('tableNote').textContent=(st.played===st.total&&st.total===6?'Seis actas cerradas. Clasificación por verificar con mesa técnica.':'Tabla provisoria: '+st.played+' de 6 encuentros finalizados.')+(st.unresolvedTies?' EMPATE FINAL: el Comité Organizador debe resolver y documentar la posición antes de premiar.':'')+' No se aplican desempates automáticos por diferencia, tries o disciplina.';
  document.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>openEditor(b.dataset.edit)));
 }
 function openEditor(id){
