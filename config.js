@@ -57,3 +57,7 @@ const a=document.createElement('a');a.href=new URL('gestion/fufy-presupuesto.htm
 if(p===fufy){a.style.cssText='background:#e8692b;color:#fff;';const admin=document.querySelector('.admin-area-grid');const area=document.querySelector('[data-admin-area="F"]');if(area){const b=a.cloneNode(true);b.href=a.href;b.style.cssText='display:block;padding:12px;border-radius:10px;background:#e8692b;color:white;font-weight:bold;text-decoration:none;grid-column:1/-1';b.textContent='💰 Abrir presupuesto maestro editable · 31 partidas';admin?.appendChild(b);}const head=document.querySelector('header .actions');head?.prepend(a);}
 else{a.className='btn primary';const actions=document.querySelector('.top .actions');actions?.prepend(a);const menu=document.querySelector('.more-panel');if(menu){const b=a.cloneNode(true);b.className='';b.style='';menu.prepend(b);}}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add,{once:true});else add();})();
+
+// Shared password eye: applies to all login, club, desk and future password inputs.
+// Loaded from central configuration so every app page inherits the same behavior.
+(()=>{const own=document.currentScript;if(!own?.src)return;if(document.querySelector('script[data-gigantes-password-eye]'))return;const s=document.createElement('script');s.src=new URL('password-visibility.js?v=20261022-1',own.src).href;s.dataset.gigantesPasswordEye='1';document.head.appendChild(s);})();
