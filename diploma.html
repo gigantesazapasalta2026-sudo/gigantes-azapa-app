@@ -18,7 +18,19 @@ body{margin:0;background:#eef1f4;font-family:Inter,Arial,sans-serif;color:#11182
 .primary{background:var(--o);color:#fff}.dark{background:#111827;color:#fff}
 .notice{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;color:var(--m)}
 .certificate{position:relative;aspect-ratio:1.414/1;background:#fff;border:14px solid #111827;overflow:hidden;box-shadow:0 24px 70px #0002;display:flex;align-items:center;justify-content:center;text-align:center;padding:5.5% 7%}
-.certificate:before{content:"";position:absolute;inset:13px;border:4px solid var(--o);pointer-events:none}
+.certificate{isolation:isolate;background:#fff}
+.certificate:before{content:"";position:absolute;inset:13px;border:4px solid var(--o);pointer-events:none;z-index:4}
+.certificate:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.4),rgba(255,255,255,.72) 46%,rgba(255,255,255,.4));pointer-events:none;z-index:1}
+.watermark-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 54%;opacity:.19;filter:saturate(.5);pointer-events:none;z-index:0}
+.certificate>.content{position:relative;z-index:2;width:100%}
+.certificate>.foot{z-index:2}
+.certificate .logo{border-radius:0;object-fit:contain;box-shadow:none;background:transparent}
+.signature{width:155px;height:108px;object-fit:contain;display:block;margin:0 auto -5px}
+.sign{min-width:235px}
+.sign b{color:#1f2937}
+.sign .org{font-size:.83em}
+@media(max-width:700px){.certificate{min-height:640px}.watermark-photo{object-position:center center;opacity:.13}.signature{width:118px;height:87px}.certificate .sign{min-width:0}.certificate .foot{position:static;margin-top:20px;display:grid;grid-template-columns:1fr 1fr;align-items:end}.sign .org{font-size:.78em}}
+@media print{.watermark-photo{opacity:.19} .certificate:after{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
 .corner{position:absolute;width:180px;height:180px;border-radius:50%;background:var(--o);opacity:.09}.c1{left:-70px;top:-70px}.c2{right:-70px;bottom:-70px}
 .logo{width:116px;height:116px;border-radius:50%;object-fit:cover;box-shadow:0 8px 22px #0002;margin-bottom:8px}
 .kicker{color:#c2410c;font-weight:950;letter-spacing:2px;font-size:clamp(.65rem,1.3vw,.9rem);text-transform:uppercase}
@@ -47,10 +59,10 @@ h1{font-size:clamp(2rem,5vw,4.7rem);line-height:.92;letter-spacing:-.04em;margin
   </div>
   <div id="status" class="notice loading">Preparando tu Diploma de Bienvenida…</div>
   <section id="certificate" class="certificate" hidden>
-    <span class="corner c1"></span><span class="corner c2"></span>
-    <div>
-      <img class="logo" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg" alt="Gigantes de Azapa">
-      <div class="kicker">Club Deportivo · Arica, Chile</div>
+    <img class="watermark-photo" src="assets/ninos-m12-m14.jpg" alt="" aria-hidden="true"><span class="corner c1"></span><span class="corner c2"></span>
+    <div class="content">
+      <img class="logo" src="assets/logo-oficial-gigantes.jpg" alt="Escudo oficial Gigantes de Azapa">
+      <div class="kicker">Club Deportivo Social y Cultural · Arica, Chile</div>
       <h1>Diploma de Bienvenida</h1>
       <div class="subtitle">Ahora formas parte de la Familia Gigantes</div>
       <div class="given">Otorgado a</div>
@@ -58,10 +70,10 @@ h1{font-size:clamp(2rem,5vw,4.7rem);line-height:.92;letter-spacing:-.04em;margin
       <div id="category" class="category"></div>
       <p class="message">En reconocimiento a tu incorporación a Gigantes de Azapa. Desde hoy compartes una camiseta, una comunidad y los valores que nos unen dentro y fuera de la cancha.</p>
       <div class="motto">Somos Rugby · Somos Equipo · Somos Familia · Somos Gigantes de Azapa</div>
-      <div class="foot">
-        <div><b>Arica</b><br><span id="issued"></span></div>
-        <div class="sign"><div class="line"></div><b>Directiva</b><br>Gigantes de Azapa Rugby Club</div>
-      </div>
+    </div>
+    <div class="foot">
+      <div><b>Arica</b><br><span id="issued"></span></div>
+      <div class="sign"><img class="signature" src="assets/firma-patricia-acuna.png" alt="Firma original de Patricia Paz Acuña Arcaino"><div class="line"></div><b>Patricia Paz Acuña Arcaino</b><br>Presidenta<br><span class="org">Club Deportivo Social y Cultural Gigantes de Azapa</span></div>
     </div>
   </section>
 </div>
