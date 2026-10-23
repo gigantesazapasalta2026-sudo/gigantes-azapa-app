@@ -307,7 +307,7 @@
     const title = actionLabels[command] || 'Confirmar operación';
     const intro = 'Partido ' + match.match_no + ' · ' + teamName(match.home_team_id) + ' vs ' + teamName(match.away_team_id) + '.\n';
     let description, minReason = 0;
-    if (command === 'start') description = intro + 'Iniciar activa el acta digital y cierra las nóminas de todos los clubes desde el primer partido del campeonato. Los delegados no podrán modificarlas. Los cambios excepcionales se gestionan en Control Center. Classic +35: 2 tiempos de 10 minutos corridos y 10 minutos de entretiempo.';
+    if (command === 'start') description = intro + 'Iniciar activa el acta digital y cierra las nóminas de todos los clubes desde el primer partido del campeonato. Los delegados no podrán modificarlas. Los cambios excepcionales se gestionan en Control Center. Classic +35: 2 tiempos de 15 minutos corridos y 10 minutos de entretiempo.';
     else if (command === 'finish') description = intro + 'Confirma con árbitro y mesa el marcador ' + score(match.home_score) + ' – ' + score(match.away_score) + '. El acta finalizada se incorporará a la tabla de posiciones.';
     else if (command === 'suspend') { description = intro + 'Se detiene el estado de juego y se conserva el marcador. Registra el motivo de la suspensión.'; minReason = 5; }
     else if (command === 'resume') description = intro + 'Reanudar devuelve el acta al estado En juego. Confirma la reanudación con el árbitro.';
