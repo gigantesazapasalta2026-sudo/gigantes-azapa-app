@@ -42,7 +42,7 @@ ul{line-height:1.6}.smallnote{font-size:.84rem;color:#667085;line-height:1.5}
 <div id="notice" class="notice">Verificando permisos y cargando los seis encuentros...</div>
 <div class="metrics"><div class="metric"><span>Equipos</span><strong id="metricTeams">—</strong></div><div class="metric"><span>Partidos programados</span><strong id="metricMatches">—</strong></div><div class="metric"><span>Actas cerradas</span><strong id="metricPlayed">—</strong></div><div class="metric"><span>Rondas</span><strong>3</strong></div></div>
 <div class="panel">
-<div class="head"><div><h2>📍 Dirección deportiva</h2><p>Seis partidos Classic de dos tiempos de 10 minutos y entretiempo de 10 minutos (bloques de 35 minutos). Cada club disputa tres encuentros; no hay finales.</p></div>
+<div class="head"><div><h2>📍 Dirección deportiva</h2><p>Seis partidos Classic de dos tiempos de 15 minutos y entretiempo de 10 minutos (bloques de 45 minutos). Cada club disputa tres encuentros; no hay finales.</p></div>
 <div class="actions"><button class="btn secondary" id="reload">↻ Actualizar</button><button class="btn secondary" id="print">🖨️ Imprimir</button><button class="btn secondary" id="csv">⬇️ Exportar CSV</button></div></div>
 <div class="notice no-print" style="margin:12px 0 0"><strong>Programación tentativa:</strong> equipos y horarios previstos para planificación. Las bases +35 son definitivas y están publicadas. El fixture registrado debe seguir el proceso de validación deportiva y acreditación antes del evento. No modificar marcadores sin acta firmada por árbitro y mesa.</div>
 </div>
@@ -88,7 +88,7 @@ function msg(text,bad){const el=$('notice');el.textContent=text;el.className='no
 function localClock(x){return clock.format(new Date(x.starts_at))}
 function standings(){return league.standings(teams,matches)}
 function checkRest(candidate){const ordered=[...candidate].sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));const last={};
- for(const m of ordered){const t=new Date(m.starts_at).getTime();for(const id of [m.home_team_id,m.away_team_id]){if(last[id]!==undefined&&t-last[id]<75*60*1000)return 'Debe haber al menos 40 minutos de descanso tras el bloque completo de 35 minutos: mínimo 75 minutos entre inicios de partidos del mismo club.';last[id]=t;}}return null}
+ for(const m of ordered){const t=new Date(m.starts_at).getTime();for(const id of [m.home_team_id,m.away_team_id]){if(last[id]!==undefined&&t-last[id]<85*60*1000)return 'Debe haber al menos 40 minutos de descanso tras el bloque completo de 45 minutos: mínimo 85 minutos entre inicios de partidos del mismo club.';last[id]=t;}}return null}
 async function load(){
  const [tr,mr]=await Promise.all([sb.from('project_teams').select('id,name,status,participant_count,active').eq('project_id',projectId).order('sort_order'),sb.from('fufy_matches').select('*').eq('project_id',projectId).order('match_no')]);
  if(tr.error||mr.error){msg('Error al consultar Control Center: '+(tr.error?.message||mr.error?.message),true);return}
