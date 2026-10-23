@@ -14,7 +14,7 @@ const esc=x=>String(x||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const data=[
 ['🥟 Empanadas','$2.500'],['🌭 Chaparritas','$2.000'],['🥤 Bebidas','$1.500'],['🍩 Roscas','4 por $1.000'],['🍦 Helados','$1.000'],['🍣 Rolls sushi','$2.500']
 ];
-const schedule=[['10:00','Primer partido Classic'],['10:40','Segundo partido Classic'],['11:20','Festival infantil'],['12:22','Inauguración y homenajes'],['13:05','Rugby Classic · tarde'],['17:05','Premiación y tercer tiempo']];
+const schedule=[['09:30','Primer partido Classic (2 × 15)'],['10:20','Segundo partido Classic'],['11:20','Festival infantil'],['12:22','Inauguración y homenajes'],['13:05','Rugby Classic · tarde'],['17:40','Premiación y tercer tiempo en Bar República']];
 function markup(s,i){
 let body='';
 if(s.type==='image'||s.type==='photo'){
