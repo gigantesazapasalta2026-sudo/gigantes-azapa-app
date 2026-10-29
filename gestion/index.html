@@ -57,6 +57,67 @@ main{padding:18px 18px;max-width:1450px;margin:auto}.hero{background:linear-grad
  .req-actions button{width:100%;min-height:43px;font-size:11px}
  .req-add .btn{width:100%;min-height:42px}
 }
+
+/* Navegación por actividad: Gira Santiago adelante, Copa FUFY agrupada. */
+.actions{flex-wrap:wrap;row-gap:6px;overflow:visible}
+.tour-top-button{background:#d9560c;color:#fff;box-shadow:0 3px 10px #a8431428}
+.tour-top-button:hover{background:#b84409}
+.top-archive-menu{position:relative}
+.top-archive-menu>summary{list-style:none;cursor:pointer;display:inline-flex;gap:5px;align-items:center;border:1px solid #fed7aa;background:#fff7ed;color:#9a3412;border-radius:8px;padding:7px 9px;font-size:11px;font-weight:900;white-space:nowrap}
+.top-archive-menu>summary::-webkit-details-marker{display:none}
+.top-archive-menu[open]>summary{background:#ffedd5}
+.top-archive-state{font-weight:750;font-size:9px}
+.top-archive-panel{position:absolute;z-index:45;right:0;top:calc(100% + 8px);width:285px;max-height:min(70vh,630px);overflow-y:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 18px 40px #0002;padding:8px;display:grid;gap:3px}
+.archive-menu-intro{padding:10px;background:#fff7ed;border-radius:8px;margin-bottom:3px;color:#9a3412}
+.archive-menu-intro strong{display:block;font-size:12px}
+.archive-menu-intro small{display:block;font-size:10px;margin-top:4px}
+.top-archive-panel a{display:block;padding:9px 10px;border-radius:7px;text-decoration:none;color:#182233;font-size:11px;font-weight:800;line-height:1.35}
+.top-archive-panel a:hover{background:#f1f5f9}
+.tool-cluster{border-bottom:1px solid #eef0f2;padding:3px 0 6px}
+.tool-cluster:last-child{border-bottom:0}
+.tool-cluster>summary{list-style:none;cursor:pointer;padding:10px;background:#f7f8fa;border-radius:7px;color:#172235;font-size:11px;font-weight:900}
+.tool-cluster>summary::-webkit-details-marker{display:none}
+.tool-cluster[open]>summary{background:#e8eff9}
+.tool-cluster a{padding-left:17px}
+.nav-feature{background:#172638;border:1px solid #b85b354d;border-radius:12px;padding:7px;margin:7px 0 10px}
+.nav-feature>.nav-label{color:#ffc090;padding:5px 7px 7px}
+.nav-feature-main{display:flex;align-items:flex-start;gap:9px;padding:11px 8px;border-radius:8px;text-decoration:none;background:#d9560c;color:#fff;font-size:13px;font-weight:900;line-height:1.3}
+.nav-feature-main span{display:block}
+.nav-feature-main small{display:block;font-size:10px;font-weight:650;margin-top:3px;color:#fff2e6}
+.nav-feature-main:hover{background:#b84409}
+.nav-accordion{margin:5px 0 8px;color:#dae3ed}
+.nav-accordion>summary{display:flex;align-items:center;gap:7px;list-style:none;cursor:pointer;padding:9px 10px;border-radius:8px;font-size:12px;font-weight:850;color:#f1f5f9;background:#ffffff0d;line-height:1.3}
+.nav-accordion>summary::-webkit-details-marker{display:none}
+.nav-accordion>summary:hover,.nav-accordion[open]>summary{background:#263b50}
+.nav-accordion>summary span:first-of-type{flex:1;min-width:0}
+.nav-accordion>summary small{display:block;font-weight:650;font-size:9px;color:#9baabe;margin-top:3px}
+.nav-accordion .nav-submenu{padding:6px 0 2px 11px;display:grid;gap:2px}
+.nav-accordion .nav-submenu a{display:block;padding:8px 7px;border-left:2px solid #52677a;text-decoration:none;color:#cbd5e1;font-size:11px;font-weight:700;line-height:1.3;border-radius:0 6px 6px 0}
+.nav-accordion .nav-submenu a:hover,.nav-accordion .nav-submenu a:focus-visible{background:#283a4b;color:#fff;border-left-color:#f36b21}
+.nav-archive{border:1px solid #ffffff17;border-radius:10px;background:#ffffff05;margin:0 0 15px;padding:4px}
+.nav-archive>summary{background:transparent}
+.gira-priority-card{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px;border:1px solid #cbd5e1;border-left:5px solid #f36b21;border-radius:14px;background:#fff;margin-bottom:16px;box-shadow:0 5px 18px #10182809}
+.gira-priority-card h2{font-size:20px;line-height:1.2;margin:8px 0}
+.gira-priority-card p{font-size:12px;line-height:1.5;color:#475569;margin:0;max-width:750px}
+.gira-priority-label{font-size:10px;font-weight:900;letter-spacing:.04em;color:#c2410c}
+.gira-priority-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end;max-width:370px;flex-shrink:0}
+.gira-priority-actions .btn{white-space:normal}
+@media(max-width:1420px){.top{grid-template-columns:1fr}.actions{justify-content:flex-start;flex-wrap:wrap}.gira-priority-card{align-items:flex-start;flex-direction:column}.gira-priority-actions{max-width:none;justify-content:flex-start}}
+@media(max-width:760px){
+ .top{position:relative;z-index:70}
+ .actions{overflow:visible;flex-wrap:wrap;gap:6px;padding-bottom:0}
+ .actions .tour-top-button{order:-2}
+ .actions .top-archive-menu{order:-1}
+ .more-menu,.top-archive-menu{position:static}
+ .top-archive-panel,.more-panel{position:absolute;top:calc(100% + 4px);left:12px;right:12px;width:auto;max-height:60vh;overscroll-behavior:contain}
+ .nav-feature,.nav-archive{display:block;grid-column:1/-1}
+ .nav-accordion .nav-submenu{grid-template-columns:1fr 1fr;gap:5px;padding:8px 1px 2px}
+ .nav-accordion .nav-submenu a{background:#ffffff0a;border-left:2px solid #52677a;padding:9px 7px;min-height:40px}
+ .gira-priority-card{padding:15px}
+ .gira-priority-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:7px}
+ .gira-priority-actions .btn:first-child{grid-column:1/-1}
+}
+@media(max-width:390px){.nav-accordion .nav-submenu{grid-template-columns:1fr}}
 </style>
 <script>const CANONICAL_HOST='gigantesdeazapa.cl';if(location.hostname==='www.gigantesdeazapa.cl'){const u=new URL(location.href);u.hostname=CANONICAL_HOST;location.replace(u.href);}</script><link rel="stylesheet" href="ux.css?v=20261005"></head>
 <body>
@@ -68,34 +129,69 @@ main{padding:18px 18px;max-width:1450px;margin:auto}.hero{background:linear-grad
 <div class="main">
   <div class="top">
     <div><h1 id="title">Centro de Control</h1><p id="sub">Administración única del Club Gigantes de Azapa</p></div>
-    <div class="actions">
-      <a id="protectionAlertBtn" class="btn report-alert" href="login.html?switch=1&next=proteccion.html">🚨 Denuncia confidencial <span id="protectionAlertCount"></span></a><a class="btn dark" href="guia.html">❓ ¿Cómo usar?</a><button class="btn primary" onclick="newTask()">+ Nueva tarea</button>
+
+    <div class="actions" aria-label="Accesos principales">
+      <a class="btn tour-top-button" href="gira-santiago.html" title="Abrir gestión de la gira: programa, hotel y actividades">✈️ Gira Santiago 2026</a>
+      <details class="top-archive-menu">
+        <summary>🏆 Copa FUFY <span class="top-archive-state">Realizada ▾</span></summary>
+        <div class="top-archive-panel">
+          <div class="archive-menu-intro"><strong>Copa FUFY 2026</strong><small>Realizada el 24 de octubre · Consulta y cierre</small></div>
+          <a href="fufy.html?v=20261008g">🏉 Control general de la Copa</a>
+          <a href="fufy-presupuesto.html">💰 Presupuesto FUFY · Editar y revisar</a>
+          <a href="../fufy-mesa.html">📝 Mesa de control · Marcadores y turnos</a>
+          <a href="fufy-clubes.html">👥 Clubes invitados · Nóminas</a>
+          <a href="fufy-liga.html">🏆 Liga, fixture y resultados</a>
+          <a href="../fufy-documentos.html">📚 Bases y documentos</a>
+          <a href="../fufy.html">🖼️ Memoria pública de la Copa</a>
+        </div>
+      </details>
+      <a id="protectionAlertBtn" class="btn report-alert" href="login.html?switch=1&amp;next=proteccion.html">🚨 Denuncia confidencial <span id="protectionAlertCount"></span></a>
+      <a class="btn dark" href="guia.html">❓ Ayuda</a>
+      <button class="btn primary" type="button" onclick="newTask()">+ Nueva tarea</button>
       <a class="btn secondary" href="../index.html">🌐 Sitio público</a>
-      <details class="more-menu"><summary>Herramientas ▾</summary><div class="more-panel">
-        <a href="piloto.html">👤 Vista Mi Gigantes · usuario</a>
-        <a href="buscar.html">🔎 Buscador global</a>
-        <a href="actividad.html">🕘 Actividad reciente</a>
-        <a href="diagnostico.html">🩺 Diagnóstico del sistema</a>
-        <a href="biblioteca.html?v=20261003g">📚 Biblioteca del club</a>
-        <a href="drive.html?v=20261003g">🗂️ Carpeta Maestra</a>
-        <a href="beneficios.html">🎟️ Club de Beneficios</a>
-        <a href="fufy.html?v=20261008g">🏉 Control Copa FUFY</a>
-        <a href="gira-santiago.html">✈️ Gira Santiago 2026</a>
-        <a href="proyectos.html">🏆 Proyectos y giras</a>
-        <a href="calidad.html">✅ Calidad de datos</a>
-        <a href="album.html">📸 Álbum del equipo</a>
-        <a href="proteccion.html">🛡️ Protección / DS22</a><a href="disciplina.html">⚖️ Comisión de Disciplina</a><a href="asistente-casos.html">🧭 Asistente de Casos</a><a href="guia-responsables.html">📘 Guía práctica responsables</a><a href="cierre-ds22.html">✅ Cierre DS22 + Disciplina</a>
-        <a href="tesoreria-v2.html?v=20261003d">💰 Tesorería · espacio de la tesorera</a>
-        <a href="recaudacion.html">🌭 Recaudación</a>
-        <a href="vuelos.html">✈️ Vuelos Santiago</a>
-        <a href="delegacion_santiago.html">👥 Delegación Santiago</a>
-        <a href="eventos.html">📅 Eventos y asistencia</a>
-        <a href="notificaciones.html">🔔 Notificaciones</a>
-        <a href="comunicaciones.html">💬 Comunicaciones</a>
-        <a href="accesos.html">🔐 Accesos y roles</a>
-        <a href="inscripciones.html">👥 Registro Maestro e incorporaciones</a>
-        <a href="sponsors.html">🏢 Interesados auspicio</a>
-      </div></details>
+      <details class="more-menu"><summary>Herramientas ▾</summary>
+        <div class="more-panel">
+          <details class="tool-cluster" open>
+            <summary>✈️ Gira Santiago · prioridad</summary>
+            <a href="gira-santiago.html">📋 Control operativo de la gira</a>
+            <a href="delegacion_santiago.html">👥 Delegación y acompañantes</a>
+            <a href="vuelos.html">🛫 Vuelos y traslados</a>
+            <a href="../panoramas-santiago.html">🗳️ Panoramas y votaciones</a>
+            <a href="eventos.html">📅 Eventos y asistencia</a>
+          </details>
+          <details class="tool-cluster">
+            <summary>👥 Personas y comunidad</summary>
+            <a href="inscripciones.html">👥 Registro Maestro</a>
+            <a href="piloto.html">👤 Vista Mi Gigantes · usuario</a>
+            <a href="beneficios.html">🎟️ Club de Beneficios</a>
+            <a href="album.html">📸 Álbum del equipo</a>
+            <a href="notificaciones.html">🔔 Notificaciones</a>
+            <a href="comunicaciones.html">💬 Comunicaciones</a>
+          </details>
+          <details class="tool-cluster">
+            <summary>💼 Gestión y documentación</summary>
+            <a href="buscar.html">🔎 Buscador global</a>
+            <a href="actividad.html">🕘 Actividad reciente</a>
+            <a href="proyectos.html">🏆 Proyectos y giras</a>
+            <a href="tesoreria-v2.html?v=20261003d">💰 Tesorería</a>
+            <a href="recaudacion.html">🌭 Recaudación</a>
+            <a href="sponsors.html">🏢 Interesados auspicio</a>
+            <a href="biblioteca.html?v=20261003g">📚 Biblioteca del club</a>
+            <a href="drive.html?v=20261003g">🗂️ Carpeta Maestra</a>
+          </details>
+          <details class="tool-cluster">
+            <summary>🛡️ Seguridad y configuración</summary>
+            <a href="calidad.html">✅ Calidad de datos</a>
+            <a href="diagnostico.html">🩺 Diagnóstico del sistema</a>
+            <a href="proteccion.html">🛡️ Protección / DS22</a>
+            <a href="disciplina.html">⚖️ Comisión de Disciplina</a>
+            <a href="asistente-casos.html">🧭 Asistente de Casos</a>
+            <a href="cierre-ds22.html">✅ Cierre DS22 + Disciplina</a>
+            <a href="accesos.html">🔐 Accesos y roles</a>
+            <a href="guia-responsables.html">📘 Guía práctica responsables</a>
+          </details>
+        </div>
+      </details>
     </div>
   </div>
   <main id="app"></main>
@@ -139,12 +235,31 @@ if(!db.localTasks)db.localTasks=[];
 db.funds=db.funds||[];db.clubDocs=db.clubDocs||[];db.fundReqs=db.fundReqs||[];db.legalProfile=db.legalProfile||null;db.inventoryItems=db.inventoryItems||[];db.inventoryBoxes=db.inventoryBoxes||[];db.controlReqs=db.controlReqs||[];db.controlValues=db.controlValues||[];db.system=db.system||{dq:[],notifications:[],responsibilities:[],checklists:[],finance:[],media:[],memberDocs:[]};
 const navGroups=[
  {label:'Ahora',items:[['dash','▦','Resumen','Lo importante al entrar'],['urgente','🔴','Urgente','Lo que requiere atención inmediata'],['ahora','🟠','Qué hacer','Prioridades de los próximos 7 días'],['proximos','🔵','Lo que viene','Hitos, eventos y vencimientos próximos']]},
- {label:'Gestión del club',items:[['administrar','🧭','Administrar club','Centro único de gestión y accesos'],['personas','👥','Registro Maestro','Jugadores, familias, altas, bajas y datos'],['proyectos','🏆','Proyectos','FUFY, Santiago y proyectos activos'],['chile','🇨🇱','Chile Rugby','Fichaje, seguro, EPC y desarrollo'],['finanzas','💰','Finanzas','Resumen financiero del club'],['tesoreria','🧾','Tesorería','Cuotas, pagos, mora y comprobantes'],['proteccion','🛡️','Protección','DS22, NNA y convivencia'],['disciplina','⚖️','Disciplina','Comisión, expedientes y resoluciones']]},
+ {label:'Gestión del club',items:[['administrar','🧭','Administrar club','Centro único de gestión y accesos'],['personas','👥','Registro Maestro','Jugadores, familias, altas, bajas y datos'],['proyectos','🏆','Proyectos','Gira Santiago, Copa FUFY realizada y otros proyectos'],['chile','🇨🇱','Chile Rugby','Fichaje, seguro, EPC y desarrollo'],['finanzas','💰','Finanzas','Resumen financiero del club'],['tesoreria','🧾','Tesorería','Cuotas, pagos, mora y comprobantes'],['proteccion','🛡️','Protección','DS22, NNA y convivencia'],['disciplina','⚖️','Disciplina','Comisión, expedientes y resoluciones']]},
  {label:'Planificación',items:[['fondos','🎯','Fondos','Postulaciones y requisitos'],['inventario','📦','Inventario','Lo que tenemos, falta, cajas y renovación'],['operacion','🧰','Operación','Voluntariado, inventario y actividades'],['desarrollo','📈','Desarrollo','Crecimiento deportivo y Arica Rugby 2030'],['sede','🏟️','Sede','Terreno e infraestructura'],['gobernanza','⚖️','Gobernanza','Estatutos, banco y asambleas']]},
  {label:'Sistema',items:[['mapa','🧭','Mapa 360','Todo lo que existe en la Carpeta Maestra'],['tareas','✓','Todas las tareas','Backlog completo'],['docs','📄','Fuentes oficiales','Qué archivo manda en cada tema'],['archivo','🗄️','Archivo','Historia y respaldos'],['auditoria','✅','Auditoría','Riesgos, seguridad y cierre']]}
 ];
 const pages=navGroups.flatMap(g=>g.items);
-nav.innerHTML=navGroups.map(g=>'<div class="nav-group"><div class="nav-label">'+g.label+'</div>'+g.items.map(p=>'<button data-r="'+p[0]+'">'+p[1]+' <span>'+p[2]+'</span></button>').join('')+'</div>').join('');
+const eventNav='<div class="nav-feature" aria-label="Actividades destacadas">'+
+  '<div class="nav-label">Prioridad actual</div>'+
+  '<a class="nav-feature-main" href="gira-santiago.html">✈️ <span>Gira Santiago 2026<small>6 al 8 de noviembre · próxima</small></span></a>'+
+  '<details class="nav-accordion" open><summary>Herramientas de la gira ▾</summary><div class="nav-submenu">'+
+  '<a href="gira-santiago.html">📋 Programa y control operativo</a>'+
+  '<a href="delegacion_santiago.html">👥 Delegación completa</a>'+
+  '<a href="vuelos.html">🛫 Vuelos y traslados</a>'+
+  '<a href="../panoramas-santiago.html">🗳️ Panoramas y votaciones</a>'+
+  '</div></details></div>'+
+  '<details class="nav-accordion nav-archive"><summary>🏆 <span>Copa FUFY 2026<small>Realizada · 24 de octubre</small></span><span aria-hidden="true">▾</span></summary>'+
+  '<div class="nav-submenu">'+
+  '<a href="fufy.html?v=20261008g">🏉 Control de la Copa</a>'+
+  '<a href="fufy-presupuesto.html">💰 Presupuesto · Editar</a>'+
+  '<a href="../fufy-mesa.html">📝 Mesa de control</a>'+
+  '<a href="fufy-clubes.html">👥 Clubes invitados · Nóminas</a>'+
+  '<a href="fufy-liga.html">🏆 Fixture y resultados</a>'+
+  '<a href="../fufy-documentos.html">📚 Documentos y bases</a>'+
+  '<a href="../fufy.html">🖼️ Memoria pública</a>'+
+  '</div></details>';
+nav.innerHTML=eventNav+navGroups.map(g=>'<div class="nav-group"><div class="nav-label">'+g.label+'</div>'+g.items.map(p=>'<button data-r="'+p[0]+'">'+p[1]+' <span>'+p[2]+'</span></button>').join('')+'</div>').join('');
 let route='dash';
 mobileNavToggle.onclick=()=>{const open=document.querySelector('aside').classList.toggle('nav-open');mobileNavToggle.setAttribute('aria-expanded',String(open))};
 nav.onclick=e=>{const b=e.target.closest('button');if(b){route=b.dataset.r;if(matchMedia('(max-width:760px)').matches){document.querySelector('aside').classList.remove('nav-open');mobileNavToggle.setAttribute('aria-expanded','false')}render()}};
@@ -271,10 +386,26 @@ function roleGuide(){
  const g=guides[r]||{title:'Equipo Gigantes',steps:[['1. Revisa tu área','Usa los accesos rápidos.'],['2. Completa pendientes','Sigue el orden de cada pantalla.'],['3. Guarda evidencia','No trabajes fuera de la app.']]};
  return '<div class="gx-guide"><strong>👋 '+esc(name?name+' · '+g.title:g.title)+'</strong><p>La aplicación te muestra un camino simple según tu rol. No necesitas aprender todos los módulos.</p><div class="gx-steps">'+g.steps.map(s=>'<div class="gx-step"><b>'+esc(s[0])+'</b>'+esc(s[1])+'</div>').join('')+'</div></div>'
 }
+function giraPriorityCard(){
+ const localDate=new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const [year,month,day]=localDate.split('-').map(Number);
+ const days=Math.round((Date.UTC(2026,10,6)-Date.UTC(year,month-1,day))/86400000);
+ if(days < -2)return '';
+ const countdown=days>1?'Faltan '+days+' días':days===1?'Comienza mañana':days===0?'Comienza hoy':'Gira en desarrollo';
+ return '<section class="gira-priority-card" aria-label="Objetivo principal del club: Gira Santiago 2026">'+
+  '<div><span class="gira-priority-label">✈️ PRIORIDAD ACTUAL · '+countdown+'</span>'+
+  '<h2>Gira Santiago 2026 · 6 al 8 de noviembre</h2>'+
+  '<p>Revisa en un solo lugar a la delegación, el programa deportivo, el alojamiento, los vuelos y los pendientes antes de partir.</p></div>'+
+  '<div class="gira-priority-actions">'+
+  '<a class="btn primary" href="gira-santiago.html">📋 Abrir control de la gira</a>'+
+  '<a class="btn secondary" href="delegacion_santiago.html">👥 Delegación</a>'+
+  '<a class="btn secondary" href="vuelos.html">🛫 Vuelos</a>'+
+  '</div></section>';
+}
 function dash(){
  const u=urgentList(),n=nowList(),up=upcomingTasks(),owners=cleanTasks().filter(ownerMissing);
  const events=upcomingProjects();
- return header()+roleGuide()+
+ return header()+giraPriorityCard()+roleGuide()+
  '<div class="overview-strip"><div class="overview-card red"><strong>'+u.length+'</strong><span>URGENTES</span></div><div class="overview-card amber"><strong>'+n.length+'</strong><span>PARA LOS PRÓXIMOS 7 DÍAS</span></div><div class="overview-card blue"><strong>'+(up.length+events.length)+'</strong><span>LO QUE VIENE</span></div><div class="overview-card gray"><strong>'+owners.length+'</strong><span>SIN RESPONSABLE</span></div></div>'+
  ((db.system?.dq||[]).filter(x=>String(x.severity).toLowerCase()==='high').length?'<div class="notice"><b>⚠ Calidad de datos:</b> hay '+(db.system.dq||[]).filter(x=>String(x.severity).toLowerCase()==='high').length+' observaciones de alta prioridad abiertas. <a href="calidad.html">Revisar calidad</a>.</div>':'')+'<div class="gx-guide"><strong>👋 Comienza aquí</strong><p>No necesitas conocer toda la aplicación. Trabaja siempre en este orden:</p><div class="gx-steps"><div class="gx-step"><b>1. Revisa Urgente</b>Resuelve lo rojo o vencido.</div><div class="gx-step"><b>2. Entra a tu área</b>Presidenta, Tesorería, Jugadores, Proyectos o Eventos.</div><div class="gx-step"><b>3. Guarda evidencia</b>Completa datos y adjunta/consulta documentos.</div><div class="gx-step"><b>4. Cierra y comunica</b>Marca tareas listas y usa impresión/exportación cuando corresponda.</div></div></div><div class="section-heading"><div><h2>Tu tablero de hoy</h2><p>Primero resuelve lo rojo, después lo de esta semana y luego mira lo que viene.</p></div></div>'+
  '<div class="focus-grid">'+
@@ -290,8 +421,8 @@ function dash(){
  '<a href="tesoreria-v2.html?v=20261003d">💰 Tesorería<small>Cuotas, ingresos, egresos, comprobantes y cierres.</small></a>'+ 
  '<a href="eventos.html">📅 Eventos<small>Calendario, convocatorias y asistencia.</small></a>'+ 
  '<a href="legal.html">⚖️ Carpeta Legal Permanente<small>Ver, descargar, cargar y controlar documentos legales del club.</small></a><a href="biblioteca.html?v=20261003g">📚 Documentos<small>Ver PDF, descargar originales y revisar archivos del club.</small></a>'+ 
- '<a href="gira-santiago.html">✈️ Gira Santiago<small>Fixture, viaje total, acompañantes, staff y pendientes.</small></a>'+
- '<a href="../fufy.html">🏆 Copa FUFY<small>Equipos, operación, fixture y producción.</small></a>'+
+ '<a href="gira-santiago.html">✈️ Gira Santiago · prioridad actual<small>Programa, delegación, alojamiento, vuelos y pendientes del 6 al 8 de noviembre.</small></a>'+
+ '<a href="fufy.html">🏆 Copa FUFY · realizada<small>Archivo del torneo del 24 de octubre, presupuesto, resultados y documentación.</small></a>'+
  '<a href="recaudacion.html">🌭 Recaudación<small>Ventas, cierres y rendición.</small></a>'+
  '<a href="album.html">📸 Álbum<small>Fotos y autorizaciones.</small></a>'+
  '<a href="proteccion.html">🛡️ Protección<small>DS22, NNA y convivencia segura.</small></a>'+
@@ -317,8 +448,8 @@ function administrar(){return header()+
 '<div class="section-heading"><div><h2>Competencia, viajes y operación</h2><p>Gestión deportiva y logística centralizada.</p></div></div>'+
 '<div class="quick">'+
 '<a href="eventos.html">📅 Eventos y asistencia<small>Calendario, convocatorias, asistencia y participación.</small></a>'+
-'<a href="fufy.html?v=20261008g">🏉 Copa FUFY<small>Operación completa del festival y torneo.</small></a>'+
-'<a href="gira-santiago.html">✈️ Gira Santiago<small>Delegación, itinerario, alojamiento, partidos y pendientes.</small></a>'+
+'<a href="gira-santiago.html">✈️ Gira Santiago · prioridad<small>Delegación, itinerario, alojamiento, partidos y pendientes.</small></a>'+
+'<a href="fufy.html?v=20261008g">🏆 Copa FUFY · archivo<small>Presupuesto, mesa de control, clubes y documentos de la edición realizada.</small></a>'+
 '<a href="proyectos.html">🏆 Proyectos y giras<small>Metas, hitos, responsables y avance.</small></a>'+
 '</div>'+
 '<div class="section-heading"><div><h2>Club, cumplimiento y comunicación</h2><p>Documentos, protección, disciplina y comunicaciones oficiales.</p></div></div>'+
