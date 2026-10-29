@@ -37,7 +37,7 @@ main{padding:18px 18px;max-width:1450px;margin:auto}.hero{background:linear-grad
  .nav button.active{box-shadow:inset 3px 0 0 var(--o)}
  .nav .sep{display:none}
  .nav>.cc-library-entry{display:flex!important;width:100%!important;min-width:0!important;white-space:normal!important;margin:0 0 8px!important;justify-content:flex-start!important;background:#263140!important}
- .main{margin-left:0}.top{position:static;padding:10px 12px;grid-template-columns:1fr}.actions{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.actions>.secondary{display:none}.more-panel{position:fixed;left:12px;right:12px;top:auto;width:auto}.top h1{font-size:18px}.top p{font-size:10px}main{padding:12px}.hero{grid-template-columns:1fr;padding:16px}.kpis{grid-template-columns:1fr 1fr}.overview-strip{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr 110px}.row>*:nth-child(n+3){display:none}
+ .main{margin-left:0}.top{position:static;padding:10px 12px;grid-template-columns:1fr}.actions{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.more-panel{position:fixed;left:12px;right:12px;top:auto;width:auto}.top h1{font-size:18px}.top p{font-size:10px}main{padding:12px}.hero{grid-template-columns:1fr;padding:16px}.kpis{grid-template-columns:1fr 1fr}.overview-strip{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr 110px}.row>*:nth-child(n+3){display:none}
  .cc-modal{padding:8px;align-items:flex-end}
  .cc-dialog{width:100%;max-width:none;max-height:92vh;border-radius:18px 18px 12px 12px}
  .cc-dialog-head{padding:15px 16px 12px;gap:10px}
@@ -62,17 +62,8 @@ main{padding:18px 18px;max-width:1450px;margin:auto}.hero{background:linear-grad
 .actions{flex-wrap:wrap;row-gap:6px;overflow:visible}
 .tour-top-button{background:#d9560c;color:#fff;box-shadow:0 3px 10px #a8431428}
 .tour-top-button:hover{background:#b84409}
-.top-archive-menu{position:relative}
-.top-archive-menu>summary{list-style:none;cursor:pointer;display:inline-flex;gap:5px;align-items:center;border:1px solid #fed7aa;background:#fff7ed;color:#9a3412;border-radius:8px;padding:7px 9px;font-size:11px;font-weight:900;white-space:nowrap}
-.top-archive-menu>summary::-webkit-details-marker{display:none}
-.top-archive-menu[open]>summary{background:#ffedd5}
-.top-archive-state{font-weight:750;font-size:9px}
-.top-archive-panel{position:absolute;z-index:45;right:0;top:calc(100% + 8px);width:285px;max-height:min(70vh,630px);overflow-y:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 18px 40px #0002;padding:8px;display:grid;gap:3px}
-.archive-menu-intro{padding:10px;background:#fff7ed;border-radius:8px;margin-bottom:3px;color:#9a3412}
-.archive-menu-intro strong{display:block;font-size:12px}
-.archive-menu-intro small{display:block;font-size:10px;margin-top:4px}
-.top-archive-panel a{display:block;padding:9px 10px;border-radius:7px;text-decoration:none;color:#182233;font-size:11px;font-weight:800;line-height:1.35}
-.top-archive-panel a:hover{background:#f1f5f9}
+.security-alerts{display:flex;justify-content:flex-end;padding:0 16px}
+.security-alerts .report-alert.show{margin-top:8px}
 .tool-cluster{border-bottom:1px solid #eef0f2;padding:3px 0 6px}
 .tool-cluster:last-child{border-bottom:0}
 .tool-cluster>summary{list-style:none;cursor:pointer;padding:10px;background:#f7f8fa;border-radius:7px;color:#172235;font-size:11px;font-weight:900}
@@ -107,9 +98,8 @@ main{padding:18px 18px;max-width:1450px;margin:auto}.hero{background:linear-grad
  .top{position:relative;z-index:70}
  .actions{overflow:visible;flex-wrap:wrap;gap:6px;padding-bottom:0}
  .actions .tour-top-button{order:-2}
- .actions .top-archive-menu{order:-1}
- .more-menu,.top-archive-menu{position:static}
- .top-archive-panel,.more-panel{position:absolute;top:calc(100% + 4px);left:12px;right:12px;width:auto;max-height:60vh;overscroll-behavior:contain}
+ .more-menu{position:static}
+ .more-panel{position:absolute;top:calc(100% + 4px);left:12px;right:12px;width:auto;max-height:60vh;overscroll-behavior:contain}
  .nav-feature,.nav-archive{display:block;grid-column:1/-1}
  .nav-accordion .nav-submenu{grid-template-columns:1fr 1fr;gap:5px;padding:8px 1px 2px}
  .nav-accordion .nav-submenu a{background:#ffffff0a;border-left:2px solid #52677a;padding:9px 7px;min-height:40px}
@@ -132,20 +122,6 @@ main{padding:18px 18px;max-width:1450px;margin:auto}.hero{background:linear-grad
 
     <div class="actions" aria-label="Accesos principales">
       <a class="btn tour-top-button" href="gira-santiago.html" title="Abrir gestión de la gira: programa, hotel y actividades">✈️ Gira Santiago 2026</a>
-      <details class="top-archive-menu">
-        <summary>🏆 Copa FUFY <span class="top-archive-state">Realizada ▾</span></summary>
-        <div class="top-archive-panel">
-          <div class="archive-menu-intro"><strong>Copa FUFY 2026</strong><small>Realizada el 24 de octubre · Consulta y cierre</small></div>
-          <a href="fufy.html?v=20261008g">🏉 Control general de la Copa</a>
-          <a href="fufy-presupuesto.html">💰 Presupuesto FUFY · Editar y revisar</a>
-          <a href="../fufy-mesa.html">📝 Mesa de control · Marcadores y turnos</a>
-          <a href="fufy-clubes.html">👥 Clubes invitados · Nóminas</a>
-          <a href="fufy-liga.html">🏆 Liga, fixture y resultados</a>
-          <a href="../fufy-documentos.html">📚 Bases y documentos</a>
-          <a href="../fufy.html">🖼️ Memoria pública de la Copa</a>
-        </div>
-      </details>
-      <a id="protectionAlertBtn" class="btn report-alert" href="login.html?switch=1&amp;next=proteccion.html">🚨 Denuncia confidencial <span id="protectionAlertCount"></span></a>
       <a class="btn dark" href="guia.html">❓ Ayuda</a>
       <button class="btn primary" type="button" onclick="newTask()">+ Nueva tarea</button>
       <a class="btn secondary" href="../index.html">🌐 Sitio público</a>
@@ -194,6 +170,7 @@ main{padding:18px 18px;max-width:1450px;margin:auto}.hero{background:linear-grad
       </details>
     </div>
   </div>
+  <div class="security-alerts" aria-live="polite"><a id="protectionAlertBtn" class="btn report-alert" href="login.html?switch=1&amp;next=proteccion.html">🚨 Denuncia confidencial <span id="protectionAlertCount"></span></a></div>
   <main id="app"></main>
 </div>
 <div id="ccModal" class="cc-modal" onclick="if(event.target===this)closeControlModal()"><div class="cc-dialog"><div class="cc-dialog-head"><div><h2 id="ccModalTitle">Completar requisito</h2><div class="meta" id="ccModalSub"></div></div><button class="cc-close" onclick="closeControlModal()">×</button></div><div class="cc-dialog-body" id="ccModalBody"></div></div></div>
@@ -527,7 +504,7 @@ async function loadLiveData(){
 }
 render();
 </script>
-<script src="../config.js"></script>
+<script src="../config.js?v=20261029-toolbar-clean"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
 (async function secureControlCenter(){
