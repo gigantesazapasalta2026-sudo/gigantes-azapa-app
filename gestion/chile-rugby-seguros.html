@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Chile Rugby | Accesos y seguros · Gigantes</title>
+<style>
+:root{--orange:#f36b21;--ink:#111827;--muted:#667085;--line:#e5e7eb;--bg:#f4f6f8}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,Arial,sans-serif}.top{background:#101820;color:white;padding:16px}main,.top-inner{max-width:1300px;margin:auto}.top-inner{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.top-inner h1{font-size:22px;margin:0}.top-inner a{color:white;margin-left:auto}main{padding:16px}.cards{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:10px}.card,.panel{background:white;border:1px solid var(--line);border-radius:12px;padding:14px}.card b{font-size:28px;display:block}.card span{font-size:11px;color:var(--muted)}.panel{margin:12px 0}.note{background:#fff7ed;border:1px solid #fed7aa;padding:11px;border-radius:9px;font-size:12px}.tools{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.tools input,.tools select,select,textarea{padding:9px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font:inherit;max-width:100%}.tools input{flex:1;min-width:190px}.btn{display:inline-block;background:var(--orange);color:#fff;font-weight:700;text-decoration:none;border:0;border-radius:8px;padding:9px 12px;cursor:pointer}.btn.secondary{background:#344054}.btn:disabled{opacity:.55;cursor:wait}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:1080px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:12px}th{background:#f8fafc;font-size:11px;position:sticky;top:0}td select{font-size:12px;padding:6px;width:155px}td .name{font-weight:800}td .sub{color:var(--muted);font-size:11px}.pill{font-weight:700;font-size:11px;border-radius:999px;padding:5px 8px;white-space:nowrap;background:#fff1e6;color:#9a3412}.pill.ok{background:#dcfce7;color:#166534}.pill.bad{background:#fee2e2;color:#991b1b}.status{font-size:11px;min-width:130px}.footer{font-size:12px;color:var(--muted)}.hide{display:none}dialog{border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 55px #11182733;max-width:550px;width:calc(100% - 20px);padding:20px}dialog::backdrop{background:#0009}dialog label{display:block;font-weight:700;font-size:12px;margin:10px 0}dialog textarea,dialog select{display:block;width:100%;margin-top:4px}dialog menu{display:flex;gap:10px;justify-content:flex-end;padding:0;margin:16px 0 0}@media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.top-inner a{margin-left:0}main{padding:10px}}@media print{.tools,.top a,td button,dialog{display:none!important}}
+</style></head>
+<body><header class="top"><div class="top-inner"><div><h1>🇨🇱 Chile Rugby · BD y seguros</h1><div style="font-size:12px;color:#f7a472">Control Center · Registro Maestro de Gigantes de Azapa</div></div><a href="index.html">← Volver al Control Center</a></div></header>
+<main><div id="loading" class="note">Verificando permisos y registros…</div><div id="app" class="hide">
+<div class="cards"><div class="card"><b id="total">—</b><span>Jugadores activos</span></div><div class="card"><b id="bdCount">—</b><span>Con registro Chile Rugby cargado</span></div><div class="card"><b id="paidCount">—</b><span>Seguro marcado pagado en BD interna</span></div><div class="card"><b id="verifiedCount">—</b><span>Seguro marcado vigente en BD interna</span></div><div class="card"><b id="blockedCount">—</b><span>Casos de acceso reportados sin resolver</span></div></div>
+<div class="panel"><div class="note"><b>Importante:</b> esta es una base de seguimiento <b>interna</b>, no la plataforma oficial de Chile Rugby. Pagar inscripción ≠ pagar seguro ≠ acreditar cobertura vigente. Solo se debe considerar habilitado al jugador cuando exista confirmación verificable de vigencia y requisitos aplicables. Los estados "pendiente" o "sin revisar" no significan que el jugador carezca de seguro; significan que falta confirmar los datos.</div>
+<div class="tools"><a class="btn" href="validacion.html">Revisar estados federativos oficiales cargados</a><a class="btn secondary" href="inscripciones.html">Editar Registro Maestro</a><a class="btn secondary" href="gira-santiago.html">Gira Santiago</a><button class="btn secondary" id="export">Exportar seguimiento CSV</button></div>
+<p class="footer">Contacto: Alejandro Herrera, aherrera@chilerugby.org · Copia: Frank Méndez, fmendez@chilerugby.org. Solicitud enviada el 3 de noviembre de 2026. No compartas claves ni códigos de recuperación.</p>
+</div>
+<div class="panel"><h2>Seguimiento por jugador</h2><div class="tools"><input id="search" type="search" placeholder="Buscar jugador o categoría…"><select id="scope"><option value="all">Todos los jugadores activos</option><option value="trip">Jugadores gira Santiago</option><option value="missing">Sin registro Chile Rugby cargado</option><option value="pending">Seguro no verificado</option><option value="problems">Problemas de acceso</option></select><button class="btn secondary" id="reload">Actualizar</button></div>
+<div id="summary" class="footer"></div><div class="tablewrap"><table><thead><tr><th>Jugador</th><th>Gira</th><th>Registro Chile Rugby</th><th>Pago inscripción</th><th>Seguro en BD</th><th>Acceso BDR</th><th>Seguimiento</th><th>Acción</th></tr></thead><tbody id="rows"></tbody></table></div></div></div>
+<dialog id="editor"><form id="form"><h3 id="editorTitle">Caso de acceso</h3><p class="footer">Este formulario NO cambia la inscripción ni el seguro federativo. Es seguimiento administrativo del club.</p>
+<label>Problema de acceso<select id="accessStatus"><option value="sin_revisar">Sin revisar</option><option value="sin_activacion">No llegó activación</option><option value="no_llega_recuperacion">No llega recuperación de contraseña</option><option value="acceso_bloqueado">Acceso bloqueado / error</option><option value="acceso_confirmado">Acceso confirmado por el jugador</option></select></label>
+<label>Gestión del caso<select id="caseStatus"><option value="sin_gestion">Sin gestión</option><option value="por_contactar">Contactar apoderado/jugador</option><option value="enviado_federacion">Enviado a Chile Rugby</option><option value="esperando_respuesta">Esperando respuesta federativa</option><option value="en_revision">En revisión</option><option value="resuelto">Resuelto</option></select></label>
+<label><input type="checkbox" id="paidReported"> Jugador/apoderado informa haber pagado la inscripción (aún no validado)</label>
+<label>Observaciones (sin contraseñas, RUT completos ni datos médicos)<textarea id="caseNotes" rows="3" maxlength="1000"></textarea></label>
+<div class="footer" id="editorMessage"></div><menu><button class="btn secondary" type="button" id="cancel">Cancelar</button><button class="btn" type="submit" id="save">Guardar caso</button></menu></form></dialog>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+'use strict';
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+const PROJECT='cb739817-50ee-4060-896a-2e3286eb5a00';
+const el=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+let user=null,roster=[],fed=new Map(),cases=new Map(),trip=new Set(),selected=null;
+const accessLabels={sin_revisar:'Sin revisar',sin_activacion:'No llegó activación',no_llega_recuperacion:'No llega recuperación',acceso_bloqueado:'Acceso bloqueado',acceso_confirmado:'Acceso confirmado'};
+const caseLabels={sin_gestion:'Sin gestión',por_contactar:'Contactar familia',enviado_federacion:'Enviado a Chile Rugby',esperando_respuesta:'Esperando respuesta',en_revision:'En revisión',resuelto:'Resuelto'};
+(async()=>{try{
+const {data:{session},error:authErr}=await sb.auth.getSession();if(authErr||!session){location.replace('login.html?next=chile-rugby-seguros.html');return}
+user=session.user;
+const {data:p,error:pe}=await sb.from('profiles').select('role,active').eq('user_id',user.id).maybeSingle();
+if(pe||!p?.active||!['superadmin','board'].includes(p.role)){el('loading').textContent='No tienes permiso para gestionar inscripciones y seguros.';return}
+await load();
+el('loading').classList.add('hide');el('app').classList.remove('hide');
+}catch(err){el('loading').textContent='Error al cargar el control: '+String(err.message||err)}})();
+async function load(){
+const [mem,ps,fs,cs,ts]=await Promise.all([
+sb.from('memberships').select('person_id').eq('status','active').eq('member_role','player'),
+sb.from('people').select('id,full_name,category,member_status').order('full_name'),
+sb.from('federation_status').select('person_id,federation_status,payment_status,insurance_status,insurance_date'),
+sb.from('federation_access_cases').select('*'),
+sb.from('travel_participants').select('person_id,role').eq('project_id',PROJECT).eq('role','player')]);
+for(const x of [mem,ps,fs,cs,ts])if(x.error)throw x.error;
+const active=new Set((mem.data||[]).map(x=>x.person_id));
+roster=(ps.data||[]).filter(x=>active.has(x.id)&&x.member_status!=='inactive');
+fed=new Map((fs.data||[]).map(x=>[x.person_id,x]));
+cases=new Map((cs.data||[]).map(x=>[x.person_id,x]));
+trip=new Set((ts.data||[]).map(x=>x.person_id));
+el('total').textContent=roster.length;
+el('bdCount').textContent=roster.filter(p=>fed.has(p.id)).length;
+el('paidCount').textContent=roster.filter(p=>String(fed.get(p.id)?.insurance_status||'').toUpperCase()==='PAGO').length;
+el('verifiedCount').textContent=roster.filter(p=>String(fed.get(p.id)?.insurance_status||'').toUpperCase()==='VIGENTE').length;
+el('blockedCount').textContent=roster.filter(p=>{const x=cases.get(p.id);return x&&!['sin_revisar','acceso_confirmado'].includes(x.access_status)&&x.case_status!=='resuelto'}).length;
+render();
+}
+function filtered(){const term=el('search').value.trim().toLocaleLowerCase('es'),scope=el('scope').value;return roster.filter(p=>{
+const f=fed.get(p.id),c=cases.get(p.id),insurance=String(f?.insurance_status||'').toUpperCase();
+if(term&&!String(p.full_name+' '+(p.category||'')).toLocaleLowerCase('es').includes(term))return false;
+if(scope==='trip'&&!trip.has(p.id))return false;
+if(scope==='missing'&&f)return false;
+if(scope==='pending'&&insurance==='VIGENTE')return false;
+if(scope==='problems'&&(!c||['sin_revisar','acceso_confirmado'].includes(c.access_status)||c.case_status==='resuelto'))return false;
+return true})}
+function render(){const list=filtered();el('summary').textContent='Mostrando '+list.length+' de '+roster.length+' jugadores activos. Gira Santiago: '+roster.filter(p=>trip.has(p.id)).length+' jugadores cruzados.';
+el('rows').innerHTML=list.length?list.map(p=>{const f=fed.get(p.id)||{},c=cases.get(p.id)||{};
+const ins=String(f.insurance_status||'').trim();const verified=ins.toUpperCase()==='VIGENTE';
+return '<tr><td><div class="name">'+esc(p.full_name)+'</div><div class="sub">'+esc(p.category||'Sin categoría')+'</div></td><td>'+ (trip.has(p.id)?'<span class="pill">Santiago</span>':'—')+'</td><td>'+esc(f.federation_status||'Sin cargar')+'</td><td>'+esc(f.payment_status||'Sin confirmar')+(c.bd_payment_reported?'<div class="sub">Pago declarado por familia</div>':'')+'</td><td><span class="pill '+(verified?'ok':ins.toUpperCase()==='PAGO'?'':'bad')+'">'+esc(ins||'Sin verificar')+'</span></td><td>'+esc(accessLabels[c.access_status||'sin_revisar'])+'</td><td>'+esc(caseLabels[c.case_status||'sin_gestion'])+'</td><td><button class="btn secondary" data-edit="'+esc(p.id)+'">Gestionar</button></td></tr>'}).join(''):'<tr><td colspan="8">No hay registros para este filtro.</td></tr>';
+document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEditor(b.dataset.edit))}
+function openEditor(id){const p=roster.find(x=>x.id===id);if(!p)return;selected=p;const c=cases.get(id)||{};el('editorTitle').textContent='Seguimiento: '+p.full_name;el('accessStatus').value=c.access_status||'sin_revisar';el('caseStatus').value=c.case_status||'sin_gestion';el('paidReported').checked=!!c.bd_payment_reported;el('caseNotes').value=c.notes||'';el('editorMessage').textContent='';el('editor').showModal()}
+el('cancel').onclick=()=>el('editor').close();
+el('form').onsubmit=async e=>{e.preventDefault();if(!selected)return;el('save').disabled=true;el('editorMessage').textContent='Guardando…';const payload={person_id:selected.id,access_status:el('accessStatus').value,case_status:el('caseStatus').value,bd_payment_reported:el('paidReported').checked,notes:el('caseNotes').value.trim()||null,updated_by:user.id,updated_at:new Date().toISOString(),last_followup_at:new Date().toISOString()};
+const {error}=await sb.from('federation_access_cases').upsert(payload,{onConflict:'person_id'});el('save').disabled=false;
+if(error){el('editorMessage').textContent='No guardado: '+error.message;return}
+el('editor').close();await load()};
+el('search').oninput=render;el('scope').onchange=render;el('reload').onclick=async()=>{try{await load()}catch(e){alert('No se pudieron actualizar los datos: '+e.message)}};
+el('export').onclick=()=>{const headings=['Jugador','Categoria','Gira Santiago','Estado registro BD','Pago inscripcion BD','Seguro BD','Acceso reportado','Estado caso','Pago declarado','Notas'];const csv=[headings,...filtered().map(p=>{const f=fed.get(p.id)||{},c=cases.get(p.id)||{};return[p.full_name,p.category||'',trip.has(p.id)?'SI':'NO',f.federation_status||'',f.payment_status||'',f.insurance_status||'',accessLabels[c.access_status||'sin_revisar'],caseLabels[c.case_status||'sin_gestion'],c.bd_payment_reported?'SI':'NO',c.notes||'']})].map(row=>row.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='gigantes_chile_rugby_seguimiento_2026.csv';a.click();URL.revokeObjectURL(url)};
+</script></main></body></html>
