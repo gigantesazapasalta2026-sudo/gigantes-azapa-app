@@ -40,6 +40,58 @@
  .hero.fufy-hero #title{font-size:clamp(2.5rem,12vw,3.6rem);margin-bottom:14px}
  .hero.fufy-hero #objective{font-size:1.04rem;line-height:1.5}
 }
+
+/* Portada exclusiva de la gira de Santiago: diseño móvil, sin datos técnicos repetidos. */
+.hero.scl-hero{position:relative;overflow:hidden;padding:27px 20px 26px;background:radial-gradient(circle at 91% 12%,rgba(243,107,33,.24),transparent 35%),linear-gradient(120deg,#111820 0%,#0b0f14 62%,#301b12 100%);border-bottom:4px solid #f36b21}
+.hero.scl-hero:before{content:"";position:absolute;right:-90px;top:-100px;width:320px;height:320px;border:1px solid rgba(243,107,33,.2);border-radius:50%;pointer-events:none}
+.hero.scl-hero .in{position:relative}
+.hero.scl-hero .hero-logo,.hero.scl-hero #status,.hero.scl-hero #title,.hero.scl-hero #objective,.hero.scl-hero #venueHero,.hero.scl-hero #meta,.hero.scl-hero .back{display:none!important}
+.scl-cover{max-width:1050px}
+.scl-cover-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:20px}
+.scl-cover-kicker{font-size:11px;font-weight:900;letter-spacing:.17em;color:#ffb783;text-transform:uppercase}
+.scl-cover-back{font-size:12px;color:#d9dce2;text-decoration:none;white-space:nowrap}
+.scl-cover-main{display:grid;grid-template-columns:minmax(0,1fr) 205px;gap:22px;align-items:center}
+.scl-cover h1{font-size:clamp(2.2rem,6vw,4rem);line-height:1;letter-spacing:-.04em;margin:0 0 10px;color:#fff}
+.scl-cover h1 span{display:block;color:#ff9b57}
+.scl-cover-desc{color:#e8e9ec!important;font-size:clamp(14px,1.6vw,17px);line-height:1.5;margin:0;max-width:460px}
+.scl-date-tile{border:1px solid rgba(255,168,102,.44);border-radius:17px;background:linear-gradient(145deg,rgba(243,107,33,.2),rgba(255,255,255,.04));padding:20px 12px;text-align:center;box-shadow:0 8px 25px #0002}
+.scl-date-tile strong{display:block;font-size:clamp(26px,4vw,40px);line-height:1.1;color:#fff;letter-spacing:-.035em}
+.scl-date-tile span{display:block;margin-top:5px;font-weight:900;color:#ffb783;letter-spacing:.1em;font-size:12px}
+.scl-date-tile small{display:block;font-size:10px;color:#e2e2e5;margin-top:5px}
+.scl-cover-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:19px}
+.scl-cover-tags span{padding:6px 9px;background:#ffffff16;border:1px solid #ffffff21;border-radius:99px;font-size:11px;font-weight:800;color:#fff}
+.scl-venues-line{margin-top:15px;padding-top:13px;border-top:1px solid #ffffff30;display:flex;flex-wrap:wrap;gap:8px 18px;color:#f4f4f6;font-size:12px}
+.scl-cover-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:18px}
+.scl-cover-actions a{display:flex;align-items:center;justify-content:center;min-height:43px;border-radius:10px;border:1px solid #ffffff48;text-decoration:none;color:#fff;font-weight:900;font-size:13px;background:#ffffff0e;padding:8px;text-align:center}
+.scl-cover-actions a:first-child{background:#f36b21;border-color:#f36b21;color:#151515}
+.scl-cover-actions a:focus-visible,.scl-cover-back:focus-visible{outline:3px solid #ffb783;outline-offset:3px}
+body.scl-page main{padding-top:14px}
+body.scl-page .kpis{display:none}
+body.scl-page #sclGenericObjectives{display:none}
+body.scl-page #detailsSection{margin-top:0!important}
+body.scl-page #itinerario,body.scl-page #alojamiento,body.scl-page #canchas{scroll-margin-top:100px}
+@media(max-width:700px){
+ .hero.scl-hero{padding:18px 16px 22px}
+ .scl-cover-top{margin-bottom:15px}
+ .scl-cover-main{grid-template-columns:minmax(0,1fr) 115px;gap:11px}
+ .scl-cover h1{font-size:clamp(29px,8vw,38px)}
+ .scl-cover-desc{font-size:13px;line-height:1.45}
+ .scl-date-tile{border-radius:12px;padding:15px 6px}
+ .scl-date-tile strong{font-size:26px}
+ .scl-date-tile span{font-size:10px}
+ .scl-date-tile small{font-size:9px}
+ .scl-cover-tags{margin-top:14px}
+ .scl-venues-line{font-size:11px;margin-top:11px}
+ .scl-cover-actions{margin-top:13px;gap:6px}
+ .scl-cover-actions a{font-size:12px;min-height:42px;padding:7px 5px}
+ body.scl-page main{padding:12px 14px 85px}
+}
+@media(max-width:350px){
+ .scl-cover-main{grid-template-columns:1fr}
+ .scl-date-tile{display:flex;align-items:center;gap:8px;justify-content:center;padding:8px}
+ .scl-date-tile span{margin:0}
+ .scl-date-tile small{display:none}
+}
 </style></head><body>
 <section class="hero"><div class="in"><img id="heroLogo" class="hero-logo" alt=""><div id="status" class="meta"></div><h1 id="title">Proyecto</h1><p id="objective"></p><div id="venueHero" class="venueHero" style="display:none"></div><div id="meta" class="meta"></div><a class="back" href="proyectos.html">← Proyectos y giras</a></div></section>
 <main><div class="kpis"><div class="k"><span>Fecha</span><b id="dates">—</b></div><div class="k"><span>Ubicación</span><b id="location">—</b></div><div class="k"><span>Estado</span><b id="state">—</b></div></div>
@@ -62,6 +114,21 @@ if(String(p.code||'').toUpperCase()==='FUFY2026'){
   document.querySelector('.hero').classList.add('fufy-hero');
   status.textContent='COPA FUFY 2026 · EN SU MEMORIA';
 }
+
+if(String(p.code||'').toUpperCase()==='SCL2026'){
+ document.body.classList.add('scl-page');
+ document.querySelector('.hero').classList.add('scl-hero');
+ document.getElementById('goals').closest('section').id='sclGenericObjectives';
+ document.querySelector('.hero .in').insertAdjacentHTML('beforeend',
+ '<div class="scl-cover">'+
+ '<div class="scl-cover-top"><span class="scl-cover-kicker">✈️ Gira formativa · Gigantes de Azapa</span><a class="scl-cover-back" href="proyectos.html">← Proyectos</a></div>'+
+ '<div class="scl-cover-main"><div><h1>Santiago <span>2026</span></h1><p class="scl-cover-desc">Tres días para jugar, compartir y crecer juntos. Desde Arica a nuevas canchas.</p></div><div class="scl-date-tile" aria-label="Del 6 al 8 de noviembre de 2026"><strong>06–08</strong><span>NOVIEMBRE</span><small>VIERNES A DOMINGO</small></div></div>'+
+ '<div class="scl-cover-tags"><span>M10</span><span>M12</span><span>M14</span><span>CLASSIC</span></div>'+
+ '<div class="scl-venues-line"><span>🏉 6 y 7 · Stade Français</span><span>🏉 8 · Country Club</span></div>'+
+ '<nav class="scl-cover-actions" aria-label="Accesos de la gira"><a href="#itinerario">📅 Programa</a><a href="#alojamiento">🏨 Hostal</a><a href="#canchas">📍 Canchas</a></nav>'+
+ '</div>');
+}
+
 renderTribute(p.public_details||{});renderDetails(p.public_details||{},p.code);
 renderLinks(p.public_links||[]);
 const [{data:g},{data:media}]=await Promise.all([sb.from('project_goals').select('*').eq('project_id',p.id),sb.from('project_media').select('*').eq('project_id',p.id).eq('public_approved',true).order('taken_at',{ascending:false})]);
@@ -88,11 +155,11 @@ function renderTribute(d){if(!d?.tribute_text)return;tributeTitle.textContent=d.
      (item.status==='por_confirmar'?' <b>(por confirmar)</b>':item.status==='aproximado'?' <em>(aprox.)</em>':'')+'</p>').join('')+'</section>').join('');
    const classic=d?.classic_match;
    const classicCard=classic?'<article class="detailCard scl-itinerary"><h2>🏉 Partido Classic · domingo 8 de noviembre</h2><div style="padding:12px 16px"><p><b>Gigantes de Azapa Classic vs Country Club Classic</b></p><p><b>Horario:</b> alrededor de las 12:00, después de los partidos infantiles.</p><p><b>Cancha:</b> Prince of Wales Country Club, Las Arañas 1901, La Reina.</p><p class="empty">Hora aproximada sujeta al desarrollo de los partidos infantiles. Tercer tiempo posterior al encuentro Classic: horario por confirmar.</p></div></article>':'';
-   const lodgingCard=lodging.address?'<article class="detailCard scl-itinerary"><h2>🏠 Alojamiento · '+esc(lodging.name||'Laredo Top')+'</h2><div style="padding:12px 16px"><p><b>Dirección:</b> '+esc(lodging.address)+'</p><p><b>Ingreso:</b> desde las 14:00 · <b>Salida:</b> 11:00</p><p>'+esc(lodging.front_desk||'')+'</p><p><b>Tarifas por noche</b></p><ul>'+((lodging.rooms||[]).map(room=>'<li>'+Number(room.people||0)+' personas: <b>'+money(room.price_per_night)+'</b></li>').join(''))+'</ul><p>'+esc(lodging.invoice_note||'')+'</p><p><a class="docbtn" href="'+esc(mapsLink(lodging.address))+'" target="_blank" rel="noopener">📍 Abrir hostal en Google Maps</a> <a class="docbtn" href="'+esc(safeLink(lodging.url))+'" target="_blank" rel="noopener">🌐 Sitio del alojamiento</a></p><p class="empty">'+esc(lodging.booking_note||'')+'</p><p><a class="docbtn" href="laredo-contacto.html" target="_blank" rel="noopener">☎ Tarjeta digital del alojamiento</a> <a class="docbtn" href="'+esc(safeLink(lodging.contact_whatsapp_url))+'" target="_blank" rel="noopener">💬 WhatsApp del hotel</a></p></div></article>':'';
+   const lodgingCard=lodging.address?'<article id="alojamiento" class="detailCard scl-itinerary"><h2>🏠 Alojamiento · '+esc(lodging.name||'Laredo Top')+'</h2><div style="padding:12px 16px"><p><b>Dirección:</b> '+esc(lodging.address)+'</p><p><b>Ingreso:</b> desde las 14:00 · <b>Salida:</b> 11:00</p><p>'+esc(lodging.front_desk||'')+'</p><p><b>Tarifas por noche</b></p><ul>'+((lodging.rooms||[]).map(room=>'<li>'+Number(room.people||0)+' personas: <b>'+money(room.price_per_night)+'</b></li>').join(''))+'</ul><p>'+esc(lodging.invoice_note||'')+'</p><p><a class="docbtn" href="'+esc(mapsLink(lodging.address))+'" target="_blank" rel="noopener">📍 Abrir hostal en Google Maps</a> <a class="docbtn" href="'+esc(safeLink(lodging.url))+'" target="_blank" rel="noopener">🌐 Sitio del alojamiento</a></p><p class="empty">'+esc(lodging.booking_note||'')+'</p><p><a class="docbtn" href="laredo-contacto.html" target="_blank" rel="noopener">☎ Tarjeta digital del alojamiento</a> <a class="docbtn" href="'+esc(safeLink(lodging.contact_whatsapp_url))+'" target="_blank" rel="noopener">💬 WhatsApp del hotel</a></p></div></article>':'';
    const venueCards=venue.map(v=>'<div class="scl-venue"><h3>'+esc(v.name||'')+'</h3><p>'+esc(v.address||'')+'</p><p><b>'+esc(v.dates||'')+'</b> · '+esc(v.activity||'')+'</p>'+ (v.status==='sede_habitual_no_confirmada'?'<p style="color:#9a3412"><b>⚠️ Sede habitual, no sede confirmada para la gira.</b></p>':'')+ '<p><a class="docbtn" href="'+esc(mapsLink(v.address))+'" target="_blank" rel="noopener">📍 Google Maps</a> <a class="docbtn" href="'+esc(routeLink(v.address))+'" target="_blank" rel="noopener">🚗 Ruta desde Laredo · ver tiempo y distancia</a></p>'+(v.phone?'<p><b>Teléfono:</b> '+esc(v.phone)+'</p>':'')+(v.mobile?'<p><b>Celular:</b> '+esc(v.mobile)+'</p>':'')+(v.email?'<p><b>Correo:</b> '+esc(v.email)+'</p>':'')+(v.rugby_email?'<p><b>Contacto rugby:</b> '+esc(v.rugby_email)+'</p>':'')+(v.contact_email?'<p><b>Contacto Old Locks:</b> '+esc(v.contact_email)+'</p>':'')+(v.venue_phone?'<p><b>Wenlock:</b> '+esc(v.venue_phone)+'</p>':'')+(v.website?'<p><a class="docbtn" href="'+esc(safeLink(v.website))+'" target="_blank" rel="noopener">🌐 Sitio del club</a></p>':'')+(v.note?'<p class="empty">'+esc(v.note)+'</p>':'')+'</div>').join('');
-   const venuesCard=venueCards?'<article class="detailCard scl-itinerary"><h2>🏉 Canchas de rugby · ubicaciones</h2><div style="padding:12px 16px"><p><a class="docbtn" href="'+esc(mapsLink(lodging.address||'Laredo 8497, Las Condes'))+'" target="_blank" rel="noopener">🗺️ Ver alojamiento en Google Maps</a></p>'+venueCards+'</div></article>':'';
+   const venuesCard=venueCards?'<article id="canchas" class="detailCard scl-itinerary"><h2>🏉 Canchas de rugby · ubicaciones</h2><div style="padding:12px 16px"><p><a class="docbtn" href="'+esc(mapsLink(lodging.address||'Laredo 8497, Las Condes'))+'" target="_blank" rel="noopener">🗺️ Ver alojamiento en Google Maps</a></p>'+venueCards+'</div></article>':'';
    const why=d?.why_it_matters||'La gira busca ampliar las experiencias deportivas y personales de nuestros jugadores.';
-   details.innerHTML='<article class="detailCard scl-itinerary"><h2>📅 Itinerario oficial · Gira Santiago 2026</h2><div class="scl-days">'+dayCards+'</div><p class="scl-note"><b>Importante:</b> '+esc(d?.itinerary_notice||'Los horarios del domingo están sujetos a confirmación de los clubes anfitriones.')+'</p></article>'+classicCard+lodgingCard+venuesCard+
+   details.innerHTML='<article id="itinerario" class="detailCard scl-itinerary"><h2>📅 Itinerario oficial · Gira Santiago 2026</h2><div class="scl-days">'+dayCards+'</div><p class="scl-note"><b>Importante:</b> '+esc(d?.itinerary_notice||'Los horarios del domingo están sujetos a confirmación de los clubes anfitriones.')+'</p></article>'+classicCard+lodgingCard+venuesCard+
     '<article class="detailCard scl-itinerary"><h2>🎟️ Panoramas y votación de la gira</h2><div style="padding:12px 16px"><p>Revisa todas las alternativas de Santiago, sus precios por niño, direcciones, mapas y teléfonos de contacto. Las opciones dentro del presupuesto pueden votarse desde Mi Gigante; las demás quedan para consulta y cotización grupal.</p><p><a class="docbtn" href="panoramas-santiago.html">🗳️ Ver panoramas y votar</a></p></div></article>'+
     '<article class="detailCard scl-simple"><h2>🖤 Por qué hacemos esta gira</h2><p>'+esc(why)+'</p></article>';
    detailsSection.style.display='block';return;
