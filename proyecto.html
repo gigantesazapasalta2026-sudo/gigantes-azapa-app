@@ -14,6 +14,28 @@
 .scl-note{margin:0;padding:12px 16px;background:#fff7ed;border-top:1px solid #fed7aa;color:#7c2d12;font-size:12px;line-height:1.45}
 .scl-simple p{line-height:1.6;margin:0;color:#374151}
 .scl-simple ul{margin:0;padding-left:20px}
+
+/* Transporte economico: aparece solo en la pagina publica SCL2026 */
+.scl-transport-standalone{display:none;margin-top:14px;padding:0;overflow:hidden}
+body.scl-page .scl-transport-standalone{display:block}
+.scl-transport-standalone h2{padding:16px 16px 0;margin:0;font-size:20px}
+.scl-t-intro{margin:0;padding:12px 16px;line-height:1.55}
+.scl-t-routes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 16px 16px}
+.scl-t-route{border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;padding:14px;min-width:0}
+.scl-t-route h3{margin:0 0 9px;font-size:17px}
+.scl-t-route ol{margin:0 0 14px;padding-left:20px;line-height:1.6;font-size:14px}
+.scl-t-route li{margin:4px 0}
+.scl-t-route .docbtn{font-size:12px;max-width:100%;white-space:normal}
+.scl-t-price{padding:14px 16px;border-top:1px solid #fcd6b5;background:#fff7ed}
+.scl-t-price h3{margin:0 0 10px;font-size:17px}
+.scl-t-price table{width:100%;border-collapse:collapse;font-size:13px}
+.scl-t-price th,.scl-t-price td{text-align:left;padding:8px 6px;border-bottom:1px solid #f5ddc8;vertical-align:top}
+.scl-t-price th:last-child,.scl-t-price td:last-child{text-align:right;white-space:nowrap}
+.scl-t-price p{font-size:13px;line-height:1.5}
+.scl-t-price a{color:#9a3412;font-weight:800}
+.scl-t-warning{margin:0;padding:13px 16px;background:#eff6ff;border-top:1px solid #bfdbfe;color:#1e3a5f;font-size:12px;line-height:1.65}
+@media(max-width:700px){.scl-t-routes{grid-template-columns:1fr}.scl-transport-standalone h2{font-size:19px}}
+
 @media(max-width:700px){
  .scl-days{grid-template-columns:1fr}
  .scl-day{border-right:0}
@@ -61,7 +83,7 @@
 .scl-cover-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:19px}
 .scl-cover-tags span{padding:6px 9px;background:#ffffff16;border:1px solid #ffffff21;border-radius:99px;font-size:11px;font-weight:800;color:#fff}
 .scl-venues-line{margin-top:15px;padding-top:13px;border-top:1px solid #ffffff30;display:flex;flex-wrap:wrap;gap:8px 18px;color:#f4f4f6;font-size:12px}
-.scl-cover-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:18px}
+.scl-cover-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:18px}
 .scl-cover-actions a{display:flex;align-items:center;justify-content:center;min-height:43px;border-radius:10px;border:1px solid #ffffff48;text-decoration:none;color:#fff;font-weight:900;font-size:13px;background:#ffffff0e;padding:8px;text-align:center}
 .scl-cover-actions a:first-child{background:#f36b21;border-color:#f36b21;color:#151515}
 .scl-cover-actions a:focus-visible,.scl-cover-back:focus-visible{outline:3px solid #ffb783;outline-offset:3px}
@@ -69,7 +91,7 @@ body.scl-page main{padding-top:14px}
 body.scl-page .kpis{display:none}
 body.scl-page #sclGenericObjectives{display:none}
 body.scl-page #detailsSection{margin-top:0!important}
-body.scl-page #itinerario,body.scl-page #alojamiento,body.scl-page #canchas{scroll-margin-top:100px}
+body.scl-page #itinerario,body.scl-page #alojamiento,body.scl-page #canchas,body.scl-page #transporte{scroll-margin-top:100px}
 @media(max-width:700px){
  .hero.scl-hero{padding:18px 16px 22px}
  .scl-cover-top{margin-bottom:15px}
@@ -82,7 +104,7 @@ body.scl-page #itinerario,body.scl-page #alojamiento,body.scl-page #canchas{scro
  .scl-date-tile small{font-size:9px}
  .scl-cover-tags{margin-top:14px}
  .scl-venues-line{font-size:11px;margin-top:11px}
- .scl-cover-actions{margin-top:13px;gap:6px}
+ .scl-cover-actions{margin-top:13px;gap:6px;grid-template-columns:repeat(2,minmax(0,1fr))}
  .scl-cover-actions a{font-size:12px;min-height:42px;padding:7px 5px}
  body.scl-page main{padding:12px 14px 85px}
 }
@@ -97,6 +119,46 @@ body.scl-page #itinerario,body.scl-page #alojamiento,body.scl-page #canchas{scro
 <main><div class="kpis"><div class="k"><span>Fecha</span><b id="dates">—</b></div><div class="k"><span>Ubicación</span><b id="location">—</b></div><div class="k"><span>Estado</span><b id="state">—</b></div></div>
 <section class="card" style="margin-top:14px"><h2>🎯 Objetivos</h2><div id="goals" class="empty">Sin objetivos publicados aún.</div></section>
 <section id="tributeSection" class="tribute" style="display:none"><div class="eyebrow">El origen de la Copa FUFY</div><h2 id="tributeTitle"></h2><h3 id="tributeName"></h3><p id="tributeText"></p><blockquote id="tributeClosing"></blockquote></section><section id="detailsSection" style="margin-top:14px;display:none"><div id="details" class="detailGrid"></div></section>
+
+<section id="transporte" class="detailCard scl-transport-standalone" aria-labelledby="metroGuideTitle">
+  <h2 id="metroGuideTitle">🚇 Cómo llegar a las canchas · Metro económico</h2>
+  <p class="scl-t-intro">Desde <strong>Hostal Laredo Top</strong> (Laredo 8497, Las Condes), dirigirse a <b>Metro Los Dominicos, Línea 1</b>. <a href="https://www.google.com/maps/dir/?api=1&amp;origin=Laredo%20Top%2C%20Laredo%208497%2C%20Las%20Condes%2C%20Santiago%2C%20Chile&amp;destination=Metro%20Los%20Dominicos%2C%20Las%20Condes%2C%20Santiago%2C%20Chile&amp;travelmode=walking" target="_blank" rel="noopener">Ver caminata hostal → Metro en Google Maps</a>. Estas rutas son sencillas para viajar por grupos de familias.</p>
+  <div class="scl-t-routes">
+    <section class="scl-t-route">
+      <h3>🏉 Vie 6 y sáb 7 · Stade Français</h3>
+      <ol>
+        <li>Entrar en <b>Los Dominicos (L1)</b>.</li>
+        <li>Tomar el Metro <b>dirección San Pablo</b>.</li>
+        <li>Bajar en <b>El Golf (L1)</b>: <b>sin transbordos</b>.</li>
+        <li>Caminar unos <b>9–12 min</b> hasta <b>Av. Mariano Sánchez Fontecilla 498</b>, Las Condes.</li>
+      </ol>
+      <a class="docbtn" href="https://www.google.com/maps/dir/?api=1&amp;origin=Laredo%20Top%2C%20Laredo%208497%2C%20Las%20Condes%2C%20Santiago%2C%20Chile&amp;destination=Stade%20Fran%C3%A7ais%2C%20Av.%20Mariano%20S%C3%A1nchez%20Fontecilla%20498%2C%20Las%20Condes%2C%20Santiago%2C%20Chile&amp;travelmode=transit" target="_blank" rel="noopener">🗺️ Ver ruta en transporte público</a>
+    </section>
+    <section class="scl-t-route">
+      <h3>🏉 Dom 8 · Country Club</h3>
+      <ol>
+        <li>Subir en <b>Los Dominicos (L1)</b>, dirección <b>San Pablo</b>.</li>
+        <li>Bajar en <b>Tobalaba</b> y combinar a <b>Línea 4, dirección Plaza de Puente Alto</b>.</li>
+        <li>Bajar en <b>Príncipe de Gales (L4)</b>.</li>
+        <li>Caminar unos <b>5–10 min</b> hacia <b>Las Arañas 1901, La Reina</b>; confirmar el acceso a las canchas de rugby con el anfitrión.</li>
+      </ol>
+      <a class="docbtn" href="https://www.google.com/maps/dir/?api=1&amp;origin=Laredo%20Top%2C%20Laredo%208497%2C%20Las%20Condes%2C%20Santiago%2C%20Chile&amp;destination=Prince%20of%20Wales%20Country%20Club%2C%20Las%20Ara%C3%B1as%201901%2C%20La%20Reina%2C%20Santiago%2C%20Chile&amp;travelmode=transit" target="_blank" rel="noopener">🗺️ Ver ruta en transporte público</a>
+    </section>
+  </div>
+  <div class="scl-t-price">
+    <h3>💰 Gasto aproximado ida y vuelta</h3>
+    <table aria-label="Tarifa de Metro estimada por adulto"><thead><tr><th>Día</th><th>Valor por adulto</th></tr></thead><tbody>
+      <tr><td>Viernes 6 (ida valle, vuelta después de las 20:45)</td><td>$1.550</td></tr>
+      <tr><td>Sábado 7</td><td>$1.630</td></tr>
+      <tr><td>Domingo 8</td><td>$1.630</td></tr>
+      <tr><td><b>Total por adulto · 3 días</b></td><td><b>$4.810</b></td></tr>
+    </tbody></table>
+    <p><b>Ejemplo de presupuesto para 68 personas:</b> 39 adultos con tarifa normal y 29 escolares gratuitos habilitados: <b>$187.590</b> por los 3 días. Si todos pagan tarifa adulta, el máximo estimado en estos seis trayectos sería <b>$327.080</b>, sin contar tarjetas bip! nuevas.</p>
+    <p><b>Niños y escolares:</b> básica $0 si aplica la gratuidad y está habilitada (desde 5.º básico, TNE válida para Santiago); media con TNE $260 por viaje. Para estudiantes que vienen de regiones, verificar activación con Junaeb. Sin beneficio activo, considerar tarifa adulta.</p>
+    <p><b>Tarifas de referencia 2026:</b> Metro bajo $735, valle $815 y punta $895; micro Red $795. Tarjeta bip! nueva $1.550 sin saldo. <a href="https://www.red.cl/tarifas-y-recargas/conoce-las-tarifas/" target="_blank" rel="noopener">Ver tarifas oficiales actualizadas</a>.</p>
+  </div>
+  <p class="scl-t-warning"><b>Consejo para los apoderados:</b> coordinar grupos de niños con un adulto responsable, llevar las tarjetas o medio de pago listos y fijar un punto de encuentro. Los domingos la red de Metro abre desde las 07:30. Revisar horario, estado del servicio y último tren del viernes. Google Maps puede mostrar otra combinación o micro según la hora; seleccionen la opción Metro.</p>
+</section>
 <section id="linksSection" class="card" style="margin-top:14px;display:none"><h2>📄 Documentos públicos</h2><div id="links" class="links"></div></section>
 <section class="support"><h2>🤝 Súmate al proyecto</h2><p>Gigantes de Azapa desarrolla estos proyectos con trabajo de familias, comunidad y auspiciadores. El apoyo puede transformarse en transporte, alimentación, hidratación, premios, implementación o experiencias deportivas para nuestros jugadores.</p><a href="sponsors.html">Quiero apoyar a Gigantes</a></section><section class="card" style="margin-top:14px"><h2>📸 Memoria del proyecto</h2><div id="gallery" class="gallery"><div class="empty">Las imágenes autorizadas aparecerán aquí.</div></div></section></main>
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
@@ -125,7 +187,7 @@ if(String(p.code||'').toUpperCase()==='SCL2026'){
  '<div class="scl-cover-main"><div><h1>Santiago <span>2026</span></h1><p class="scl-cover-desc">Tres días para jugar, compartir y crecer juntos. Desde Arica a nuevas canchas.</p></div><div class="scl-date-tile" aria-label="Del 6 al 8 de noviembre de 2026"><strong>06–08</strong><span>NOVIEMBRE</span><small>VIERNES A DOMINGO</small></div></div>'+
  '<div class="scl-cover-tags"><span>M10</span><span>M12</span><span>M14</span><span>CLASSIC</span></div>'+
  '<div class="scl-venues-line"><span>🏉 6 y 7 · Stade Français</span><span>🏉 8 · Country Club</span></div>'+
- '<nav class="scl-cover-actions" aria-label="Accesos de la gira"><a href="#itinerario">📅 Programa</a><a href="#alojamiento">🏨 Hostal</a><a href="#canchas">📍 Canchas</a></nav>'+
+ '<nav class="scl-cover-actions" aria-label="Accesos de la gira"><a href="#itinerario">📅 Programa</a><a href="#alojamiento">🏨 Hostal</a><a href="#canchas">📍 Canchas</a><a href="#transporte">🚇 Cómo llegar</a></nav>'+
  '</div>');
 }
 
