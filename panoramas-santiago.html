@@ -1,61 +1,58 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
-<title>Panoramas y votación · Gira Santiago 2026</title>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panoramas recreativos · Gira Santiago 2026</title>
 <style>
-:root{--o:#eb6b25;--ink:#111827;--line:#e5e7eb;--muted:#667085}*{box-sizing:border-box}body{background:#f4f6f8;color:var(--ink);font-family:Arial,system-ui;margin:0}header{background:#111827;color:white;padding:19px}header div,main{max-width:1050px;margin:auto}header a{color:#ffb989}.card{border:1px solid var(--line);background:white;border-radius:16px;padding:17px;margin:14px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:13px}.option{border:1px solid #e5e7eb;border-radius:14px;padding:16px;background:white;display:flex;flex-direction:column;gap:9px}.option h3{margin:0;font-size:18px}.option p{margin:0;font-size:13px;line-height:1.5}.muted{color:var(--muted)}.pill{border-radius:50px;background:#fff7ed;color:#9a3412;padding:5px 9px;font-weight:800;font-size:11px;display:inline-block}.pill.ok{background:#ecfdf5;color:#166534}.pill.no{background:#f3f4f6;color:#475467}.price{font-weight:900;font-size:21px}.btn{background:var(--o);border:0;border-radius:9px;padding:11px 13px;color:white;font-weight:800;cursor:pointer}.btn:disabled{opacity:.55;cursor:not-allowed}.btn.secondary{background:#111827}.meta{font-size:12px;color:#475467}.meta a{color:#9a3412}.results{border-top:1px solid var(--line);padding-top:10px}.bar{height:7px;background:#eee;border-radius:20px;overflow:hidden}.bar span{height:100%;display:block;background:#ef7b35}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.notice{border:1px solid #fed7aa;background:#fff7ed;border-radius:10px;padding:13px;line-height:1.5}.hidden{display:none}.summary{display:flex;gap:16px;flex-wrap:wrap}.summary strong{display:block;font-size:24px}@media(max-width:600px){header{padding:14px}.card{padding:13px}.option{padding:13px}}
+:root{--orange:#ed6b28;--ink:#17202f;--gray:#667085;--border:#e4e7ec}*{box-sizing:border-box}
+body{font-family:Arial,system-ui;margin:0;background:#f5f6f9;color:var(--ink)}
+header{background:#101827;color:#fff;padding:19px 15px}header>div,main{max-width:1110px;margin:auto}header a{color:#ffbc8b;text-decoration:none}
+header h1{font-size:clamp(23px,4vw,32px);margin:0 0 8px}
+main{padding:16px 12px 50px}.notice{padding:15px;background:#fff8ef;border:1px solid #f1d8c3;border-radius:14px;line-height:1.55;font-size:14px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:18px 0}
+h2{margin:0 0 12px;font-size:21px}.sub{font-size:13px;color:var(--gray)}
+.card{border:1px solid var(--border);background:#fff;border-radius:15px;padding:17px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.option{display:flex;flex-direction:column;gap:11px;box-shadow:0 2px 9px #15242f08}
+.option h3{font-size:19px;line-height:1.3;margin:0}.option p{margin:0;font-size:13px;line-height:1.5}
+.price{font-weight:800;font-size:22px;color:#98431c}.pill{display:inline-block;background:#eff5ff;color:#344a70;border-radius:30px;padding:5px 9px;font-size:11px;font-weight:700}.pill.low{background:#e7faeb;color:#156739}.pill.warn{background:#fff3da;color:#875600}
+.label{font-weight:700;color:#253146}.links{margin-top:auto;display:flex;flex-wrap:wrap;gap:8px}
+.links a{background:#111827;border-radius:8px;padding:9px 11px;color:#fff;text-decoration:none;font-weight:700;font-size:12px}
+.links a.secondary{background:#fff;border:1px solid #d5d8dd;color:#252b34}
+.meta{font-size:12px;color:#5c6575}.mini{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap}
+.num{font-weight:800;color:#1f2937}.footer{margin-top:19px}.foot{font-size:12px;color:#5c6575}
 </style></head><body>
-<header><div><h1>🏉 Santiago 2026 · Panoramas y votación</h1><a href="mi_gigantes.html">← Volver a Mi Gigante</a></div></header>
-<main><div class="card notice"><b>Convivencia sábado 7 de noviembre, después de los partidos.</b> Objetivo: actividades de hasta $5.000 por niño. El 8 de noviembre es domingo. Precios de referencia; reservas, descuentos y fechas específicas deben confirmarse directamente con los recintos. Las actividades aún sin precio viable se muestran para evaluación, pero no permiten votar.</div>
-<div class="card" id="status">Revisando acceso y cargando panoramas…</div>
-<section class="card"><h2>📊 Votación de apoderados</h2><div id="summary">Cargando resultados…</div><p class="muted" style="font-size:12px">Un voto por cuenta de apoderado vinculada a un jugador de la gira, incluso si tiene más de un hijo. Puedes cambiar de preferencia antes del cierre. Gana la alternativa más votada; ante empate, la Directiva debe resolverlo. Los resultados son agregados, sin nombres.</p></section>
-<section><h2>🎟️ Alternativas y reservas</h2><div id="cards" class="grid"></div></section>
-<div class="card"><b>Directiva / Control Center:</b> revisar contactos, confirmar cupos y precios, y anunciar la ganadora antes de reservar. <a href="gestion/gira-santiago.html">Abrir Control Center de la gira</a>.</div>
+<header><div><h1>🏉 Panoramas para jugar y divertirse</h1><a href="proyecto.html?slug=gira-santiago-2026">← Volver a la Gira Santiago</a></div></header>
+<main>
+<div class="notice"><b>Sábado 7 de noviembre · después de los partidos</b><p>Este catálogo reúne alternativas para que los niños salten, corran, jueguen y compartan como equipo. La directiva coordina el panorama según disponibilidad, presupuesto y transporte. <b>No hay votación.</b> Precios publicados de referencia, no reservas confirmadas. Considerar además los tiempos de traslado y el cansancio acumulado después del rugby.</p></div>
+<div class="top"><div><h2>🎮 Diversión y aventura en Santiago</h2><span class="sub" id="counter">Cargando actividades…</span></div><span class="pill low">29 jugadores confirmados · presupuesto ideal $5.000 c/u</span></div>
+<div id="message" class="card" style="margin-bottom:12px">Cargando panoramas recreativos…</div>
+<div id="cards" class="grid"></div>
+<div class="card footer"><b>Coordinación Gigantes de Azapa</b><p class="foot">Para cualquier actividad habrá que comprobar cupos para 29 a 30 jugadores, tarifa grupal, eventual acompañamiento adulto y ruta desde Laredo Top. No se ha reservado ninguna actividad desde esta página.</p><a href="proyecto.html?slug=gira-santiago-2026">Consultar itinerario y alojamiento</a></div>
 </main>
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
-const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
-let poll,opts=[],me=null,canVote=false,myVote=null,eligibleCount=0;
-const money=n=>'$'+Number(n||0).toLocaleString('es-CL'),safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const link=(u,label)=>u&&/^https:\/\//i.test(u)?'<a href="'+safe(u)+'" rel="noopener noreferrer" target="_blank">'+label+'</a>':'';
-(async()=>{try{
- const {data:{session}}=await sb.auth.getSession(); if(!session){location.href='gestion/login.html?next=../panoramas-santiago.html';return}
- me=session.user.id;
- const pp=await sb.from('travel_activity_polls').select('*').eq('project_id','cb739817-50ee-4060-896a-2e3286eb5a00').single();if(pp.error)throw pp.error;poll=pp.data;
- const [os,gl,own]=await Promise.all([
- sb.from('travel_activity_options').select('*').eq('poll_id',poll.id).order('sort_order'),
- sb.from('guardian_links').select('child_person_id').eq('guardian_user_id',me),
- sb.from('people').select('id').eq('auth_user_id',me).maybeSingle()
- ]);
- if(os.error)throw os.error;opts=os.data||[];
- const children=(gl.data||[]).map(x=>x.child_person_id);
- const eligibleIds=[...children,...(own.data?[own.data.id]:[])];
- // The database remains authoritative: write policies validate authenticated guardians of trip players.
- const trip=eligibleIds.length?await sb.from('travel_participants').select('person_id,role,attendance_status').eq('project_id',poll.project_id).in('person_id',eligibleIds):{data:[]};
- const eligibility=await sb.rpc('can_vote_santiago_panorama');if(eligibility.error)throw eligibility.error;canVote=eligibility.data===true;
- const ownVote=await sb.from('travel_activity_votes').select('option_id').eq('poll_id',poll.id).eq('voter_user_id',me).maybeSingle();if(ownVote.error)throw ownVote.error;
- myVote=ownVote.data?.option_id||null;
- document.getElementById('status').innerHTML=canVote?'<span class="pill ok">✅ Apoderado habilitado para votar</span>':'<span class="pill no">Consulta habilitada · Sin voto: requiere vínculo de apoderado y jugador participante en la gira</span>';
- draw();
-}catch(e){document.getElementById('status').textContent='No fue posible cargar la votación: '+(e.message||e)} })();
-function draw(){
- const total=opts.reduce((s,o)=>s+Number(o.vote_count||0),0), max=Math.max(0,...opts.map(o=>Number(o.vote_count||0)));
- const open=poll.status==='open'&&(!poll.closes_at||Date.now()<new Date(poll.closes_at).getTime());
- document.getElementById('summary').innerHTML='<div class="summary"><div><strong>'+total+'</strong><span class="muted">votos registrados</span></div><div><strong>'+opts.filter(o=>o.eligible_for_vote).length+'</strong><span class="muted">alternativas votables</span></div><div><strong>'+(open?'Abierta':'Cerrada')+'</strong><span class="muted">estado</span></div></div><p class="muted">Cierre: '+(poll.closes_at?new Date(poll.closes_at).toLocaleString('es-CL'):'por definir')+'. '+(myVote?'Tu voto está registrado; puedes modificarlo antes del cierre.':'Selecciona una actividad elegible para votar.')+'</p>';
- document.getElementById('cards').innerHTML=opts.map(o=>{const eligible=o.eligible_for_vote&&o.estimated_child_max_clp<=poll.budget_cap_clp;
- const pct=total?Math.round(100*(o.vote_count||0)/total):0;
- const price=o.estimated_child_min_clp===o.estimated_child_max_clp?money(o.estimated_child_min_clp):money(o.estimated_child_min_clp)+' a '+money(o.estimated_child_max_clp);
- return '<article class="option"><div class="row"><span class="pill '+(eligible?'ok':'no')+'">'+(eligible?'En votación':'Pendiente de tarifa u horario')+'</span><span class="price">'+price+'</span></div><h3>'+safe(o.title)+'</h3><p>'+safe(o.description)+'</p><p class="meta"><b>📍 Dirección:</b> '+safe(o.address)+' '+link(o.map_url,'🗺️ Ver mapa')+'</p><p class="meta"><b>⏱️ Tiempo:</b> '+safe(o.duration_notes)+'</p><p class="meta"><b>🚌 Traslado:</b> '+safe(o.transport_notes)+'</p><p class="meta"><b>💵 Condiciones:</b> '+safe(o.price_notes)+'</p><p class="meta"><b>📞 Reservas:</b> '+safe(o.contact_phone||'Sin teléfono confirmado')+(o.contact_email?' · <a href="mailto:'+safe(o.contact_email)+'">'+safe(o.contact_email)+'</a>':'')+'</p><p class="meta">'+link(o.source_url,'Información oficial ↗')+' · Reserva: '+safe(o.booking_status)+'</p><div class="results"><div class="row"><b>'+Number(o.vote_count||0)+' votos</b><span>'+pct+'%</span></div><div class="bar"><span style="width:'+pct+'%"></span></div></div><button class="btn '+(myVote===o.id?'secondary':'')+'" data-vote="'+safe(o.id)+'" '+(!open||!eligible||!canVote?'disabled':'')+'>'+(myVote===o.id?'✓ Tu elección':'Votar por este panorama')+'</button></article>'}).join('');
- document.getElementById('cards').querySelectorAll('[data-vote]').forEach(b=>b.onclick=()=>vote(b.dataset.vote));
-}
-async function vote(id){
- if(!canVote||poll.status!=='open'||(poll.closes_at&&Date.now()>=new Date(poll.closes_at).getTime()))return;
- const option=opts.find(o=>o.id===id);if(!option||!option.eligible_for_vote||option.estimated_child_max_clp>poll.budget_cap_clp)return;
- if(myVote===id)return;
- document.getElementById('status').textContent='Registrando tu voto…';
- let r=myVote?await sb.from('travel_activity_votes').update({option_id:id,voted_at:new Date().toISOString()}).eq('poll_id',poll.id).eq('voter_user_id',me):await sb.from('travel_activity_votes').insert({poll_id:poll.id,option_id:id,voter_user_id:me});
- if(r.error){document.getElementById('status').textContent='No se registró el voto: '+r.error.message;return}
- myVote=id;
- const rr=await sb.from('travel_activity_options').select('*').eq('poll_id',poll.id).order('sort_order');if(!rr.error)opts=rr.data||opts;
- document.getElementById('status').innerHTML='<span class="pill ok">✅ Voto guardado correctamente</span>';draw();
-}
+const PROJECT='cb739817-50ee-4060-896a-2e3286eb5a00';
+const allowed=new Set(['parque-dominicos','santa-rosa','goolfy','araucanoparque','parque-aventura-inmersivo','minecraft-moonlight-trail','mall-sport-autopista84','dopamine-land','infinity-jump','kidzania','parque-infancia','juegos-diana','happyland-costanera']);
+const priority=['parque-aventura-inmersivo','infinity-jump','happyland-costanera','goolfy','mall-sport-autopista84','juegos-diana','dopamine-land','minecraft-moonlight-trail','kidzania','parque-dominicos','araucanoparque','parque-infancia','santa-rosa'];
+const clean=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+const price=n=>'$'+Number(n).toLocaleString('es-CL');
+const link=(url,label,cl='secondary')=>url&&/^https:\/\//i.test(url)?'<a class="'+cl+'" target="_blank" rel="noopener noreferrer" href="'+clean(url)+'">'+label+'</a>':'';
+(async()=>{
+ try{
+ const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+ const p=await sb.from('travel_activity_polls').select('id').eq('project_id',PROJECT).single();if(p.error)throw p.error;
+ const r=await sb.from('travel_activity_options').select('*').eq('poll_id',p.data.id);
+ if(r.error)throw r.error;
+ const opts=(r.data||[]).filter(o=>allowed.has(o.slug)).sort((a,b)=>priority.indexOf(a.slug)-priority.indexOf(b.slug));
+ document.getElementById('counter').textContent=opts.length+' actividades recreativas disponibles para consultar';
+ document.getElementById('message').style.display='none';
+ document.getElementById('cards').innerHTML=opts.map(o=>{
+ const unpriced=o.slug==='happyland-costanera'||(o.estimated_child_min_clp===0&&o.estimated_child_max_clp===0&&o.price_notes&&/no confirmado|no interpretar|cotizaci/i.test(o.price_notes));
+ const min=Number(o.estimated_child_min_clp)||0,max=Number(o.estimated_child_max_clp)||0;
+ const amount=unpriced?'Por cotizar':min===max?(min===0?'Gratis':price(min)):min===0?'Gratis / hasta '+price(max):price(min)+'–'+price(max);
+ const group=unpriced?'Consultar tarifa para los 29 jugadores':min===max&&min>0?'29 niños: '+price(29*min):min===0&&max===0?'29 niños: sin entrada':min>0?'29 niños: '+price(29*min)+'–'+price(29*max):'Hasta '+price(29*max)+' (referencial)';
+ const affordable=(!unpriced&&max<=5000);
+ return '<article class="card option"><div class="mini"><span class="pill '+(unpriced?'warn':affordable?'low':'')+'">'+(unpriced?'Precio pendiente':affordable?'Dentro del presupuesto':'Cotizar descuento grupal')+'</span><span class="num">29 niños</span></div><h3>'+clean(o.title)+'</h3><div><span class="price">'+amount+'</span><p class="meta">'+group+'</p></div><p>'+clean(o.description)+'</p><p><span class="label">📍 Ubicación:</span> '+clean(o.address||'Por confirmar')+'</p><p><span class="label">⏱️ Duración y horario:</span> '+clean(o.duration_notes||'Por confirmar')+'</p><p><span class="label">🚌 Traslado:</span> '+clean(o.transport_notes||'Consultar ruta')+'</p><p><span class="label">💰 Tarifas y condiciones:</span> '+clean(o.price_notes||'Cotizar directamente con el recinto')+'</p><p><span class="label">📞 Contacto:</span> '+clean(o.contact_phone||'Sin teléfono confirmado')+(o.contact_email?' · <a href="mailto:'+clean(o.contact_email)+'">'+clean(o.contact_email)+'</a>':'')+'</p><div class="links">'+link(o.map_url,'📍 Ver mapa','primary')+link(o.source_url,'🌐 Sitio y reservas')+'</div></article>';
+ }).join('');
+ }catch(e){document.getElementById('message').textContent='No pudimos cargar los panoramas. Revisa conexión o inténtalo nuevamente. '+(e.message||'')}
+})();
 </script></body></html>
