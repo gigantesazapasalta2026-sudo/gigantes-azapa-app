@@ -15,7 +15,7 @@ const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHAB
 const req=[
  {type:'profile_photo',label:'Foto del jugador',accept:'image/*',help:'La foto identifica al jugador en su ficha y podrá utilizarse en el álbum público del equipo sólo si la autorización de imagen está en Sí.'},
  {type:'identity_card',label:'Cédula vigente',accept:'image/*,application/pdf',help:'Nos permite verificar identidad y vigencia. Es especialmente importante antes de viajes para evitar problemas por documentos vencidos o datos incorrectos.'},
- {type:'insurance',label:'Seguro Chile Rugby',accept:'image/*,application/pdf',help:'El respaldo del seguro permite al club verificar que la cobertura esté vigente y actuar con mayor rapidez si ocurre una lesión o emergencia.'},
+ {type:'insurance',label:'Seguro Chile Rugby',accept:'image/*,application/pdf',help:'Si BDChile muestra Seguro PAGO, el club reconoce el pago sin exigir otro comprobante. Puedes subir opcionalmente una captura de la pantalla de BDChile que diga seguro pagado.'},
  {type:'medical_authorization',label:'Autorización médica',accept:'image/*,application/pdf',help:'Autoriza primeros auxilios y coordinación de una derivación de urgencia cuando corresponda, y mantiene disponibles antecedentes relevantes para una atención segura.'}
 ];
 function badge(s){s=s||'Pendiente';let c=/approved|pago|fichado|tiene/i.test(s)?'ok':/rejected|expired|overdue|no tiene/i.test(s)?'bad':'warn';return '<span class="badge '+c+'">'+s+'</span>'}
@@ -74,10 +74,15 @@ async function selectPerson(id){person=people.find(x=>x.id===id);family.querySel
  name.textContent=person.full_name;avatar.title='Foto de identificación del jugador. Si la autorización de imagen está en Sí, podrá mostrarse también en el álbum público del equipo.';avatar.src='https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg';const profilePhoto=(d||[]).find(z=>z.document_type==='profile_photo'&&z.status==='approved');if(profilePhoto){const signed=await sb.storage.from('member-private').createSignedUrl(profilePhoto.storage_path,3600);if(!signed.error&&signed.data?.signedUrl)avatar.src=signed.data.signedUrl}meta.textContent=[person.category,person.rut_passport?'RUT/ID terminado en '+person.rut_passport.slice(-4):'RUT pendiente'].filter(Boolean).join(' · ');
  federation.innerHTML=status('Inscripción BD',f?.federation_status,'Confirma que el jugador está incorporado en el registro de Chile Rugby.')+status('Pago registro',f?.payment_status,'Acredita que el proceso de registro federativo quedó pagado y vigente.')+status('EPC',f?.epc_status,'El EPC forma parte de los antecedentes exigidos por Chile Rugby para mantener la situación del jugador regularizada.')+status('Seguro',f?.insurance_status,'Es fundamental para activar el protocolo correspondiente ante una lesión o accidente cubierto.');
  health.textContent=[person.health_system,person.health_provider].filter(Boolean).join(' · ')||'Pendiente';health.className='badge '+(person.health_system?'ok':'warn');
- documents.innerHTML=req.map(x=>docRow(x,d||[])).join('')+imageAuthorizationRow();const pendingDocs=req.filter(x=>!(d||[]).some(z=>z.document_type===x.type&&z.status==='approved')).length+(person.image_authorization===null||person.image_authorization===undefined?1:0);
+ documents.innerHTML=req.map(x=>docRow(x,d||[],f)).join('')+imageAuthorizationRow();const pendingDocs=req.filter(x=>!(x.type==='insurance'&&String(f?.insurance_status||'').trim().toUpperCase()==='PAGO')&&!(d||[]).some(z=>z.document_type===x.type&&z.status==='approved')).length+(person.image_authorization===null||person.image_authorization===undefined?1:0);
  const pendingFed=[f?.federation_status,f?.payment_status,f?.epc_status,f?.insurance_status].filter(x=>!x||!/fichado|pago|tiene/i.test(x)).length;
  const pendingCharges=(c||[]).filter(x=>!['paid','waived'].includes(x.status)&&Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0))>0);const sum=pendingCharges.reduce((a,x)=>a+Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0)),0);
- const pct=Number(reqSummary?.completion_percent||0),pendingCount=Number(reqSummary?.pending_requirements??(pendingDocs+pendingFed));completionKpi.textContent=pct+'%';pendingKpi.textContent=pendingCount;completionFill.style.width=Math.max(0,Math.min(100,pct))+'%';completionText.textContent=pendingCount?pct+'% completa · '+pendingCount+' requisito(s) por resolver':'100% completa · ficha al día';dueKpi.textContent='$'+sum.toLocaleString('es-CL');overall.textContent=(pendingCount+pendingCharges.length)?'Tienes requisitos por resolver':'Ficha al día';renderPendingRequirements(reqStatus||[]);
+ const insurancePaid=String(f?.insurance_status||'').trim().toUpperCase()==='PAGO';
+ const statusRows=(reqStatus||[]).filter(x=>!(insurancePaid&&x.requirement_code==='insurance_document'));
+ const originalRequirements=(reqStatus||[]).length;
+ const completedRequirements=(reqStatus||[]).filter(x=>x.complete).length;
+ const pct=originalRequirements?Math.round(100*(completedRequirements+(insurancePaid&&reqStatus?.some(x=>x.requirement_code==='insurance_document'&&!x.complete)?1:0))/originalRequirements):Number(reqSummary?.completion_percent||0);
+ const pendingCount=statusRows.filter(x=>!x.complete).length;completionKpi.textContent=pct+'%';pendingKpi.textContent=pendingCount;completionFill.style.width=Math.max(0,Math.min(100,pct))+'%';completionText.textContent=pendingCount?pct+'% completa · '+pendingCount+' requisito(s) por resolver':'100% completa · ficha al día';dueKpi.textContent='$'+sum.toLocaleString('es-CL');overall.textContent=(pendingCount+pendingCharges.length)?'Tienes requisitos por resolver':'Ficha al día';renderPendingRequirements(statusRows);
  renderDues(c||[],pay||[]);renderPayments(pay||[]);renderPlayerDevelopment((dev||[])[0]);renderFamilyContacts(contacts||[],contactReqs||[]);injuryLink.href='lesionado.html?person='+encodeURIComponent(id);renderPersonalProfile();renderLeaveClub()
 }
 function escv(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
@@ -150,7 +155,10 @@ async function savePersonalProfile(){
  await selectPerson(person.id);
  profileMsg.textContent='✓ Datos actualizados correctamente.';
 }
-function docRow(x,docs){
+function docRow(x,docs,fed){
+ const insurancePaid=x.type==='insurance'&&String(fed?.insurance_status||'').trim().toUpperCase()==='PAGO';
+ if(insurancePaid){const d=docs.find(z=>z.document_type==='insurance');return '<div class="status"><div><div class="docTitle"><b>Seguro Chile Rugby</b>'+help(x.help)+'</div><div class="docHint">✓ Pago confirmado en BDChile. No necesitas subir otro comprobante. Si deseas, puedes adjuntar una captura de la pantalla de pago.</div></div>'+badge('PAGO')+'<div class="docActions"><button class="btn secondary" onclick="pick(\'insurance\',\'image/*,application/pdf\')">'+(d?'Actualizar captura':'Subir captura (opcional)')+'</button></div></div>';}
+
  let d=docs.find(z=>z.document_type===x.type);
  let actions='';
  if(x.type==='profile_photo'){
