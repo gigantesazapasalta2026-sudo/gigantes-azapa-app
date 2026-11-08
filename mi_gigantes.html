@@ -173,7 +173,7 @@ function docRow(x,docs,fed){
 function imageAuthorizationRow(){
  const v=person?.image_authorization;
  const h='Define si el club puede usar fotografías institucionales no sensibles del jugador, por ejemplo en el álbum del equipo y comunicaciones deportivas del club. Puedes cambiar esta decisión más adelante.';
- return '<div class="status"><div><div class="docTitle"><b>Autorización de imagen</b>'+help(h)+'</div><div class="docHint">'+(v===true?'Autorizada':v===false?'No autorizada':'Debes elegir Sí o No')+'</div></div>'+badge(v===true?'Autorizada':v===false?'No autorizada':'Pendiente')+'<div class="consentActions"><button class="consentBtn yes '+(v===true?'active':'')+'" onclick="setImageAuthorization(true)">Sí</button><button class="consentBtn no '+(v===false?'active':'')+'" onclick="setImageAuthorization(false)">No</button></div></div>'
+ return '<div class="status"><div><div class="docTitle"><b>Autorización de imagen</b>'+help(h)+'</div><div class="docHint">'+(v===true?'Autorizada':v===false?'No autorizada':'Debes elegir Sí o No')+'</div><div id="imageAuthorizationFeedback" role="status" aria-live="polite" style="font-size:12px;margin-top:6px"></div></div>'+badge(v===true?'Autorizada':v===false?'No autorizada':'Pendiente')+'<div class="consentActions"><button class="consentBtn yes '+(v===true?'active':'')+'" onclick="setImageAuthorization(true)">Sí</button><button class="consentBtn no '+(v===false?'active':'')+'" onclick="setImageAuthorization(false)">No</button></div></div>'
 }
 async function clearPublicAlbumPhotoFiles(){
  if(!person)return;
@@ -205,13 +205,33 @@ async function publishCurrentProfilePhotoToAlbum(){
  if(up.error){console.error('No se pudo publicar foto en álbum',up.error);return}
  await sb.rpc('sync_member_album_photo',{target_person:person.id,public_object_path:publicPath});
 }
+let imageAuthorizationSaving=false;
 async function setImageAuthorization(value){
- if(!person)return;
- const {data,error}=await sb.from('person_profile_updates').insert({person_id:person.id,payload:{image_authorization:value}}).select('new_snapshot').single();
- if(error){alert('No fue posible guardar la autorización: '+error.message);return}
- person={...person,...(data?.new_snapshot||{}),image_authorization:value};people=people.map(p=>p.id===person.id?person:p);
- await publishCurrentProfilePhotoToAlbum();
- await selectPerson(person.id);
+ if(!person||imageAuthorizationSaving)return;
+ const targetId=person.id;
+ const row=document.getElementById('imageAuthorizationFeedback');
+ const buttons=document.querySelectorAll('.consentActions .consentBtn');
+ const show=(message,error=false)=>{const el=document.getElementById('imageAuthorizationFeedback');if(el){el.textContent=message;el.style.color=error?'#b42318':'#166534';}};
+ imageAuthorizationSaving=true;
+ buttons.forEach(b=>b.disabled=true);
+ show('Guardando autorización…');
+ try{
+   const {data:sessionData,error:sessionError}=await sb.auth.getUser();
+   if(sessionError||!sessionData?.user){show('Tu sesión venció. Ingresa nuevamente a Mi Gigantes.',true);return;}
+   const {data,error}=await sb.from('person_profile_updates').insert({person_id:targetId,payload:{image_authorization:value}}).select('new_snapshot').single();
+   if(error){show('No se pudo guardar: '+error.message+'. Si es la ficha de tu hijo, solicita a la Directiva verificar el vínculo de apoderado.',true);return;}
+   const snapshot=data?.new_snapshot||{};
+   person={...person,...snapshot,image_authorization:value};
+   people=people.map(p=>p.id===targetId?person:p);
+   const fresh=await sb.from('people').select('image_authorization').eq('id',targetId).maybeSingle();
+   if(fresh.error||fresh.data?.image_authorization!==value){
+     show('Se recibió la solicitud, pero todavía no se confirmó el cambio. Revisa tu vínculo de apoderado o contacta a la Directiva.',true);return;
+   }
+   show(value?'✓ Autorización guardada.':'✓ Preferencia guardada: no autorizada.');
+   try{await publishCurrentProfilePhotoToAlbum()}catch(photoError){console.warn('Sincronización del álbum pendiente',photoError);}
+   await selectPerson(targetId);
+ }catch(e){show('No fue posible completar el cambio: '+(e?.message||'Error de conexión'),true);}
+ finally{imageAuthorizationSaving=false;document.querySelectorAll('.consentActions .consentBtn').forEach(b=>b.disabled=false);}
 }
 function pick(type,accept){let i=document.createElement('input');i.type='file';i.accept=accept;i.onchange=()=>uploadDoc(type,i.files[0]);i.click()}
 async function uploadDoc(type,file){
