@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0b0f14">
+<title>Festival Arica 2027 · Control Center Gigantes de Azapa</title>
+<link rel="icon" href="../assets/logo-oficial-gigantes.jpg">
+<style>
+:root{--orange:#f36b21;--orange-light:#fff4e9;--ink:#111827;--sub:#64748b;--border:#e2e8f0;--green:#166534;--bg:#f4f6f9}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);font:14px/1.48 Inter,Arial,Helvetica,sans-serif;color:var(--ink)}
+a{color:#b5490d}button,input,select{font:inherit}button{cursor:pointer}
+header{background:linear-gradient(112deg,#111827,#281b17 70%,#5a2c16);color:#fff;padding:19px 20px 27px}
+.header-inner,main{max-width:1180px;margin:auto}.nav{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}
+.nav a{color:#ffbb88;font-size:13px;font-weight:800;text-decoration:none}.identity{display:flex;gap:13px;align-items:center}.identity img{width:60px;height:60px;object-fit:contain;background:#fff;border-radius:13px;padding:5px}
+.eyebrow{color:#ffad71;text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:900}
+h1{font-size:clamp(28px,5vw,43px);line-height:1.1;margin:4px 0 8px}.intro{color:#e2e8f0;max-width:800px;margin:0}
+.header-links{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}.header-links a{display:inline-flex;padding:8px 12px;border:1px solid #ffffff3b;border-radius:9px;color:#fff;text-decoration:none;font-size:12px;font-weight:800}
+.header-links a:first-child{background:var(--orange);border-color:var(--orange)}
+main{padding:22px 18px 48px}
+.notice{padding:13px 15px;border:1px solid #fcd9b8;background:var(--orange-light);border-radius:12px;color:#8c380c;margin-bottom:18px;line-height:1.6}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:18px}.kpi{background:#fff;padding:15px;border:1px solid var(--border);border-radius:13px}
+.kpi strong{display:block;font-size:25px;letter-spacing:-.04em}.kpi span{display:block;color:var(--sub);font-size:11px;font-weight:750}
+.tabs{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0}.tabs a{border:1px solid var(--border);border-radius:999px;background:#fff;color:#253044;text-decoration:none;font-size:12px;font-weight:800;padding:8px 12px}
+.section{margin:19px 0 25px;scroll-margin-top:15px}.section-head{display:flex;gap:10px;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.section-head h2{margin:0;font-size:21px}.muted{color:var(--sub);font-size:12px}.section-head .muted{max-width:600px}
+.card{background:#fff;border:1px solid var(--border);border-radius:15px;padding:17px}.days{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.day{border-left:5px solid var(--orange);border-radius:12px;background:#fff;padding:17px;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.day span{color:#9a3412;font-weight:900;font-size:11px;text-transform:uppercase}.day h3{margin:7px 0 8px;font-size:20px}.day p{color:#475569;margin:0;line-height:1.6}
+.day small{display:block;margin-top:10px;color:#a24516;font-weight:700}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.stack{display:grid;gap:9px}
+.item{border:1px solid var(--border);border-radius:11px;padding:13px;background:#fff;min-width:0}.item h3{font-size:14px;margin:0 0 5px}.item p{margin:5px 0;color:#475569;font-size:12px;line-height:1.5}
+.item .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}
+.item .tools label{font-size:11px;color:#475569;font-weight:700}
+input[type="text"],input[type="number"],input[type="url"],select{border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:8px;max-width:100%;min-height:36px}
+input[type="text"]{width:100%}input[type="number"]{width:115px}select{max-width:240px;font-size:12px}
+.btn{display:inline-block;border:0;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:900;background:var(--orange);color:white}
+.btn:disabled{opacity:.5;cursor:not-allowed}.btn.light{background:#f3f4f6;color:#111827;border:1px solid #d1d5db}
+.badge{display:inline-block;font-size:10px;font-weight:850;border-radius:999px;padding:4px 7px;color:#92400e;background:#fef3c7}
+.badge.green{color:#166534;background:#dcfce7}.badge.gray{color:#475569;background:#f1f5f9}
+.searchbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.searchbar input{min-width:220px;flex:1}
+.check-groups{display:grid;gap:10px}.group{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.group summary{padding:14px;font-size:14px;font-weight:900;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
+.group summary span{font-size:11px;color:var(--sub);font-weight:700}
+.group .content{border-top:1px solid var(--border);padding:14px}.group .content>div+div{border-top:1px solid #f1f5f9}
+.check-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0}.check-row input{margin:4px 0 0;accent-color:var(--orange);width:18px;height:18px}
+.check-row b{font-size:12px;display:block}.check-row small{display:block;color:var(--sub);font-size:11px}
+.amt{font-size:18px;font-weight:900;color:#174936}.budget-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px 0}
+.budget-item+.budget-item{border-top:1px solid #eef2f7}.budget-item h3{font-size:13px;margin:0}.budget-item p{font-size:11px;color:var(--sub);margin:3px 0}.budget-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.budget-form label{font-size:10px;font-weight:800;color:#475569}.budget-form label span{display:block}
+.bottom-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.bottom-links a{display:inline-flex;border:1px solid var(--border);padding:10px 12px;border-radius:9px;text-decoration:none;background:#fff;font-weight:800;font-size:12px}
+footer{max-width:1180px;margin:0 auto;padding:0 18px 30px;color:var(--sub);font-size:11px}
+.loading,.error{padding:16px;border:1px solid var(--border);background:#fff;border-radius:11px}.error{color:#991b1b}
+@media(max-width:880px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-2{grid-template-columns:1fr}.days{grid-template-columns:1fr}}
+@media(max-width:520px){header{padding:15px 15px 22px}main{padding:17px 12px 40px}.identity img{width:47px;height:47px}.nav{margin-bottom:20px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi{padding:12px}.section-head{display:block}.section-head .muted{display:block;margin-top:4px}.budget-item{grid-template-columns:1fr}.group summary{display:block}.group summary span{display:block;margin-top:3px}}
+</style>
+</head>
+<body>
+<header><div class="header-inner">
+  <div class="nav"><a href="index.html">← Control Center</a><a href="proyectos.html?code=FESTARICA2027">Ver ficha administrativa ↗</a></div>
+  <div class="identity"><img src="../assets/logo-oficial-gigantes.jpg" alt="Escudo de Gigantes de Azapa"><div><div class="eyebrow">Gigantes de Azapa · Coordinación 2027</div><h1>Festival de Rugby y Turismo</h1></div></div>
+  <p class="intro">Arica · 10 al 12 de diciembre de 2027 · M8, M10, M12 y M14. Planificación, gestiones municipales, delegaciones, recintos, protección y financiamiento.</p>
+  <div class="header-links"><a href="../proyecto.html?slug=festival-rugby-turismo-arica-2027" target="_blank" rel="noopener">Ver página pública</a><a href="proyectos.html?code=FESTARICA2027">Editar proyecto</a><a href="biblioteca.html">Documentos</a></div>
+</div></header>
+<main>
+<div class="notice"><b>Proyecto en preparación.</b> El 8 de diciembre de 2027 es miércoles feriado. Se proyectan actividades para <b>viernes 10, sábado 11 y domingo 12</b>. Sedes, invitaciones y subvenciones no están confirmadas. Esta pantalla es privada para personal autorizado.</div>
+<div id="authStatus" class="loading" role="status">Verificando sesión y permisos...</div>
+<div id="dashboard" hidden>
+<div class="kpis">
+  <div class="kpi"><strong id="kpiTasks">—</strong><span>Tareas completadas / total</span></div>
+  <div class="kpi"><strong id="kpiCheck">—</strong><span>Checklist completado / total</span></div>
+  <div class="kpi"><strong id="kpiTeams">—</strong><span>Clubes confirmados</span></div>
+  <div class="kpi"><strong id="kpiRequests">—</strong><span>Gestiones iniciadas / total</span></div>
+  <div class="kpi"><strong id="kpiBudget">—</strong><span>Costos cotizados incluidos</span></div>
+</div>
+<nav class="tabs" aria-label="Secciones del proyecto">
+  <a href="#programa">Programa</a><a href="#clubes">Clubes</a><a href="#gestiones">Gestiones</a><a href="#tareas">Tareas</a><a href="#checklist">Checklist</a><a href="#presupuesto">Presupuesto</a><a href="#hitos">Hitos</a><a href="#financiamiento">Fondos</a>
+</nav>
+<section id="programa" class="section"><div class="section-head"><h2>Programa preliminar</h2><span class="muted">La agenda se confirma después de obtener permisos y respuestas de los clubes.</span></div>
+  <div class="days">
+    <div class="day"><span>Viernes 10 · Diciembre 2027</span><h3>Rugby en pasto</h3><p>Festival formativo M8, M10, M12 y M14. Sede de pasto municipal o alternativa por confirmar.</p><small>Reserva de cancha pendiente</small></div>
+    <div class="day"><span>Sábado 11 · Diciembre 2027</span><h3>Rugby en arena</h3><p>Partidos por la tarde en cancha habilitada de Arica. Coordinar baños, duchas, aseo, hidratación y tercer tiempo.</p><small>Reserva de cancha y servicios pendiente</small></div>
+    <div class="day"><span>Domingo 12 · Diciembre 2027</span><h3>Gira turística</h3><p>Recorrido familiar por Arica para los visitantes. Programa, transportes y costos por definir.</p><small>Actividades sujetas a coordinación</small></div>
+  </div>
+</section>
+<div class="grid-2">
+  <section class="section" id="clubes"><div class="section-head"><h2>Clubes y delegaciones</h2><span class="muted">Solo “Confirmado” acredita respuesta formal.</span></div><div id="teamList" class="stack"></div></section>
+  <section class="section" id="gestiones"><div class="section-head"><h2>Gestiones externas</h2><span class="muted">Las cartas aún no se han enviado. Registrar estados reales y conservar respaldo.</span></div><div id="requestList" class="stack"></div></section>
+</div>
+<section class="section" id="tareas"><div class="section-head"><h2>Plan de tareas</h2><span class="muted">Responsables propuestos, por designar oficialmente. Las fechas son de gestión interna.</span></div>
+  <div class="searchbar"><input id="taskSearch" type="text" placeholder="Buscar tarea, área o código..." aria-label="Buscar tareas"><select id="taskFilter" aria-label="Filtrar tarea"><option value="all">Todas</option><option value="pending">Sin completar</option><option value="done">Completadas</option></select></div>
+  <div id="taskList" class="grid-2"></div>
+</section>
+<section id="checklist" class="section"><div class="section-head"><h2>Checklist por comisión</h2><span class="muted">Para completar una tarea con respaldo exigible, registre la referencia o evidencia.</span></div><div id="checkGroups" class="check-groups"></div></section>
+<section id="presupuesto" class="section"><div class="section-head"><h2>Presupuesto para cotizar</h2><span class="muted">Los valores iniciales $0 significan “sin cotización”, no costos gratuitos. Nada se incluye hasta que exista un monto válido y se marque expresamente.</span></div>
+  <div class="card"><p><span class="amt" id="budgetTotal">$0</span><span class="muted"> · suma de partidas cotizadas e incluidas (no es un presupuesto aprobado)</span></p><div id="budgetList"></div></div>
+</section>
+<div class="grid-2">
+<section id="hitos" class="section"><div class="section-head"><h2>Hitos</h2><span class="muted">Plazos de trabajo propuestos.</span></div><div id="milestoneList" class="stack"></div></section>
+<section id="financiamiento" class="section"><div class="section-head"><h2>Vías de financiamiento</h2><span class="muted">Verificar bases y disponibilidad antes de cualquier postulación.</span></div><div id="fundingList" class="stack"></div></section>
+</div>
+<div class="bottom-links"><a href="proyectos.html?code=FESTARICA2027">Ficha administrativa</a><a href="sponsors.html">Gestión de auspiciadores</a><a href="biblioteca.html">Biblioteca de documentos</a><a href="drive.html">Carpeta maestra / Drive</a></div>
+</div>
+</main>
+<footer>Gigantes de Azapa · Uso interno. Los respaldos oficiales y autorizaciones permanecen en el Control Center o en Drive; los datos de menores no se publican.</footer>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script src="festival-arica-2027.js"></script>
+</body></html>
