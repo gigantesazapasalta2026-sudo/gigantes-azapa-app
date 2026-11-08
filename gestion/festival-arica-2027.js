@@ -4,7 +4,7 @@
 (() => {
   'use strict';
   const PID = 'a91fccb5-868a-482c-b590-bea4cf4a265c';
-  const CODES = ['SUBV_MUNI_2027','FNDR8_2027','DONACIONES_IND','FONDEPORTE_2027','FONDEPORTE_AD','FNDR_MERITO_2026'];
+  const CODES = ['SUBV_MUNI_2027','FNDR8_2027','DONACIONES_IND','FONDEPORTE_2027','FONDEPORTE_AD'];
   const staffRoles = ['superadmin','board','coach','commission','treasury'];
   const sb = supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{
     auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}
@@ -119,10 +119,11 @@
     ).join('')||'<div class="item muted">No hay tareas en este filtro.</div>');
   }
   function renderChecklist(){
+    const expanded=new Set(Array.from($('checkGroups').querySelectorAll('details.group[open]')).map(x=>x.getAttribute('data-code')));
     $('checkGroups').innerHTML=err('checklist')+(state.responsibilities.map(r=>{
       const items=state.checklist.filter(c=>c.responsibility_id===r.id);
       const done=items.filter(c=>c.status==='done').length;
-      return '<details class="group"><summary>'+E(r.title)+'<span>'+done+' / '+items.length+' completados</span></summary><div class="content">'+
+      return '<details class="group" data-code="'+E(r.code)+'" '+(expanded.has(r.code)?'open':'')+'><summary>'+E(r.title)+'<span>'+done+' / '+items.length+' completados</span></summary><div class="content">'+
         '<div class="tools" style="margin-bottom:10px"><label style="flex:1">Responsable <input type="text" data-responsible-name="'+E(r.id)+'" value="'+E(r.responsible_name||'POR DESIGNAR')+'" '+(!canManage?'disabled':'')+'></label>'+
         '<button class="btn light" data-save-responsible="'+E(r.id)+'" type="button" '+(!canManage?'disabled':'')+'>Asignar</button></div>'+
         items.map(i=>'<div class="check-row"><input type="checkbox" data-check="'+E(i.id)+'" '+(i.status==='done'?'checked':'')+'>'+
