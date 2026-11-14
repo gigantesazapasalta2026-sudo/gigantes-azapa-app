@@ -9,7 +9,7 @@ main{padding:18px}.card{background:white;border:1px solid var(--border);border-r
 </style></head><body>
 <header><div class="bar"><div><h1>✅ Pase de Lista Gigantes</h1><div style="color:#c7d0dc">Entrenadores · Registro diario e historial</div></div><a href="centro-tecnico.html">← Centro Técnico</a></div></header>
 <main>
-<div class="row"><p id="who" class="muted">Comprobando permisos…</p><a class="btn" href="desarrollo-jugadores.html">Planificar entrenamientos</a></div>
+<div class="row"><p id="who" class="muted">Comprobando permisos…</p><a class="btn primary" href="plantel-entrenadores.html">👥 Administrar plantel</a> <a class="btn" href="desarrollo-jugadores.html">Planificar entrenamientos</a></div>
 <div id="message" role="status" aria-live="polite"></div>
 <div class="card"><h2>Selecciona tu entrenamiento</h2><div class="filters">
 <label>Categoría<select id="team"><option value="">Cargando…</option></select></label>
@@ -22,7 +22,7 @@ main{padding:18px}.card{background:white;border:1px solid var(--border);border-r
 <section id="listView" class="card">
 <div class="row"><div><h2>Jugadores de la categoría</h2><span id="summary" class="muted"></span></div><div class="actions"><button id="onlyPending">Mostrar sin marcar</button><button id="refresh">Actualizar</button></div></div>
 <div class="alert">Cada selección guarda únicamente la asistencia de ese jugador. Si no has marcado un nombre, permanece <b>Sin marcar</b>. No se registra como ausente.</div>
-<div id="players"><p class="muted">Selecciona una sesión.</p></div>
+<div id="players"><p class="muted">Selecciona una sesión.</p></div><div class="card" style="margin-top:12px"><div class="row"><h2>Primera visita · asistencia provisional</h2><a href="plantel-entrenadores.html">Agregar visitante o gestionar plantel</a></div><p class="muted">Solo visitantes previamente registrados, no jugadores inscritos. Antes de participar deben cumplirse los requisitos deportivos y de protección.</p><div id="guestList"></div></div>
 </section>
 <section id="historyView" class="card hidden"><div class="row"><div><h2>Historial de asistencia</h2><p class="muted">Porcentaje calculado solo sobre registros realizados, no sobre casillas pendientes. Las justificaciones y lesiones son privadas.</p></div><button id="export" class="primary">Exportar CSV</button></div><div class="tablewrap" id="history"></div></section>
 </main>
@@ -32,7 +32,7 @@ main{padding:18px}.card{background:white;border:1px solid var(--border);border-r
 "use strict";
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const states={pending:'Sin marcar',present:'Presente',late:'Atrasado',absent:'Ausente',excused:'Justificado',injured:'Lesionado'};
-const app={db:null,profile:null,teams:[],members:[],sessions:[],records:[],selectedSession:null,tab:'list',pendingOnly:false,busy:false,readOnly:true};
+const app={db:null,profile:null,teams:[],members:[],sessions:[],records:[],selectedSession:null,visitors:[],guestAttendance:[],tab:'list',pendingOnly:false,busy:false,readOnly:true};
 function notice(s,bad=false){$('message').innerHTML=s?'<div class="alert '+(bad?'error':'')+'">'+esc(s)+'</div>':''}
 const isManager=()=>['superadmin','board'].includes(app.profile?.role),canWrite=()=>app.profile?.role==='superadmin'||(app.profile?.role==='coach'&&app.teams.some(t=>t.id===$('team').value&&t.assigned));
 const currentTeam=()=>app.teams.find(x=>x.id===$('team').value),roster=()=>app.members.filter(m=>m.team_id===$('team').value&&m.active);
@@ -68,15 +68,42 @@ function render(){
   return '<div class="person"><div><div class="name">'+esc(name)+'</div><div class="small">'+(record?'Actualizado: '+new Date(record.updated_at).toLocaleString('es-CL'):'Aún sin registro')+'</div></div><select class="state '+esc(value)+'" data-person="'+esc(p.person_id)+'" aria-label="Asistencia de '+esc(name)+'" '+(!canWrite()?'disabled':'')+'>'+Object.keys(states).map(k=>'<option value="'+k+'" '+(k===value?'selected':'')+'>'+esc(states[k])+'</option>').join('')+'</select></div>'
  }).join('');
  $('players').querySelectorAll('select[data-person]').forEach(el=>el.onchange=()=>mark(el));
- renderHistory();
+ renderGuests();renderHistory();
+}
+function renderGuests(){
+ const dest=$('guestList');if(!dest)return;
+ const guests=app.visitors.filter(v=>v.team_id===currentTeam()?.id&&v.status==='pending');
+ if(!guests.length){dest.innerHTML='<p class="muted">Sin visitantes provisionales. Puedes registrarlos desde Administrar plantel.</p>';return}
+ const sid=app.selectedSession?.id;
+ dest.innerHTML=!sid?'<p class="muted">Selecciona una sesión para registrar visitas.</p>':guests.map(v=>{
+   const a=app.guestAttendance.find(x=>x.trial_id===v.id&&x.session_id===sid);
+   return '<div class="person"><div><b>'+esc(v.full_name)+'</b><div class="small">Visitante provisional · No equivale a inscripción oficial</div></div><select class="state '+(a?.attendance_status||'pending')+'" data-guest="'+v.id+'" '+(!canWrite()?'disabled':'')+'><option value="pending" '+(!a?'selected':'')+'>Sin marcar</option><option value="present" '+(a?.attendance_status==='present'?'selected':'')+'>Presente</option><option value="late" '+(a?.attendance_status==='late'?'selected':'')+'>Atrasado</option></select></div>'
+ }).join('');
+ dest.querySelectorAll('select[data-guest]').forEach(select=>select.onchange=()=>markGuest(select));
+}
+async function markGuest(select){
+ const id=select.dataset.guest,sid=app.selectedSession?.id;
+ if(!canWrite()||!sid)return notice('No autorizado.',true);
+ const a=app.guestAttendance.find(x=>x.trial_id===id&&x.session_id===sid);
+ const prev=a?.attendance_status||'pending',next=select.value;select.disabled=true;
+ let response;
+ if(next==='pending'){response=await app.db.from('sport_trial_attendance').delete().eq('trial_id',id).eq('session_id',sid)}
+ else response=await app.db.from('sport_trial_attendance').upsert({trial_id:id,session_id:sid,attendance_status:next,recorded_by:app.profile.user_id,updated_at:new Date().toISOString()},{onConflict:'trial_id,session_id'}).select('trial_id,session_id,attendance_status').single();
+ if(response.error){select.value=prev;select.disabled=false;notice('No se pudo guardar asistencia provisional: '+response.error.message,true);return}
+ app.guestAttendance=app.guestAttendance.filter(x=>!(x.trial_id===id&&x.session_id===sid));
+ if(next!=='pending')app.guestAttendance.push(response.data);
+ renderGuests();notice('Asistencia de visitante guardada por separado.');
 }
 async function loadAttendance(){
- const team=currentTeam();if(!team){app.records=[];render();return}
+ const team=currentTeam();if(!team){app.records=[];app.guestAttendance=[];render();return}
  const ids=app.sessions.filter(s=>s.team_id===team.id).map(x=>x.id);
- if(!ids.length){app.records=[];render();return}
- const response=await app.db.from('sport_session_attendance').select('session_id,person_id,attendance_status,updated_at').in('session_id',ids);
- if(response.error){notice('No fue posible cargar asistencia: '+response.error.message,true);return}
- app.records=response.data||[];render();
+ if(!ids.length){app.records=[];app.guestAttendance=[];render();return}
+ const [response,trial]=await Promise.all([
+   app.db.from('sport_session_attendance').select('session_id,person_id,attendance_status,updated_at').in('session_id',ids),
+   app.db.from('sport_trial_attendance').select('trial_id,session_id,attendance_status').in('session_id',ids)
+ ]);
+ if(response.error||trial.error){notice('No fue posible cargar asistencia: '+(response.error||trial.error).message,true);return}
+ app.records=response.data||[];app.guestAttendance=trial.data||[];render();
 }
 async function mark(select){
  if(!canWrite()||!app.selectedSession)return notice('No tienes permiso para registrar asistencia en esta categoría.',true);
@@ -141,6 +168,9 @@ async function init(){
  ]);
  if(members.error||sessions.error)throw new Error('No se pudo cargar el plantel deportivo: '+(members.error||sessions.error).message);
  app.members=members.data||[];app.sessions=sessions.data||[];
+ const guestResult=await sb.from('sport_trial_players').select('id,team_id,full_name,status').in('team_id',ids);
+ if(guestResult.error)notice('No se pudo cargar visitantes: '+guestResult.error.message,true);
+ app.visitors=guestResult.data||[];
  $('date').value=today;$('team').onchange=switchTeam;$('date').onchange=()=>updateSessions('');
  $('session').onchange=()=>{app.selectedSession=selection();render()};
  $('newSession').onclick=createSession;
