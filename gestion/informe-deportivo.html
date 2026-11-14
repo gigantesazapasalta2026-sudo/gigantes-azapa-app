@@ -1,0 +1,76 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Informe Deportivo · Gigantes de Azapa</title>
+<style>:root{--ink:#17222f;--line:#dce2ea;--orange:#e87534;--muted:#607080}*{box-sizing:border-box}body{font:14px/1.5 system-ui,Arial;background:#f5f7f9;color:var(--ink);margin:0}header{background:#121d2b;color:#fff;padding:20px}header .wrap,main{max-width:1120px;margin:auto}h1{font-size:24px;margin:0}header a{color:#fff}.row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}.card{background:#fff;border:1px solid var(--line);padding:16px;border-radius:13px;margin:14px 0}.card h2{font-size:18px;margin:0 0 8px}.muted{font-size:12px;color:var(--muted)}button,.btn{font:inherit;font-weight:700;border:1px solid var(--line);border-radius:9px;background:white;color:var(--ink);padding:9px 12px;text-decoration:none;cursor:pointer}button.primary{background:var(--orange);color:white;border-color:var(--orange)}select,input{border:1px solid #bdc9d6;padding:10px;border-radius:9px;font:inherit}.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:end}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}.metric{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px}.metric b{font-size:27px;display:block}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:820px}td,th{padding:11px;text-align:left;border-bottom:1px solid #e7ebf0}th{font-size:11px;color:var(--muted)}.note{padding:12px;background:#fff6ed;border-radius:10px;border:1px solid #f1c8aa;margin:10px 0}.bad{background:#ffeceb;border-color:#eeaaa5}.hidden{display:none}@media(max-width:700px){main{padding:12px}.grid{grid-template-columns:repeat(2,1fr)}}</style></head><body>
+<header><div class="wrap row"><div><h1>📊 Informe Deportivo Gigantes</h1><span>Supervisión, asistencia y seguimiento por categoría</span></div><a href="mi-entrenamiento.html">← Mi Entrenamiento</a></div></header>
+<main><p id="identity" class="muted">Verificando acceso…</p><div id="message"></div>
+<div class="card"><div class="filters"><label>Período <input id="month" type="month"></label><label>Categoría<select id="team"><option value="all">Todas mis categorías</option></select></label><button id="load" class="primary">Actualizar informe</button><button id="export">Exportar CSV</button></div><p class="muted">Cada sesión se cuenta una sola vez. Las casillas sin marcar no se consideran ausencias; el porcentaje mostrado usa únicamente asistencias efectivamente registradas.</p></div>
+<div class="grid" id="numbers"></div><section class="card"><h2>Resumen por categoría</h2><div class="tablewrap" id="table"></div></section>
+<div class="card"><h2>Alertas de gestión</h2><div id="alerts"></div></div>
+<div class="card"><h2>Resumen mensual para la directiva</h2><p class="muted">Este texto es un resumen agregado; no contiene nombres de menores. Puedes revisarlo y copiarlo al acta o al informe institucional.</p><div id="summary" class="note"></div><button id="copy">Copiar resumen</button></div>
+</main><script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+const app={db:null,profile:null,teams:[],rows:[],headline:'',month:''};
+const admin=()=>['superadmin','board'].includes(app.profile?.role);
+function err(msg,bad){$('message').innerHTML=msg?'<div class="note '+(bad?'bad':'')+'">'+esc(msg)+'</div>':'';}
+const nextMonth=s=>{let [y,m]=s.split('-').map(Number);return (m===12?y+1:y)+'-'+String(m===12?1:m+1).padStart(2,'0')+'-01'};
+const metric=(label,val,extra)=>'<div class="metric"><small>'+esc(label)+'</small><b>'+esc(val)+'</b><span class="muted">'+esc(extra)+'</span></div>';
+const csvCell=v=>{const s=String(v??'').replace(/^[\s]*[+\-=@]/,"'$&");return '"'+s.replace(/"/g,'""')+'"'};
+async function load(){
+ const month=$('month').value,t=$('team').value;app.month=month;
+ if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))return err('Selecciona un período válido.',true);
+ let teams=app.teams.filter(x=>t==='all'||x.id===t);if(!teams.length)return err('No hay categorías autorizadas.',true);
+ const start=month+'-01',end=nextMonth(month);
+ const [sess,plans,roster,visitors,transfers,develop]=await Promise.all([
+  app.db.from('sport_training_sessions').select('id,team_id,status,session_date').gte('session_date',start).lt('session_date',end).in('team_id',teams.map(x=>x.id)).limit(1000),
+  app.db.from('sport_plans').select('id,team_id,status,period_type,created_at').in('team_id',teams.map(x=>x.id)).limit(1000),
+  app.db.from('sport_team_members').select('team_id,active').in('team_id',teams.map(x=>x.id)).limit(2000),
+  app.db.from('sport_trial_players').select('team_id,status').in('team_id',teams.map(x=>x.id)).limit(500),
+  app.db.from('sport_roster_transfer_requests').select('from_team_id,to_team_id,status').limit(500),
+  app.db.from('sport_player_development_reviews').select('team_id,review_date').gte('review_date',start).lt('review_date',end).in('team_id',teams.map(x=>x.id)).limit(1000)
+ ]);
+ if([sess,plans,roster,visitors,transfers,develop].some(x=>x.error))return err('No se pudieron cargar todos los datos del informe: '+[sess,plans,roster,visitors,transfers,develop].filter(x=>x.error).map(x=>x.error.message).join('; '),true);
+ const sessions=sess.data||[],sessionIds=sessions.map(s=>s.id),attendance=[];
+ for(let i=0;i<sessionIds.length;i+=150){let r=await app.db.from('sport_session_attendance').select('session_id,attendance_status').in('session_id',sessionIds.slice(i,i+150));if(r.error)return err('Error consultando asistencia: '+r.error.message,true);attendance.push(...r.data||[])}
+ const rows=teams.map(t=>{
+  const ss=sessions.filter(s=>s.team_id===t.id&&s.status!=='cancelled'),sid=new Set(ss.map(x=>x.id)),at=attendance.filter(a=>sid.has(a.session_id)),total=at.length,present=at.filter(a=>['present','late'].includes(a.attendance_status)).length;
+  const completed=ss.filter(s=>s.status==='completed').length;
+  const missed=at.filter(a=>a.attendance_status==='absent').length,justified=at.filter(a=>a.attendance_status==='excused').length,injured=at.filter(a=>a.attendance_status==='injured').length;
+  const pendingTransfers=(transfers.data||[]).filter(x=>x.status==='pending'&&(x.to_team_id===t.id||x.from_team_id===t.id)).length;
+  return {id:t.id,code:t.code,name:t.name,roster:(roster.data||[]).filter(m=>m.team_id===t.id&&m.active).length,sessions:ss.length,completed,plan:(plans.data||[]).filter(x=>x.team_id===t.id).length,marked:total,present,missed,justified,injured,rate:total?Math.round(100*present/total):null,visits:(visitors.data||[]).filter(v=>v.team_id===t.id&&v.status==='pending').length,transfers:pendingTransfers,reviews:(develop.data||[]).filter(d=>d.team_id===t.id).length};
+ });app.rows=rows;
+ const sum=key=>rows.reduce((n,r)=>n+r[key],0),rate=sum('marked')?Math.round(100*sum('present')/sum('marked')):null;
+ $('numbers').innerHTML=metric('Categorías',rows.length,'en este informe')+metric('Entrenamientos',sum('sessions'),'sesiones programadas o realizadas')+metric('Asistencia',rate===null?'Sin datos':rate+'%','sobre marcas registradas')+metric('Evolución',sum('reviews'),'evaluaciones este mes');
+ $('table').innerHTML='<table><thead><tr><th>Categoría</th><th>Plantel</th><th>Sesiones</th><th>Realizadas</th><th>Asistencias</th><th>% registradas</th><th>Planes</th><th>Visitas</th><th>Traslados pendientes</th><th>Evaluaciones</th></tr></thead><tbody>'+rows.map(r=>'<tr><td>'+esc(r.name)+'</td><td>'+r.roster+'</td><td>'+r.sessions+'</td><td>'+r.completed+'</td><td>'+r.present+' / '+r.marked+'</td><td>'+(r.rate===null?'Sin datos':r.rate+'%')+'</td><td>'+r.plan+'</td><td>'+r.visits+'</td><td>'+r.transfers+'</td><td>'+r.reviews+'</td></tr>').join('')+'</tbody></table>';
+ const alerts=[];rows.forEach(r=>{if(!r.plan)alerts.push(r.name+': sin planificación registrada');if(r.sessions&&!r.completed)alerts.push(r.name+': sin sesiones marcadas como completadas');if(r.visits)alerts.push(r.name+': '+r.visits+' visitantes pendientes de formalización');if(r.transfers)alerts.push(r.name+': '+r.transfers+' solicitudes de traslado pendientes')});
+ $('alerts').innerHTML=alerts.length?alerts.map(a=>'<div class="note">'+esc(a)+'</div>').join(''):'<p class="muted">Sin alertas según los registros visibles.</p>';
+ app.headline='Gigantes de Azapa · Informe deportivo '+month+'. Categorías: '+rows.length+'. Sesiones registradas: '+sum('sessions')+', realizadas: '+sum('completed')+'. Participaciones presentes o atrasadas: '+sum('present')+' de '+sum('marked')+' marcas realizadas ('+(rate===null?'sin porcentaje':rate+'%')+'). Evaluaciones individuales registradas: '+sum('reviews')+'. Visitas provisionales pendientes: '+sum('visits')+'. Solicitudes de traslado pendientes: '+sum('transfers')+'. Datos por categoría revisables en Control Center; pendientes sin marcar no equivalen a ausencia.';
+ $('summary').textContent=app.headline;err('');
+}
+function exportCSV(){
+ if(!app.rows.length)return err('Primero genera el informe.',true);
+ const data=[['Período','Categoría','Plantel','Sesiones','Completadas','Asistencias','Marcas','Porcentaje','Planes','Visitantes pendientes','Traslados pendientes','Evaluaciones']];
+ for(const r of app.rows)data.push([app.month,r.name,r.roster,r.sessions,r.completed,r.present,r.marked,r.rate===null?'':r.rate,r.plan,r.visits,r.transfers,r.reviews]);
+ const blob=new Blob(['\ufeff'+data.map(x=>x.map(csvCell).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8;'});
+ const href=URL.createObjectURL(blob),a=document.createElement('a');a.href=href;a.download='Gigantes_informe_deportivo_'+app.month+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(href),1000);
+}
+async function init(){
+ app.db=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+ const {data:{session}}=await app.db.auth.getSession();if(!session){location.replace('login.html?next=informe-deportivo.html');return}
+ const p=await app.db.from('profiles').select('user_id,display_name,role,active').eq('user_id',session.user.id).maybeSingle();
+ if(p.error||!p.data?.active||!['superadmin','board','coach'].includes(p.data.role)){location.replace('../mi_gigantes.html');return}app.profile=p.data;
+ $('identity').textContent=(p.data.display_name||session.user.email)+' · '+(admin()?'Dirección deportiva':'Entrenador');
+ const [ts,ass]=await Promise.all([app.db.from('sport_teams').select('id,code,name,status,sort_order').neq('status','inactive').order('sort_order'),app.db.from('sport_staff_assignments').select('user_id,team_id,ends_on').eq('active',true)]);
+ if(ts.error||ass.error)return err('No fue posible cargar categorías y permisos.',true);
+ const now=new Date(),today=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,10);
+ const ids=new Set((ass.data||[]).filter(x=>x.user_id===p.data.user_id&&(!x.ends_on||x.ends_on>=today)).map(x=>x.team_id));
+ app.teams=(ts.data||[]).filter(x=>admin()||ids.has(x.id)||ids.has(null));
+ $('team').innerHTML='<option value="all">Todas mis categorías</option>'+app.teams.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join('');
+ let date=new Date();$('month').value=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0');
+ const selected=new URLSearchParams(location.search).get('team');if(selected&&app.teams.some(x=>x.id===selected))$('team').value=selected;
+ $('load').onclick=load;$('export').onclick=exportCSV;$('copy').onclick=async()=>{try{await navigator.clipboard.writeText(app.headline);err('Resumen copiado.')}catch(e){err('No se pudo copiar automáticamente.',true)}};await load();
+}
+init().catch(e=>err('No se pudo abrir el informe: '+e.message,true));
+})();
+</script></body></html>
