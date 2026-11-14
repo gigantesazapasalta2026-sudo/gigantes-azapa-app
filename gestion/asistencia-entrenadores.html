@@ -10,7 +10,7 @@ main{padding:18px}.card{background:white;border:1px solid var(--border);border-r
 <header><div class="bar"><div><h1>✅ Pase de Lista Gigantes</h1><div style="color:#c7d0dc">Entrenadores · Registro diario e historial</div></div><a href="mi-entrenamiento.html">← Mi Entrenamiento</a></div></header>
 <main>
 <div class="row"><p id="who" class="muted">Comprobando permisos…</p><a class="btn primary" href="plantel-entrenadores.html">👥 Administrar plantel</a> <a class="btn" href="desarrollo-jugadores.html">Planificar entrenamientos</a></div>
-<div id="message" role="status" aria-live="polite"></div>
+<div id="message" role="status" aria-live="polite"></div><div id="syncInfo" class="muted"></div><button id="retrySync" class="hidden" type="button">Sincronizar marcaciones pendientes</button>
 <div class="card"><h2>Selecciona tu entrenamiento</h2><div class="filters">
 <label>Categoría<select id="team"><option value="">Cargando…</option></select></label>
 <label>Fecha<input id="date" type="date"></label>
@@ -32,7 +32,7 @@ main{padding:18px}.card{background:white;border:1px solid var(--border);border-r
 "use strict";
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const states={pending:'Sin marcar',present:'Presente',late:'Atrasado',absent:'Ausente',excused:'Justificado',injured:'Lesionado'};
-const app={db:null,profile:null,teams:[],members:[],sessions:[],records:[],selectedSession:null,visitors:[],guestAttendance:[],tab:'list',pendingOnly:false,busy:false,readOnly:true};
+const app={db:null,profile:null,teams:[],members:[],sessions:[],records:[],selectedSession:null,visitors:[],guestAttendance:[],tab:'list',pendingOnly:false,busy:false,readOnly:true,offlineQueue:[],syncing:false};
 function notice(s,bad=false){$('message').innerHTML=s?'<div class="alert '+(bad?'error':'')+'">'+esc(s)+'</div>':''}
 const isManager=()=>['superadmin','board'].includes(app.profile?.role),canWrite=()=>app.profile?.role==='superadmin'||(app.profile?.role==='coach'&&app.teams.some(t=>t.id===$('team').value&&t.assigned));
 const currentTeam=()=>app.teams.find(x=>x.id===$('team').value),roster=()=>app.members.filter(m=>m.team_id===$('team').value&&m.active);
@@ -118,8 +118,40 @@ async function mark(select){
   const res=await app.db.from('sport_session_attendance').upsert(payload,{onConflict:'session_id,person_id'}).select('session_id,person_id,attendance_status,updated_at').single();
   err=res.error;if(!err){app.records=app.records.filter(x=>!(x.session_id===sid&&x.person_id===pid));app.records.push(res.data)}
  }
- if(err){select.value=previous;select.disabled=false;notice('No se pudo guardar '+(roster().find(p=>p.person_id===pid)?.people?.full_name||'jugador')+': '+err.message,true);return}
+ if(err){
+  select.value=previous;select.disabled=false;
+  if(navigator.onLine===false || /fetch|network|connection|load failed/i.test(err.message||'')){
+   const key=sid+':'+pid;
+   app.offlineQueue=app.offlineQueue.filter(x=>x.key!==key);
+   app.offlineQueue.push({key,session_id:sid,person_id:pid,status:next});
+   updateSync();
+   notice('La marcación no se ha guardado todavía. Quedó pendiente solo en esta pestaña; mantenla abierta y sincroniza al recuperar la conexión.',true);
+   return;
+  }
+  notice('No se pudo guardar '+(roster().find(p=>p.person_id===pid)?.people?.full_name||'jugador')+': '+err.message,true);return
+}
  render();notice('Asistencia guardada correctamente.');
+}
+function updateSync(){
+ const n=app.offlineQueue.length;
+ $('syncInfo').textContent=n?n+' marcación(es) sin guardar. No cierres esta pestaña hasta sincronizar.':'';
+ $('retrySync').classList.toggle('hidden',!n);
+}
+async function syncPending(){
+ if(!app.offlineQueue.length||app.syncing||navigator.onLine===false)return;
+ app.syncing=true;$('retrySync').disabled=true;let failed=0;
+ for(const pending of [...app.offlineQueue]){
+  const team=app.sessions.find(s=>s.id===pending.session_id)?.team_id;
+  if(!app.teams.some(t=>t.id===team))continue;
+  let response;
+  if(pending.status==='pending')response=await app.db.from('sport_session_attendance').delete().eq('session_id',pending.session_id).eq('person_id',pending.person_id);
+  else response=await app.db.from('sport_session_attendance').upsert({session_id:pending.session_id,person_id:pending.person_id,attendance_status:pending.status,recorded_by:app.profile.user_id,updated_at:new Date().toISOString()},{onConflict:'session_id,person_id'});
+  if(response.error){failed++;continue}
+  app.offlineQueue=app.offlineQueue.filter(x=>x.key!==pending.key);
+ }
+ app.syncing=false;$('retrySync').disabled=false;updateSync();
+ if(failed)notice('Algunas marcaciones no se guardaron. Revisa los permisos y vuelve a sincronizar.',true);
+ else {await loadAttendance();notice('Marcaciones pendientes sincronizadas.')}
 }
 async function createSession(){
  const team=currentTeam(),date=$('date').value;if(!team||!date||!canWrite())return notice('Selecciona una categoría autorizada y fecha.',true);
@@ -175,7 +207,7 @@ async function init(){
  $('session').onchange=()=>{app.selectedSession=selection();render()};
  $('newSession').onclick=createSession;
  $('onlyPending').onclick=()=>{app.pendingOnly=!app.pendingOnly;render()};
- $('refresh').onclick=loadAttendance;$('export').onclick=exportCSV;
+ $('refresh').onclick=loadAttendance;$('export').onclick=exportCSV;$('retrySync').onclick=syncPending;window.addEventListener('online',()=>syncPending());window.addEventListener('beforeunload',e=>{if(app.offlineQueue.length){e.preventDefault();e.returnValue='';}});
  $('tabs').onclick=e=>{const btn=e.target.closest('button[data-tab]');if(!btn)return;app.tab=btn.dataset.tab;document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('selected',b.dataset.tab===app.tab));$('listView').classList.toggle('hidden',app.tab!=='list');$('historyView').classList.toggle('hidden',app.tab!=='history')};
  updateSessions('');await loadAttendance();
 }
