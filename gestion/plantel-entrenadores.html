@@ -1,0 +1,127 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Mi Plantel · Gigantes de Azapa</title><style>
+:root{--ink:#152132;--muted:#617087;--orange:#ed702c;--line:#dce2eb}*{box-sizing:border-box}body{font:14px/1.5 system-ui,Arial,sans-serif;background:#f6f7f9;margin:0;color:var(--ink)}header{background:#101927;color:#fff;padding:18px}header .inner{max-width:1080px;margin:auto;display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}h1{font-size:23px;margin:0}header a{color:#fff}main{max-width:1080px;margin:16px auto;padding:0 14px}.card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px;margin:12px 0}.card h2{font-size:18px;margin:0 0 7px}.card h3{font-size:15px;margin:12px 0 4px}.small{font-size:12px;color:var(--muted)}.line{border-bottom:1px solid #edf0f3;padding:12px 0}.line:last-child{border-bottom:0}.row,.actions{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.actions{justify-content:flex-start}button,.btn{background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 12px;cursor:pointer;font:inherit;font-weight:700;text-decoration:none;color:var(--ink)}button.primary,.btn.primary{background:var(--orange);color:white;border-color:var(--orange)}button:disabled{opacity:.5;cursor:not-allowed}input,select,textarea{border:1px solid #b9c5d4;border-radius:9px;padding:9px;font:inherit;max-width:100%}input[type=text]{min-width:210px}textarea{width:100%;min-height:60px}.form label{display:block;margin:10px 0;font-weight:700}.form label input,.form label select{display:block;margin-top:5px;width:100%}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.alert{padding:11px;border:1px solid #f0caad;background:#fff8ed;border-radius:9px}.error{background:#fff0f0;border-color:#e9aaa5}.hidden{display:none!important}.badge{padding:4px 8px;font-size:11px;border-radius:20px;background:#f0f3f8;color:#405474}.hint{color:var(--muted);font-size:12px;margin:6px 0}@media(max-width:700px){.grid{grid-template-columns:1fr}.row{align-items:flex-start}input[type=text]{width:100%}.card{padding:13px}}</style></head><body>
+<header><div class="inner"><div><h1>🏉 Mi Plantel · Gigantes</h1><div>Alta, baja y cambios de categoría con historial</div></div><a href="asistencia-entrenadores.html">← Pase de Lista</a></div></header>
+<main><p id="identity" class="small">Validando sesión…</p><div id="message" role="status" aria-live="polite"></div>
+<section class="card"><div class="row"><h2>Selecciona la categoría</h2><select id="team"><option value="">Cargando…</option></select></div><p class="hint">El entrenador puede incorporar jugadores registrados a su propio equipo, dejar de convocarlos y solicitar traslados. No se eliminan sus asistencias históricas.</p></section>
+<div class="grid">
+<section class="card"><h2>Jugadores activos</h2><div id="roster"></div></section>
+<section class="card"><h2>Incorporar jugador existente</h2><p class="hint">Busca primero en Registro Maestro para evitar duplicar identidades. Escribe al menos tres letras.</p><div class="actions"><input id="search" type="text" placeholder="Nombre o apellido" autocomplete="off"><button id="find">Buscar</button></div><div id="matches"></div>
+<div class="line"><h2>Primera visita</h2><p class="hint">Registra solo el nombre de referencia y la primera fecha. No equivale a inscripción, seguro, permiso ni autorización de participación. Antes de participar deben cumplirse los requisitos de protección y seguridad del club.</p><div class="form"><label>Nombre del visitante<input id="visitorName" type="text" maxlength="140" placeholder="Nombre y apellido"></label><label>Fecha de primera visita<input id="visitorDate" type="date"></label><button class="primary" id="addVisitor">Registrar visitante provisional</button></div><div id="visitors"></div></div></section>
+</div>
+<section class="card"><div class="row"><h2>Solicitudes de cambio de categoría</h2><button id="refresh">Actualizar</button></div><p class="hint">El entrenador solicita; la dirección revisa edad, reglas de categoría, autorizaciones y condiciones deportivas antes de aprobar. El historial de asistencia del equipo anterior se conserva.</p><div id="requests"></div></section>
+<section class="card"><h2>Historial de movimientos</h2><div id="audit"></div></section>
+</main>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+let db,profile,teams=[],members=[],visitors=[],requests=[],audit=[],matches=[],isBusy=false;
+const admin=()=>['superadmin','board'].includes(profile?.role),superadmin=()=>profile?.role==='superadmin',team=()=>teams.find(t=>t.id===$('team').value);
+const allowed=()=>superadmin()||!!team()?.assigned;
+const today=()=>{let n=new Date();return new Date(n.getTime()-n.getTimezoneOffset()*60000).toISOString().slice(0,10)};
+const message=(s,bad=false)=>{$('message').innerHTML=s?'<div class="alert '+(bad?'error':'')+'">'+esc(s)+'</div>':''};
+const active=()=>members.filter(m=>m.team_id===team()?.id&&m.active);
+function render(){
+ const t=team();if(!t)return;
+ $('roster').innerHTML=active().length?active().sort((a,b)=>String(a.people?.full_name||'').localeCompare(String(b.people?.full_name||''),'es')).map(m=>'<div class="line row"><div><b>'+esc(m.people?.full_name||'Jugador')+'</b><div class="small">Plantel oficial de '+esc(t.code)+'</div></div>'+(allowed()?'<button class="remove" data-id="'+m.id+'">Quitar del plantel</button>':'')+'</div>').join(''):'<p class="small">Sin jugadores asignados. Puedes buscar integrantes existentes del club.</p>';
+ $('roster').querySelectorAll('.remove').forEach(b=>b.onclick=()=>removeMember(b.dataset.id));
+ $('visitors').innerHTML='<h3>Visitas provisionales</h3>'+(visitors.filter(v=>v.team_id===t.id).map(v=>'<div class="line row"><div><b>'+esc(v.full_name)+'</b> <span class="badge">'+esc(v.status)+'</span><div class="small">Desde '+esc(v.first_seen_on)+'</div></div>'+(allowed()&&v.status==='pending'?'<button class="closeVisitor" data-id="'+v.id+'">Cerrar visita</button>':'')+'</div>').join('')||'<p class="small">Sin visitantes registrados.</p>')+'<a class="btn" href="asistencia-entrenadores.html">Marcar asistencia provisional</a>';
+ $('visitors').querySelectorAll('.closeVisitor').forEach(b=>b.onclick=()=>closeVisitor(b.dataset.id));
+ const relevant=requests.filter(x=>x.to_team_id===t.id||x.from_team_id===t.id);
+ $('requests').innerHTML=relevant.length?relevant.map(r=>'<div class="line"><div class="row"><b>'+esc(r.people?.full_name||'Jugador')+'</b><span class="badge">'+esc(r.status)+'</span></div><p class="small">'+esc(r.sport_teams?.name||t.name)+' · '+esc(r.reason||'Sin motivo adicional')+'</p>'+(admin()&&r.status==='pending'?'<label class="small"><input type="checkbox" class="eligible" data-id="'+r.id+'"> Confirmé elegibilidad, requisitos reglamentarios y autorizaciones aplicables</label><div class="actions"><button class="approve primary" data-id="'+r.id+'">Aprobar traslado</button><button class="reject" data-id="'+r.id+'">Rechazar</button></div>':'')+'</div>').join(''):'<p class="small">No hay solicitudes en esta categoría.</p>';
+ $('requests').querySelectorAll('.approve').forEach(b=>b.onclick=()=>reviewTransfer(b.dataset.id,'approved'));
+ $('requests').querySelectorAll('.reject').forEach(b=>b.onclick=()=>reviewTransfer(b.dataset.id,'rejected'));
+ $('audit').innerHTML=audit.filter(a=>a.team_id===t.id).slice(0,18).map(a=>'<div class="line"><b>'+esc(a.people?.full_name||'Jugador')+'</b> · '+esc(a.action)+' <span class="small">'+new Date(a.event_time).toLocaleString('es-CL')+'</span></div>').join('')||'<p class="small">Sin movimientos registrados en el nuevo historial.</p>';
+ $('addVisitor').disabled=!allowed();$('find').disabled=!allowed();
+}
+async function reload(){
+ const ids=teams.map(t=>t.id),responses=await Promise.all([
+ db.from('sport_team_members').select('id,team_id,person_id,active,people(id,full_name)').in('team_id',ids),
+ db.from('sport_trial_players').select('*').in('team_id',ids).order('created_at',{ascending:false}),
+ db.from('sport_roster_transfer_requests').select('*,people(full_name),sport_teams!sport_roster_transfer_requests_to_team_id_fkey(name)').or(ids.map(id=>'to_team_id.eq.'+id).join(',')).order('requested_at',{ascending:false}),
+ db.from('sport_roster_audit').select('*,people(full_name)').in('team_id',ids).order('event_time',{ascending:false}).limit(100)
+ ]);
+ for(let i=0;i<responses.length;i++)if(responses[i].error){message('No fue posible cargar datos del plantel: '+responses[i].error.message,true);return}
+ [members,visitors,requests,audit]=responses.map(r=>r.data||[]);render();
+}
+async function find(){
+ const q=$('search').value.trim();if(q.length<3)return message('Escribe al menos tres letras para buscar.',true);
+ const response=await db.from('people').select('id,full_name,category,birth_date').ilike('full_name','%'+q.replace(/[%_,()]/g,'')+'%').limit(25).order('full_name');
+ if(response.error)return message('Error al buscar: '+response.error.message,true);
+ matches=response.data||[];$('matches').innerHTML=matches.length?matches.map(p=>'<div class="line row"><div><b>'+esc(p.full_name)+'</b><div class="small">'+esc(p.category||'Categoría por revisar')+'</div></div><button class="addExisting" data-id="'+p.id+'">Incorporar o trasladar</button></div>').join(''):'<p class="small">No hay coincidencias. Si es primera visita, regístralo como visitante provisional.</p>';
+ $('matches').querySelectorAll('.addExisting').forEach(b=>b.onclick=()=>addExisting(b.dataset.id));
+}
+async function addExisting(personId){
+ if(!allowed())return message('No tienes permiso de gestión en esta categoría.',true);
+ const t=team(),person=matches.find(m=>m.id===personId);if(!t||!person)return;
+ if(active().some(m=>m.person_id===personId))return message('El jugador ya está en el plantel.',true);
+ if(!confirm('¿Agregar a '+person.full_name+' a '+t.name+'? Si ya pertenece a otra categoría, se registrará una solicitud de traslado para revisión.'))return;
+ let res=await db.from('sport_team_members').select('id,active').eq('team_id',t.id).eq('person_id',personId).maybeSingle();
+ if(res.error)return message(res.error.message,true);
+ if(res.data){
+  res=await db.from('sport_team_members').update({active:true,left_on:null,source:'coach_roster',updated_at:new Date().toISOString()}).eq('id',res.data.id);
+ }else{
+  res=await db.from('sport_team_members').insert({team_id:t.id,person_id:personId,active:true,squad_role:'player',source:'coach_roster',joined_on:today()});
+ }
+ if(res.error&&res.error.message.includes('PLAYER_ASSIGNED_TO_OTHER_TEAM')){
+  const request=await db.from('sport_roster_transfer_requests').insert({person_id:personId,from_team_id:null,to_team_id:t.id,reason:'Solicitud de traslado desde Pase de Lista',requested_by:profile.user_id});
+  if(request.error)return message('No fue posible crear solicitud de traslado: '+request.error.message,true);
+  message('El jugador pertenece a otra categoría. Solicitud registrada para la directiva.');await reload();return;
+ }
+ if(res.error)return message('No fue posible incorporar: '+res.error.message,true);
+ message(person.full_name+' incorporado al plantel.');await reload();
+}
+async function removeMember(id){
+ if(!allowed())return;const m=members.find(x=>x.id===id);if(!m||!m.active)return;
+ if(!confirm('¿Quitar a '+(m.people?.full_name||'este jugador')+' del plantel de '+team().name+'? Conservaremos sus asistencias anteriores y su ficha del club.'))return;
+ const res=await db.from('sport_team_members').update({active:false,left_on:today(),updated_at:new Date().toISOString()}).eq('id',id).eq('team_id',team().id);
+ if(res.error)return message('No se pudo actualizar: '+res.error.message,true);
+ message('Jugador retirado del plantel activo; su historial se conserva.');await reload();
+}
+async function addVisitor(){
+ if(!allowed())return;const name=$('visitorName').value.trim(),date=$('visitorDate').value;
+ if(name.length<3||!date)return message('Ingresa nombre y fecha de visita.',true);
+ if(visitors.some(v=>v.team_id===team().id&&v.status==='pending'&&v.full_name.toLocaleLowerCase('es')===name.toLocaleLowerCase('es')))return message('Ese visitante ya está registrado. Revisa la lista antes de duplicarlo.',true);
+ if(!confirm('¿Registrar primera visita de '+name+'? Esto NO inscribe al jugador oficialmente ni acredita seguro o autorización de apoderados.'))return;
+ const res=await db.from('sport_trial_players').insert({team_id:team().id,full_name:name,first_seen_on:date,created_by:profile.user_id,status:'pending'});
+ if(res.error)return message('No se pudo registrar visita: '+res.error.message,true);
+ $('visitorName').value='';message('Visitante provisional registrado. Se debe completar inscripción y autorización por el canal oficial.');await reload();
+}
+async function closeVisitor(id){
+ if(!allowed()||!confirm('¿Cerrar este registro provisional? No se borrarán asistencias anteriores.'))return;
+ const res=await db.from('sport_trial_players').update({status:'closed'}).eq('id',id).eq('team_id',team().id).eq('status','pending');
+ if(res.error)return message('No se pudo cerrar: '+res.error.message,true);message('Visita cerrada.');await reload();
+}
+async function reviewTransfer(id,status){
+ if(!admin())return;
+ const box=$('requests').querySelector('.eligible[data-id="'+id+'"]');
+ if(status==='approved'&&!box?.checked)return message('Confirma primero elegibilidad reglamentaria y autorizaciones.',true);
+ const reason=prompt(status==='approved'?'Comentario de aprobación (opcional)':'Motivo del rechazo',status==='approved'?'':'');
+ if(reason===null)return;
+ if(status==='rejected'&&!reason.trim())return message('Explica el motivo del rechazo.',true);
+ if(!confirm(status==='approved'?'¿Aprobar traslado? El jugador dejará su categoría anterior y pasará a la nueva.':'¿Rechazar solicitud?'))return;
+ const payload={status,eligibility_verified:status==='approved',review_note:reason.trim()||null};
+ const res=await db.from('sport_roster_transfer_requests').update(payload).eq('id',id).eq('status','pending').select('id,status').maybeSingle();
+ if(res.error||!res.data)return message('No se pudo resolver la solicitud: '+(res.error?.message||'Solicitud ya resuelta'),true);
+ message('Traslado '+(status==='approved'?'aprobado y aplicado':'rechazado')+'.');await reload();
+}
+async function init(){
+ db=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+ const session=(await db.auth.getSession()).data.session;if(!session){location.replace('login.html?next=plantel-entrenadores.html');return}
+ const p=await db.from('profiles').select('user_id,display_name,role,active').eq('user_id',session.user.id).maybeSingle();
+ if(p.error||!p.data?.active||!['superadmin','board','coach'].includes(p.data.role)){location.replace('../mi_gigantes.html');return}
+ profile=p.data;$('identity').textContent=(p.data.display_name||session.user.email)+' · '+(admin()?'Directiva':'Entrenador');
+ const [ts,as]=await Promise.all([db.from('sport_teams').select('id,code,name,status,sort_order').neq('status','inactive').order('sort_order'),db.from('sport_staff_assignments').select('user_id,team_id,active,ends_on').eq('active',true)]);
+ if(ts.error||as.error)throw Error('No se pudieron cargar categorías autorizadas.');
+ const assigned=new Set((as.data||[]).filter(a=>a.user_id===profile.user_id&&(!a.ends_on||a.ends_on>=today())).map(a=>a.team_id));
+ teams=(ts.data||[]).filter(t=>admin()||assigned.has(t.id)||assigned.has(null)).map(t=>({...t,assigned:assigned.has(t.id)||assigned.has(null)}));
+ if(!teams.length){message('No tienes una categoría asignada. Solicita la habilitación a la directiva.',true);return}
+ $('team').innerHTML=teams.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('');$('visitorDate').value=today();
+ $('team').onchange=()=>{message('');render()};$('find').onclick=find;$('search').onkeydown=e=>{if(e.key==='Enter')find()};
+ $('addVisitor').onclick=addVisitor;$('refresh').onclick=reload;
+ await reload();
+}
+init().catch(e=>message('Error al iniciar: '+e.message,true));
+})();
+</script></body></html>
