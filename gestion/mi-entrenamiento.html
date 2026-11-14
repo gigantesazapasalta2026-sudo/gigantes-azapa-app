@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Mi Entrenamiento · Gigantes de Azapa</title>
+<style>
+:root{--navy:#121c29;--orange:#ec702e;--bg:#f6f7fa;--ink:#1b2937;--muted:#5f6b7a;--line:#dfe5ec;--good:#147a50}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg)}a{color:#a84613}header{background:var(--navy);color:#fff;padding:20px max(16px,calc((100% - 1050px)/2))}header h1{margin:0;font-size:26px}header p{margin:2px 0;color:#ccd4df}header a{color:#fff}main{max-width:1050px;margin:0 auto;padding:16px}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.card{border:1px solid var(--line);background:#fff;padding:16px;border-radius:14px;margin:12px 0}.card h2{margin:0 0 8px;font-size:17px}.muted{color:var(--muted);font-size:12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}.tile{display:block;border:1px solid var(--line);background:#fff;border-radius:13px;padding:17px;text-decoration:none;color:var(--ink);min-height:115px}.tile:hover{border-color:var(--orange)}.tile b{display:block;font-size:16px}.tile span{display:block;font-size:12px;color:var(--muted);margin-top:5px}.tile svg{height:23px}.btn,button{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 13px;font:inherit;font-weight:750;cursor:pointer;text-decoration:none;display:inline-block}.btn.primary,button.primary{background:var(--orange);color:#fff;border-color:var(--orange)}button:disabled{opacity:.55;cursor:not-allowed}select,input,textarea{font:inherit;padding:10px;border:1px solid #c4ceda;border-radius:9px;background:white;max-width:100%}.label{display:block;font-weight:700;margin:8px 0 4px;font-size:12px}.numbers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.number{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px}.number b{display:block;font-size:27px}.number small{color:var(--muted)}.tag{display:inline-block;border-radius:25px;background:#eef1f4;padding:4px 9px;font-size:11px;font-weight:700}.line{padding:12px 0;border-bottom:1px solid #e9edf2}.line:last-child{border-bottom:0}.alert{background:#fff7ee;border:1px solid #f4d4b7;border-radius:10px;padding:12px;margin:10px 0}.alert.error{background:#ffebeb;border-color:#eeafac}.good{color:var(--good)}.hidden{display:none!important}#notice:empty{display:none}textarea{width:100%;min-height:100px}.actions{display:flex;gap:9px;flex-wrap:wrap}#coachMsg{font-size:13px} .foot{font-size:12px;color:var(--muted)}@media(max-width:690px){header h1{font-size:22px}.grid,.grid3{grid-template-columns:1fr 1fr}.numbers{grid-template-columns:1fr 1fr}.tile{padding:13px;min-height:98px}}@media(max-width:420px){.grid3{grid-template-columns:1fr 1fr}.tile b{font-size:14px}}
+</style></head><body>
+<header><div class="row"><div><h1>🏉 Mi Entrenamiento</h1><p>Gigantes de Azapa · Espacio de entrenadores</p></div><a href="../mi_gigantes.html">Mi Gigantes</a></div></header>
+<main><div class="row"><div><b id="identity">Comprobando acceso…</b><div class="muted" id="role"></div></div><label><span class="label">Mi categoría</span><select id="team" aria-label="Categoría"><option value="">Cargando…</option></select></label></div>
+<div id="notice"></div><div class="numbers" id="numbers"></div>
+<div class="card" id="next"><h2>Próximo entrenamiento</h2><p class="muted">Cargando calendario…</p></div>
+<div class="grid3">
+<a class="tile" id="goAttendance" href="asistencia-entrenadores.html"><b>✅ Pasar lista</b><span>Marcar jugadores con un toque, incluso con conexión inestable</span></a>
+<a class="tile" id="goRoster" href="plantel-entrenadores.html"><b>👥 Mi plantel</b><span>Incorporaciones, visitantes y cambios de categoría</span></a>
+<a class="tile" id="goPlan" href="formacion.html"><b>🗓️ Planificaciones</b><span>Planes editables, ejercicios y sesiones</span></a>
+<a class="tile" id="goBlocks" href="desarrollo-jugadores.html"><b>📋 Mi sesión</b><span>Ejercicios, progreso y cierre del entrenamiento</span></a>
+<a class="tile" href="biblioteca-ejercicios.html"><b>🎬 Ejercicios y videos</b><span>Banco técnico por categoría y edad</span></a>
+<a class="tile" id="goReport" href="informe-deportivo.html"><b>📈 Informe mensual</b><span>Asistencia, trabajo realizado y objetivos</span></a>
+</div>
+<div class="grid"><section class="card"><h2>Recordatorios deportivos</h2><div id="reminders" class="muted">Revisando la planificación…</div><p class="foot">Son avisos dentro de la app; no se envían notificaciones automáticas al teléfono.</p></section>
+<section class="card"><h2>Estado del equipo</h2><div id="rosterState" class="muted">Cargando…</div><p class="foot">Los estados de documentación y protección deben confirmarse desde el registro institucional antes de participar.</p><a class="btn" id="goChecks" href="plantel-entrenadores.html">Revisar nómina</a></section></div>
+<section class="card"><h2>Mensaje a apoderados (envío manual)</h2><p class="muted">Plantilla de aviso general. No incluye nombres, teléfonos ni datos sensibles de menores. El entrenador revisa el texto y el destinatario antes de enviarlo.</p><label class="label" for="coachMsg">Mensaje sugerido</label><textarea id="coachMsg" maxlength="800"></textarea><div class="actions"><button id="copyMsg">Copiar mensaje</button><button class="primary" id="shareMsg">Compartir desde mi teléfono</button></div><p class="foot">No se envía ningún WhatsApp o correo automáticamente.</p></section>
+<section class="card" id="management"><h2>Control Center y supervisión</h2><p class="muted">Las personas autorizadas por la directiva pueden revisar todas las categorías y los informes; los entrenadores trabajan con sus equipos asignados.</p><div class="actions"><a class="btn" href="centro-tecnico.html">Centro Técnico</a><a class="btn" href="auditoria-planteles.html">Auditar planteles</a><a class="btn" href="informe-deportivo.html">Informe mensual</a><a class="btn" href="formacion.html">Asignaciones</a></div></section>
+</main>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+"use strict";
+const $=x=>document.getElementById(x),safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+const app={db:null,profile:null,teams:[],plans:[],sessions:[],members:[],attendance:[],visitors:[],requests:[],today:null};
+const admin=()=>['superadmin','board'].includes(app.profile?.role),team=()=>app.teams.find(t=>t.id===$('team').value)||app.teams[0];
+const iso=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
+const msg=(s,bad=false)=>{$('notice').innerHTML=s?'<div class="alert '+(bad?'error':'')+'">'+safe(s)+'</div>':''};
+const dayReadable=d=>d?new Date(d+'T12:00:00').toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'}):'';
+const link=(id,path,t)=>$(id).href=path+(t?'?team='+encodeURIComponent(t.id):'');
+function render(){
+ const t=team();if(!t)return;const today=app.today;
+ const sessions=app.sessions.filter(s=>s.team_id===t.id&&s.status!=='cancelled').sort((a,b)=>String(a.session_date).localeCompare(String(b.session_date)));
+ const upcoming=sessions.filter(x=>x.session_date>=today).sort((a,b)=>a.session_date.localeCompare(b.session_date));
+ const latest=upcoming[0],past=sessions.filter(s=>s.session_date<today);
+ const players=app.members.filter(m=>m.team_id===t.id&&m.active);
+ const planning=app.plans.filter(p=>p.team_id===t.id);
+ const ids=new Set(sessions.map(s=>s.id)),att=app.attendance.filter(a=>ids.has(a.session_id));
+ const present=att.filter(a=>['present','late'].includes(a.attendance_status)).length;
+ const marked=att.length,attPct=marked?Math.round(100*present/marked):null;
+ $('numbers').innerHTML=[['Jugadores',players.length,'vinculados'],['Sesiones',sessions.length,'registradas'],['Asistencia',attPct===null?'—':attPct+'%','solo marcas completadas'],['Planes',planning.length,'en tu categoría']].map(n=>'<div class="number"><small>'+safe(n[0])+'</small><b>'+safe(n[1])+'</b><small>'+safe(n[2])+'</small></div>').join('');
+ $('next').innerHTML='<div class="row"><h2>Próximo entrenamiento</h2><span class="tag">'+safe(t.name)+'</span></div>'+
+ (latest?'<h3>'+safe(latest.title)+'</h3><div>'+safe(dayReadable(latest.session_date))+'</div><p class="muted">'+safe(latest.session_objective||'Objetivo por completar')+'</p><div class="actions"><a class="btn primary" href="asistencia-entrenadores.html?team='+encodeURIComponent(t.id)+'&date='+latest.session_date+'&session='+encodeURIComponent(latest.id)+'">Pasar lista de esta sesión</a><a class="btn" href="desarrollo-jugadores.html">Abrir ejercicios</a></div>':'<p>No hay una sesión futura registrada para '+safe(t.name)+'. Puedes crearla desde el módulo de planificación.</p><a class="btn primary" href="desarrollo-jugadores.html">Crear sesión</a>');
+ const warnings=[];
+ if(!planning.length)warnings.push('No hay un plan registrado para esta categoría.');
+ if(!upcoming.length)warnings.push('No hay una próxima sesión programada.');
+ const incomplete=past.filter(s=>s.status!=='completed');if(incomplete.length)warnings.push(incomplete.length+' sesiones anteriores sin cierre registrado.');
+ const attendancePending=past.filter(s=>!app.attendance.some(a=>a.session_id===s.id));
+ if(attendancePending.length)warnings.push(attendancePending.length+' sesiones anteriores aún sin registros de asistencia.');
+ $('reminders').innerHTML=warnings.length?warnings.map(x=>'<div class="line">• '+safe(x)+'</div>').join(''):'<span class="good">Sin recordatorios pendientes en los registros cargados.</span>';
+ const visits=app.visitors.filter(v=>v.team_id===t.id&&v.status==='pending').length;
+ const transfers=app.requests.filter(r=>r.status==='pending'&&(r.from_team_id===t.id||r.to_team_id===t.id)).length;
+ $('rosterState').innerHTML='<div class="line">'+players.length+' jugadores activos en la nómina deportiva</div><div class="line">'+visits+' visitas provisionales por formalizar</div><div class="line">'+transfers+' solicitudes de categoría pendientes</div>';
+ const nextDate=latest?.session_date||today;
+ $('coachMsg').value='Hola familias de Gigantes de Azapa. Les recordamos el entrenamiento de '+t.name+' del '+dayReadable(nextDate)+'. '+(latest?.session_objective?'Objetivo: '+latest.session_objective+'. ':'')+'Por favor confirmen los detalles y cualquier novedad directamente con el entrenador. ¡Nos vemos en la cancha!';
+ link('goAttendance','asistencia-entrenadores.html',t);link('goRoster','plantel-entrenadores.html',t);link('goReport','informe-deportivo.html',t);link('goChecks','plantel-entrenadores.html',t);
+ $('management').classList.toggle('hidden',!admin());
+}
+async function init(){
+ if(!window.supabase)throw new Error('Biblioteca de inicio de sesión no disponible.');
+ app.today=iso();
+ const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});app.db=sb;
+ const {data:{session},error}=await sb.auth.getSession();if(error||!session){location.replace('login.html?next=mi-entrenamiento.html');return}
+ const user=await sb.from('profiles').select('user_id,display_name,role,active').eq('user_id',session.user.id).maybeSingle();
+ if(user.error||!user.data?.active||!['superadmin','board','coach'].includes(user.data.role)){location.replace('../mi_gigantes.html');return}
+ app.profile=user.data;$('identity').textContent=user.data.display_name||session.user.email;$('role').textContent=admin()?'Dirección / gestión deportiva':'Entrenador de categoría';
+ const [ts,ass]=await Promise.all([sb.from('sport_teams').select('id,name,code,status,sort_order').neq('status','inactive').order('sort_order'),sb.from('sport_staff_assignments').select('team_id,user_id,active,ends_on').eq('active',true)]);
+ if(ts.error||ass.error)throw Error('No se pudieron cargar las categorías y asignaciones.');
+ const assigned=new Set((ass.data||[]).filter(a=>a.user_id===session.user.id&&(!a.ends_on||a.ends_on>=app.today)).map(a=>a.team_id));
+ app.teams=(ts.data||[]).filter(t=>admin()||assigned.has(t.id)||assigned.has(null));
+ if(!app.teams.length){msg('Tu cuenta está activa, pero no tiene categorías asignadas. Solicita a la directiva habilitar tu acceso desde Formación → Asignaciones.',true);$('team').innerHTML='<option>Sin categoría asignada</option>';return}
+ $('team').innerHTML=app.teams.map(t=>'<option value="'+t.id+'">'+safe(t.name)+'</option>').join('');
+ const query=new URLSearchParams(location.search),fromLink=query.get('team');
+ if(fromLink&&app.teams.some(x=>x.id===fromLink))$('team').value=fromLink;
+ else if(!admin())$('team').value=(app.teams.find(x=>x.status==='current')||app.teams[0]).id;
+ const ids=app.teams.map(t=>t.id);
+ const res=await Promise.all([
+  sb.from('sport_plans').select('id,team_id,status').in('team_id',ids),
+  sb.from('sport_training_sessions').select('id,team_id,session_date,title,session_objective,status').in('team_id',ids).order('session_date',{ascending:false}).limit(700),
+  sb.from('sport_team_members').select('team_id,active').in('team_id',ids),
+  sb.from('sport_trial_players').select('team_id,status').in('team_id',ids),
+  sb.from('sport_roster_transfer_requests').select('to_team_id,from_team_id,status').limit(300)
+ ]);
+ for(let i=0;i<res.length;i++)if(res[i].error)throw Error('Error consultando registros deportivos: '+res[i].error.message);
+ [app.plans,app.sessions,app.members,app.visitors,app.requests]=res.map(x=>x.data||[]);
+ const sid=app.sessions.map(x=>x.id);
+ if(sid.length){for(let i=0;i<sid.length;i+=200){const a=await sb.from('sport_session_attendance').select('session_id,attendance_status').in('session_id',sid.slice(i,i+200));if(a.error){msg('No se pudieron leer todas las asistencias; el porcentaje es parcial.',true);break}app.attendance.push(...(a.data||[]));}}
+ $('team').onchange=render;
+ $('copyMsg').onclick=async()=>{try{await navigator.clipboard.writeText($('coachMsg').value);msg('Mensaje copiado. Revisa destinatarios antes de enviarlo.')}catch(e){msg('No se pudo copiar automáticamente. Selecciona y copia el texto.',true)}};
+ $('shareMsg').onclick=async()=>{if(!navigator.share){msg('Tu navegador no ofrece compartir desde esta pantalla. Usa Copiar mensaje.',true);return}try{await navigator.share({text:$('coachMsg').value})}catch(e){if(e.name!=='AbortError')msg('No se pudo abrir el menú de compartir.',true)}};
+ render();
+}
+init().catch(e=>msg(e.message,true));
+})();
+</script></body></html>
