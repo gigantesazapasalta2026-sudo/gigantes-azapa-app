@@ -39,7 +39,7 @@ async function reload(){
  const ids=teams.map(t=>t.id),responses=await Promise.all([
  db.from('sport_team_members').select('id,team_id,person_id,active,people(id,full_name)').in('team_id',ids),
  db.from('sport_trial_players').select('*').in('team_id',ids).order('created_at',{ascending:false}),
- db.from('sport_roster_transfer_requests').select('*,people(full_name),sport_teams!sport_roster_transfer_requests_to_team_id_fkey(name)').or(ids.map(id=>'to_team_id.eq.'+id).join(',')).order('requested_at',{ascending:false}),
+ db.from('sport_roster_transfer_requests').select('*,people(full_name),sport_teams!sport_roster_transfer_requests_to_team_id_fkey(name)').order('requested_at',{ascending:false}).limit(200),
  db.from('sport_roster_audit').select('*,people(full_name)').in('team_id',ids).order('event_time',{ascending:false}).limit(100)
  ]);
  for(let i=0;i<responses.length;i++)if(responses[i].error){message('No fue posible cargar datos del plantel: '+responses[i].error.message,true);return}
