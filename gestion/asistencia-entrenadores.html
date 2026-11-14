@@ -49,7 +49,7 @@ function updateSessions(keep){
  $('sessionDetail').textContent=canWrite()?'Puedes utilizar una sesión planificada o crear una nueva lista para esa fecha.':'Vista de consulta de dirección. Solo entrenadores asignados y superadministradores pueden modificar asistencia.';
  render();
 }
-async function switchTeam(){updateSessions('');await loadAttendance();}
+async function switchTeam(){updateSessions(selectedSession||'');await loadAttendance();}
 function render(){
  const current=app.selectedSession;const people=roster();
  const records=app.records.filter(a=>a.session_id===current?.id);
@@ -203,7 +203,7 @@ async function init(){
  const guestResult=await sb.from('sport_trial_players').select('id,team_id,full_name,status').in('team_id',ids);
  if(guestResult.error)notice('No se pudo cargar visitantes: '+guestResult.error.message,true);
  app.visitors=guestResult.data||[];
- $('date').value=today;$('team').onchange=switchTeam;$('date').onchange=()=>updateSessions('');
+ const params=new URLSearchParams(location.search),selectedTeam=params.get('team'),selectedDate=params.get('date'),selectedSession=params.get('session');if(selectedTeam&&app.teams.some(t=>t.id===selectedTeam))$('team').value=selectedTeam; $('date').value=/^\d{4}-\d{2}-\d{2}$/.test(selectedDate||'')?selectedDate:today;$('team').onchange=switchTeam;$('date').onchange=()=>updateSessions('');
  $('session').onchange=()=>{app.selectedSession=selection();render()};
  $('newSession').onclick=createSession;
  $('onlyPending').onclick=()=>{app.pendingOnly=!app.pendingOnly;render()};
