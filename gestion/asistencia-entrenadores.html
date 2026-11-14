@@ -133,10 +133,10 @@ async function createSession(){
 function renderHistory(){
  const team=currentTeam();if(!team)return;
  const sessions=app.sessions.filter(s=>s.team_id===team.id&&s.status!=='cancelled').sort((a,b)=>String(b.session_date).localeCompare(String(a.session_date)));
- const player=roster().slice().sort((a,b)=>String(a.people?.full_name||'').localeCompare(String(b.people?.full_name||''),'es'));
+ const player=app.members.filter(m=>m.team_id===team.id).slice().sort((a,b)=>String(a.people?.full_name||'').localeCompare(String(b.people?.full_name||''),'es'));
  const valid=new Set(sessions.map(s=>s.id)),rs=app.records.filter(x=>valid.has(x.session_id));
- const rows=player.map(p=>{const ar=rs.filter(x=>x.person_id===p.person_id),attended=ar.filter(x=>['present','late'].includes(x.attendance_status)).length,missed=ar.filter(x=>x.attendance_status==='absent').length,excused=ar.filter(x=>x.attendance_status==='excused').length,injured=ar.filter(x=>x.attendance_status==='injured').length;
- return {name:p.people?.full_name||'Jugador',attended,missed,excused,injured,registered:ar.length,pending:Math.max(0,sessions.length-ar.length),rate:ar.length?Math.round(attended/ar.length*100):null};
+ const rows=player.map(p=>{const eligible=sessions.filter(s=>(!p.joined_on||s.session_date>=p.joined_on)&&(!p.left_on||s.session_date<=p.left_on));const allowedSessions=new Set(eligible.map(s=>s.id));const ar=rs.filter(x=>x.person_id===p.person_id&&allowedSessions.has(x.session_id)),attended=ar.filter(x=>['present','late'].includes(x.attendance_status)).length,missed=ar.filter(x=>x.attendance_status==='absent').length,excused=ar.filter(x=>x.attendance_status==='excused').length,injured=ar.filter(x=>x.attendance_status==='injured').length;
+ return {name:p.people?.full_name||'Jugador',attended,missed,excused,injured,registered:ar.length,pending:Math.max(0,eligible.length-ar.length),rate:ar.length?Math.round(attended/ar.length*100):null};
  });
  app.history=rows;
  $('history').innerHTML='<p class="muted">'+sessions.length+' sesiones registradas para '+esc(team.name)+'. Se incluyen sesiones en proceso; las faltantes siguen pendientes, no ausentes.</p><table><thead><tr><th>Jugador</th><th>Asistió</th><th>Ausente</th><th>Justificado</th><th>Lesionado</th><th>Sin marcar</th><th>% registrado</th></tr></thead><tbody>'+rows.map(r=>'<tr><td>'+esc(r.name)+'</td><td>'+r.attended+'</td><td>'+r.missed+'</td><td>'+r.excused+'</td><td>'+r.injured+'</td><td>'+r.pending+'</td><td>'+((r.rate===null)?'Sin datos':r.rate+'%')+'</td></tr>').join('')+'</tbody></table>';
@@ -163,7 +163,7 @@ async function init(){
  if(!isManager()){const m=app.teams.find(t=>t.assigned&&t.status==='current')||app.teams[0];$('team').value=m.id}
  const ids=app.teams.map(t=>t.id);
  const [members,sessions]=await Promise.all([
-  sb.from('sport_team_members').select('team_id,person_id,active,people(id,full_name)').eq('active',true).in('team_id',ids),
+  sb.from('sport_team_members').select('team_id,person_id,active,joined_on,left_on,people(id,full_name)').in('team_id',ids),
   sb.from('sport_training_sessions').select('id,team_id,title,session_date,status').in('team_id',ids).order('session_date',{ascending:false})
  ]);
  if(members.error||sessions.error)throw new Error('No se pudo cargar el plantel deportivo: '+(members.error||sessions.error).message);
