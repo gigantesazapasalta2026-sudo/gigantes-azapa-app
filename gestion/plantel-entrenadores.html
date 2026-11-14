@@ -16,7 +16,7 @@
 (function(){
 'use strict';
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
-let db,profile,teams=[],members=[],visitors=[],requests=[],audit=[],matches=[],isBusy=false;
+let db,profile,teams=[],allTeams=[],members=[],visitors=[],requests=[],audit=[],matches=[],isBusy=false;
 const admin=()=>['superadmin','board'].includes(profile?.role),superadmin=()=>profile?.role==='superadmin',team=()=>teams.find(t=>t.id===$('team').value);
 const allowed=()=>superadmin()||!!team()?.assigned;
 const today=()=>{let n=new Date();return new Date(n.getTime()-n.getTimezoneOffset()*60000).toISOString().slice(0,10)};
@@ -24,8 +24,9 @@ const message=(s,bad=false)=>{$('message').innerHTML=s?'<div class="alert '+(bad
 const active=()=>members.filter(m=>m.team_id===team()?.id&&m.active);
 function render(){
  const t=team();if(!t)return;
- $('roster').innerHTML=active().length?active().sort((a,b)=>String(a.people?.full_name||'').localeCompare(String(b.people?.full_name||''),'es')).map(m=>'<div class="line row"><div><b>'+esc(m.people?.full_name||'Jugador')+'</b><div class="small">Plantel oficial de '+esc(t.code)+'</div></div>'+(allowed()?'<button class="remove" data-id="'+m.id+'">Quitar del plantel</button>':'')+'</div>').join(''):'<p class="small">Sin jugadores asignados. Puedes buscar integrantes existentes del club.</p>';
+ $('roster').innerHTML=active().length?active().sort((a,b)=>String(a.people?.full_name||'').localeCompare(String(b.people?.full_name||''),'es')).map(m=>'<div class="line row"><div><b>'+esc(m.people?.full_name||'Jugador')+'</b><div class="small">Plantel oficial de '+esc(t.code)+'</div></div>'+(allowed()?'<button class="remove" data-id="'+m.id+'">Quitar del plantel</button><button class="transfer" data-id="'+m.person_id+'">Solicitar traslado</button>':'')+'</div>').join(''):'<p class="small">Sin jugadores asignados. Puedes buscar integrantes existentes del club.</p>';
  $('roster').querySelectorAll('.remove').forEach(b=>b.onclick=()=>removeMember(b.dataset.id));
+ $('roster').querySelectorAll('.transfer').forEach(b=>b.onclick=()=>requestTransfer(b.dataset.id));
  $('visitors').innerHTML='<h3>Visitas provisionales</h3>'+(visitors.filter(v=>v.team_id===t.id).map(v=>'<div class="line row"><div><b>'+esc(v.full_name)+'</b> <span class="badge">'+esc(v.status)+'</span><div class="small">Desde '+esc(v.first_seen_on)+'</div></div>'+(allowed()&&v.status==='pending'?'<button class="closeVisitor" data-id="'+v.id+'">Cerrar visita</button>':'')+'</div>').join('')||'<p class="small">Sin visitantes registrados.</p>')+'<a class="btn" href="asistencia-entrenadores.html">Marcar asistencia provisional</a>';
  $('visitors').querySelectorAll('.closeVisitor').forEach(b=>b.onclick=()=>closeVisitor(b.dataset.id));
  const relevant=requests.filter(x=>x.to_team_id===t.id||x.from_team_id===t.id);
@@ -72,6 +73,24 @@ async function addExisting(personId){
  if(res.error)return message('No fue posible incorporar: '+res.error.message,true);
  message(person.full_name+' incorporado al plantel.');await reload();
 }
+async function requestTransfer(personId){
+ if(!allowed())return message('No tienes autorización para solicitar traslados.',true);
+ const from=team(),member=active().find(m=>m.person_id===personId);if(!from||!member)return;
+ const targets=allTeams.filter(t=>t.id!==from.id);
+ if(!targets.length)return message('No hay otras categorías disponibles.',true);
+ const names=targets.map((t,i)=>(i+1)+'. '+t.name).join('\n');
+ const chosen=prompt('¿A qué categoría se solicita trasladar a '+(member.people?.full_name||'este jugador')+'?\n'+names+'\nEscribe el número:', '');
+ if(chosen===null)return;
+ const n=Number(chosen);if(!Number.isInteger(n)||n<1||n>targets.length)return message('Selecciona un número de categoría válido.',true);
+ const dest=targets[n-1];
+ const reason=prompt('Motivo del cambio de '+from.name+' a '+dest.name+' (opcional):','');
+ if(reason===null)return;
+ if(reason.length>600)return message('Resume el motivo en 600 caracteres como máximo.',true);
+ if(!confirm('¿Enviar solicitud de traslado a '+dest.name+'? La dirección debe aprobarla; el cambio no será inmediato.'))return;
+ const res=await db.from('sport_roster_transfer_requests').insert({person_id:personId,from_team_id:from.id,to_team_id:dest.id,reason:reason.trim()||null,requested_by:profile.user_id});
+ if(res.error)return message('No se pudo solicitar traslado: '+res.error.message,true);
+ message('Solicitud enviada a dirección deportiva. El jugador continúa en '+from.name+' hasta su aprobación.');await reload();
+}
 async function removeMember(id){
  if(!allowed())return;const m=members.find(x=>x.id===id);if(!m||!m.active)return;
  if(!confirm('¿Quitar a '+(m.people?.full_name||'este jugador')+' del plantel de '+team().name+'? Conservaremos sus asistencias anteriores y su ficha del club.'))return;
@@ -115,6 +134,7 @@ async function init(){
  const [ts,as]=await Promise.all([db.from('sport_teams').select('id,code,name,status,sort_order').neq('status','inactive').order('sort_order'),db.from('sport_staff_assignments').select('user_id,team_id,active,ends_on').eq('active',true)]);
  if(ts.error||as.error)throw Error('No se pudieron cargar categorías autorizadas.');
  const assigned=new Set((as.data||[]).filter(a=>a.user_id===profile.user_id&&(!a.ends_on||a.ends_on>=today())).map(a=>a.team_id));
+ allTeams=ts.data||[];
  teams=(ts.data||[]).filter(t=>admin()||assigned.has(t.id)||assigned.has(null)).map(t=>({...t,assigned:assigned.has(t.id)||assigned.has(null)}));
  if(!teams.length){message('No tienes una categoría asignada. Solicita la habilitación a la directiva.',true);return}
  $('team').innerHTML=teams.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('');$('visitorDate').value=today();
