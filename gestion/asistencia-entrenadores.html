@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Asistencia de Entrenadores · Gigantes de Azapa</title>
+<style>
+:root{--ink:#151e2a;--orange:#ed702c;--muted:#617083;--border:#dce3eb;--bg:#f5f7f9;--green:#157348;--red:#b42318}
+*{box-sizing:border-box}body{background:var(--bg);color:var(--ink);margin:0;font:14px/1.45 system-ui,Arial,sans-serif}
+header{background:#121a26;color:white;padding:17px 18px}header .bar,main{max-width:1120px;margin:auto}.bar,.row,.filters,.actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.bar{justify-content:space-between}.bar h1{font-size:23px;margin:0}.bar a{color:white}
+main{padding:18px}.card{background:white;border:1px solid var(--border);border-radius:15px;padding:17px;margin-bottom:13px}.card h2{font-size:18px;margin:0 0 7px}.row{justify-content:space-between}.muted{color:var(--muted);font-size:12px}.statgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}.stat{background:white;border:1px solid var(--border);border-radius:13px;padding:14px}.stat strong{display:block;font-size:26px}.filters{margin-top:11px;align-items:end}.filters label{display:block;font-size:12px;font-weight:750}.filters select,.filters input{display:block;margin-top:4px}.btn,button,select,input{font:inherit}button,.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;background:white;border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--ink);font-weight:750;cursor:pointer;text-decoration:none}button.primary,.btn.primary{background:var(--orange);color:white;border-color:var(--orange)}button:disabled{opacity:.5;cursor:not-allowed}input,select{border:1px solid #bbc7d4;background:#fff;padding:10px;border-radius:9px}input[type="date"]{min-width:140px}.group{display:flex;gap:6px;flex-wrap:wrap}.group button{padding:10px 13px}.person{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #edf0f4;padding:13px 0}.person:first-child{border-top:0}.name{font-weight:750}.small{font-size:11px;color:var(--muted)}.state{font-size:12px;font-weight:750;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer}.state:focus{outline:2px solid var(--orange)}.pending{color:#59677c;background:#f4f6f9}.present{color:#126b44;background:#def7e9}.late{color:#8f5305;background:#fff1cc}.absent{color:#ac3026;background:#ffe4e1}.excused{color:#345cc8;background:#e9efff}.injured{color:#854db3;background:#f4e9fd}.alert{padding:12px;margin-bottom:12px;background:#fff4e9;border:1px solid #f2cfb4;border-radius:10px}.alert.error{background:#fff0f0;border-color:#efb4b0;color:#a42620}.hidden{display:none!important}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:620px}td,th{padding:11px;border-bottom:1px solid #ecf0f4;text-align:left}th{font-size:11px;color:var(--muted)}.pill{display:inline-flex;padding:4px 8px;background:#eff2f6;border-radius:18px;font-size:11px;font-weight:750}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.tabs button.selected{background:#172333;color:#fff}.hidden{display:none!important}@media(max-width:700px){main{padding:12px}.statgrid{grid-template-columns:repeat(2,1fr)}.person{align-items:flex-start;flex-direction:column}.person .state{width:100%;font-size:15px}.filters select,.filters input{width:100%}.filters label{flex:1;min-width:135px}.group{width:100%}.group button{flex:1}.card{padding:14px}}
+</style></head><body>
+<header><div class="bar"><div><h1>✅ Pase de Lista Gigantes</h1><div style="color:#c7d0dc">Entrenadores · Registro diario e historial</div></div><a href="centro-tecnico.html">← Centro Técnico</a></div></header>
+<main>
+<div class="row"><p id="who" class="muted">Comprobando permisos…</p><a class="btn" href="desarrollo-jugadores.html">Planificar entrenamientos</a></div>
+<div id="message" role="status" aria-live="polite"></div>
+<div class="card"><h2>Selecciona tu entrenamiento</h2><div class="filters">
+<label>Categoría<select id="team"><option value="">Cargando…</option></select></label>
+<label>Fecha<input id="date" type="date"></label>
+<label>Sesión<select id="session"><option value="">Selecciona una fecha y categoría</option></select></label>
+<button class="primary" id="newSession">+ Crear lista del día</button>
+</div><p class="muted" id="sessionDetail">Los entrenadores pueden crear una lista si no existe sesión para ese día. Nunca se marca ausencia automáticamente.</p></div>
+<div class="statgrid" id="stats"></div>
+<div class="tabs" id="tabs"><button class="selected" data-tab="list">Marcar asistencia</button><button data-tab="history">Historial general</button></div>
+<section id="listView" class="card">
+<div class="row"><div><h2>Jugadores de la categoría</h2><span id="summary" class="muted"></span></div><div class="actions"><button id="onlyPending">Mostrar sin marcar</button><button id="refresh">Actualizar</button></div></div>
+<div class="alert">Cada selección guarda únicamente la asistencia de ese jugador. Si no has marcado un nombre, permanece <b>Sin marcar</b>. No se registra como ausente.</div>
+<div id="players"><p class="muted">Selecciona una sesión.</p></div>
+</section>
+<section id="historyView" class="card hidden"><div class="row"><div><h2>Historial de asistencia</h2><p class="muted">Porcentaje calculado solo sobre registros realizados, no sobre casillas pendientes. Las justificaciones y lesiones son privadas.</p></div><button id="export" class="primary">Exportar CSV</button></div><div class="tablewrap" id="history"></div></section>
+</main>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+const states={pending:'Sin marcar',present:'Presente',late:'Atrasado',absent:'Ausente',excused:'Justificado',injured:'Lesionado'};
+const app={db:null,profile:null,teams:[],members:[],sessions:[],records:[],selectedSession:null,tab:'list',pendingOnly:false,busy:false,readOnly:true};
+function notice(s,bad=false){$('message').innerHTML=s?'<div class="alert '+(bad?'error':'')+'">'+esc(s)+'</div>':''}
+const isManager=()=>['superadmin','board'].includes(app.profile?.role),canWrite=()=>app.profile?.role==='superadmin'||(app.profile?.role==='coach'&&app.teams.some(t=>t.id===$('team').value&&t.assigned));
+const currentTeam=()=>app.teams.find(x=>x.id===$('team').value),roster=()=>app.members.filter(m=>m.team_id===$('team').value&&m.active);
+const sessionsForDay=()=>app.sessions.filter(s=>s.team_id===$('team').value&&s.session_date===$('date').value&&s.status!=='cancelled').sort((a,b)=>String(a.title).localeCompare(String(b.title)));
+const todayLocal=()=>{const n=new Date(),d=new Date(n.getTime()-n.getTimezoneOffset()*60000);return d.toISOString().slice(0,10)};
+function selection(){return app.sessions.find(s=>s.id===$('session').value)||null}
+function updateSessions(keep){
+ const items=sessionsForDay();
+ $('session').innerHTML='<option value="">Selecciona sesión…</option>'+items.map(s=>'<option value="'+s.id+'">'+esc(s.title)+(s.status==='completed'?' (realizada)':'')+'</option>').join('');
+ const selected=items.find(x=>x.id===keep);if(selected)$('session').value=selected.id;else if(items.length===1)$('session').value=items[0].id;
+ app.selectedSession=selection();
+ $('newSession').disabled=!canWrite()||!currentTeam()||!$('date').value;
+ $('newSession').textContent=items.length?'+ Nueva sesión del día':'+ Crear lista del día';
+ $('sessionDetail').textContent=canWrite()?'Puedes utilizar una sesión planificada o crear una nueva lista para esa fecha.':'Vista de consulta de dirección. Solo entrenadores asignados y superadministradores pueden modificar asistencia.';
+ render();
+}
+async function switchTeam(){updateSessions('');await loadAttendance();}
+function render(){
+ const current=app.selectedSession;const people=roster();
+ const records=app.records.filter(a=>a.session_id===current?.id);
+ const present=records.filter(x=>['present','late'].includes(x.attendance_status)).length;
+ const notPresent=records.filter(x=>['absent','excused','injured'].includes(x.attendance_status)).length;
+ const pending=Math.max(people.length-records.length,0);
+ $('stats').innerHTML=[
+  ['Plantel',people.length,'Jugadores activos'],['Presentes',present,'Incluye atrasos'],['No asistentes',notPresent,'Ausente / justificado / lesionado'],['Sin marcar',pending,'No se asume ausencia']
+ ].map(x=>'<div class="stat"><span class="muted">'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong><span class="small">'+esc(x[2])+'</span></div>').join('');
+ $('summary').textContent=current?esc(current.title)+' · '+records.length+' de '+people.length+' registrados':'Selecciona una sesión para pasar lista.';
+ $('onlyPending').textContent=app.pendingOnly?'Mostrar todos':'Solo pendientes';
+ $('newSession').disabled=!canWrite()||!currentTeam()||!$('date').value;
+ const filtered=people.filter(p=>!app.pendingOnly||!records.some(a=>a.person_id===p.person_id));
+ $('players').innerHTML=!current?'<p class="muted">Selecciona una sesión o crea una lista del día.</p>':!people.length?'<p class="muted">No existen jugadores asignados en esta categoría. Completa el plantel desde Registro Maestro / Formación antes de pasar lista.</p>':!filtered.length?'<p class="muted">Todos los jugadores visibles tienen asistencia registrada.</p>':filtered.map(p=>{
+  const record=records.find(a=>a.person_id===p.person_id),value=record?.attendance_status||'pending',name=p.people?.full_name||'Jugador';
+  return '<div class="person"><div><div class="name">'+esc(name)+'</div><div class="small">'+(record?'Actualizado: '+new Date(record.updated_at).toLocaleString('es-CL'):'Aún sin registro')+'</div></div><select class="state '+esc(value)+'" data-person="'+esc(p.person_id)+'" aria-label="Asistencia de '+esc(name)+'" '+(!canWrite()?'disabled':'')+'>'+Object.keys(states).map(k=>'<option value="'+k+'" '+(k===value?'selected':'')+'>'+esc(states[k])+'</option>').join('')+'</select></div>'
+ }).join('');
+ $('players').querySelectorAll('select[data-person]').forEach(el=>el.onchange=()=>mark(el));
+ renderHistory();
+}
+async function loadAttendance(){
+ const team=currentTeam();if(!team){app.records=[];render();return}
+ const ids=app.sessions.filter(s=>s.team_id===team.id).map(x=>x.id);
+ if(!ids.length){app.records=[];render();return}
+ const response=await app.db.from('sport_session_attendance').select('session_id,person_id,attendance_status,updated_at').in('session_id',ids);
+ if(response.error){notice('No fue posible cargar asistencia: '+response.error.message,true);return}
+ app.records=response.data||[];render();
+}
+async function mark(select){
+ if(!canWrite()||!app.selectedSession)return notice('No tienes permiso para registrar asistencia en esta categoría.',true);
+ const sid=app.selectedSession.id,pid=select.dataset.person,found=app.records.find(x=>x.session_id===sid&&x.person_id===pid);
+ const previous=found?.attendance_status||'pending',next=select.value;
+ select.disabled=true;notice('');
+ let err=null;
+ if(next==='pending'){
+  if(found){const res=await app.db.from('sport_session_attendance').delete().eq('session_id',sid).eq('person_id',pid);err=res.error;if(!err)app.records=app.records.filter(x=>!(x.session_id===sid&&x.person_id===pid));}
+ }else{
+  const payload={session_id:sid,person_id:pid,attendance_status:next,recorded_by:app.profile.user_id,updated_at:new Date().toISOString()};
+  const res=await app.db.from('sport_session_attendance').upsert(payload,{onConflict:'session_id,person_id'}).select('session_id,person_id,attendance_status,updated_at').single();
+  err=res.error;if(!err){app.records=app.records.filter(x=>!(x.session_id===sid&&x.person_id===pid));app.records.push(res.data)}
+ }
+ if(err){select.value=previous;select.disabled=false;notice('No se pudo guardar '+(roster().find(p=>p.person_id===pid)?.people?.full_name||'jugador')+': '+err.message,true);return}
+ render();notice('Asistencia guardada correctamente.');
+}
+async function createSession(){
+ const team=currentTeam(),date=$('date').value;if(!team||!date||!canWrite())return notice('Selecciona una categoría autorizada y fecha.',true);
+ if(!confirm('¿Crear una nueva sesión de asistencia en '+team.name+' para '+date+'? Si ya existe una sesión planificada, puedes seleccionarla sin crear otra.'))return;
+ $('newSession').disabled=true;
+ const payload={team_id:team.id,session_date:date,title:'Pase de lista · '+team.name+' · '+date,duration_minutes:75,status:'planned',created_by:app.profile.user_id,session_objective:'Registro de asistencia del entrenamiento'};
+ const {data,error}=await app.db.from('sport_training_sessions').insert(payload).select('id,team_id,session_date,title,status').single();
+ if(error){notice('No se pudo crear la lista: '+error.message,true);updateSessions(app.selectedSession?.id);return}
+ app.sessions.push(data);updateSessions(data.id);await loadAttendance();notice('Lista creada. Ya puedes marcar asistencia de los jugadores.');
+}
+function renderHistory(){
+ const team=currentTeam();if(!team)return;
+ const sessions=app.sessions.filter(s=>s.team_id===team.id&&s.status!=='cancelled').sort((a,b)=>String(b.session_date).localeCompare(String(a.session_date)));
+ const player=roster().slice().sort((a,b)=>String(a.people?.full_name||'').localeCompare(String(b.people?.full_name||''),'es'));
+ const valid=new Set(sessions.map(s=>s.id)),rs=app.records.filter(x=>valid.has(x.session_id));
+ const rows=player.map(p=>{const ar=rs.filter(x=>x.person_id===p.person_id),attended=ar.filter(x=>['present','late'].includes(x.attendance_status)).length,missed=ar.filter(x=>x.attendance_status==='absent').length,excused=ar.filter(x=>x.attendance_status==='excused').length,injured=ar.filter(x=>x.attendance_status==='injured').length;
+ return {name:p.people?.full_name||'Jugador',attended,missed,excused,injured,registered:ar.length,pending:Math.max(0,sessions.length-ar.length),rate:ar.length?Math.round(attended/ar.length*100):null};
+ });
+ app.history=rows;
+ $('history').innerHTML='<p class="muted">'+sessions.length+' sesiones registradas para '+esc(team.name)+'. Se incluyen sesiones en proceso; las faltantes siguen pendientes, no ausentes.</p><table><thead><tr><th>Jugador</th><th>Asistió</th><th>Ausente</th><th>Justificado</th><th>Lesionado</th><th>Sin marcar</th><th>% registrado</th></tr></thead><tbody>'+rows.map(r=>'<tr><td>'+esc(r.name)+'</td><td>'+r.attended+'</td><td>'+r.missed+'</td><td>'+r.excused+'</td><td>'+r.injured+'</td><td>'+r.pending+'</td><td>'+((r.rate===null)?'Sin datos':r.rate+'%')+'</td></tr>').join('')+'</tbody></table>';
+}
+function exportCSV(){
+ const team=currentTeam();if(!team)return notice('Selecciona categoría.',true);
+ const rows=[['Jugador','Asistió','Ausente','Justificado','Lesionado','Registros','Pendientes','Asistencia %'],...(app.history||[]).map(p=>[p.name,p.attended,p.missed,p.excused,p.injured,p.registered,p.pending,p.rate??''])];
+ const cell=v=>{const val=String(v??''),safe=/^[\s]*[=+\-@]/.test(val)?"'"+val:val;return '"'+safe.replace(/"/g,'""')+'"';};
+ const content='\ufeff'+rows.map(r=>r.map(cell).join(';')).join('\r\n'),blob=new Blob([content],{type:'text/csv;charset=utf-8;'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Gigantes_asistencia_'+team.code+'_'+todayLocal()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+async function init(){
+ const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});app.db=sb;
+ const {data:{session},error:authErr}=await sb.auth.getSession();if(authErr||!session){location.replace('login.html?next=asistencia-entrenadores.html');return}
+ const profile=await sb.from('profiles').select('user_id,display_name,role,active').eq('user_id',session.user.id).maybeSingle();
+ if(profile.error||!profile.data?.active||!['superadmin','board','coach'].includes(profile.data.role)){location.replace('../mi_gigantes.html');return}
+ app.profile=profile.data;$('who').textContent=(profile.data.display_name||session.user.email)+' · '+(isManager()?'Dirección deportiva':'Entrenador');
+ const [teams,assignments]=await Promise.all([sb.from('sport_teams').select('id,code,name,status,sort_order').neq('status','inactive').order('sort_order'),sb.from('sport_staff_assignments').select('team_id,user_id,active,ends_on,staff_role').eq('active',true)]);
+ if(teams.error||assignments.error)throw new Error('Error cargando permisos y categorías.');
+ const today=todayLocal(),my=assignments.data.filter(a=>a.user_id===session.user.id&&(!a.ends_on||a.ends_on>=today));const assigned=new Set(my.map(a=>a.team_id));
+ app.teams=(teams.data||[]).filter(t=>isManager()||assigned.has(t.id)||assigned.has(null)).map(t=>({...t,assigned:assigned.has(t.id)||assigned.has(null)}));
+ if(!app.teams.length){$('team').innerHTML='<option value="">Sin categoría</option>';notice('Aún no tienes categoría deportiva asignada. La directiva debe activarla en Control Center → Formación → Asignaciones.',true);return}
+ $('team').innerHTML=app.teams.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('');
+ if(!isManager()){const m=app.teams.find(t=>t.assigned&&t.status==='current')||app.teams[0];$('team').value=m.id}
+ const ids=app.teams.map(t=>t.id);
+ const [members,sessions]=await Promise.all([
+  sb.from('sport_team_members').select('team_id,person_id,active,people(id,full_name)').eq('active',true).in('team_id',ids),
+  sb.from('sport_training_sessions').select('id,team_id,title,session_date,status').in('team_id',ids).order('session_date',{ascending:false})
+ ]);
+ if(members.error||sessions.error)throw new Error('No se pudo cargar el plantel deportivo: '+(members.error||sessions.error).message);
+ app.members=members.data||[];app.sessions=sessions.data||[];
+ $('date').value=today;$('team').onchange=switchTeam;$('date').onchange=()=>updateSessions('');
+ $('session').onchange=()=>{app.selectedSession=selection();render()};
+ $('newSession').onclick=createSession;
+ $('onlyPending').onclick=()=>{app.pendingOnly=!app.pendingOnly;render()};
+ $('refresh').onclick=loadAttendance;$('export').onclick=exportCSV;
+ $('tabs').onclick=e=>{const btn=e.target.closest('button[data-tab]');if(!btn)return;app.tab=btn.dataset.tab;document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('selected',b.dataset.tab===app.tab));$('listView').classList.toggle('hidden',app.tab!=='list');$('historyView').classList.toggle('hidden',app.tab!=='history')};
+ updateSessions('');await loadAttendance();
+}
+init().catch(e=>notice('No se pudo abrir el pase de lista: '+e.message,true));
+})();
+</script></body></html>
