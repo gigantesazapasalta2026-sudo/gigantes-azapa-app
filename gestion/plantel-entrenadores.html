@@ -137,7 +137,7 @@ async function init(){
  allTeams=ts.data||[];
  teams=(ts.data||[]).filter(t=>admin()||assigned.has(t.id)||assigned.has(null)).map(t=>({...t,assigned:assigned.has(t.id)||assigned.has(null)}));
  if(!teams.length){message('No tienes una categoría asignada. Solicita la habilitación a la directiva.',true);return}
- $('team').innerHTML=teams.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('');$('visitorDate').value=today();
+ $('team').innerHTML=teams.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('');const selectedTeam=new URLSearchParams(location.search).get('team');if(selectedTeam&&teams.some(t=>t.id===selectedTeam))$('team').value=selectedTeam;$('visitorDate').value=today();
  $('team').onchange=()=>{message('');render()};$('find').onclick=find;$('search').onkeydown=e=>{if(e.key==='Enter')find()};
  $('addVisitor').onclick=addVisitor;$('refresh').onclick=reload;
  await reload();
