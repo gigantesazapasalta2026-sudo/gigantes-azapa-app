@@ -12,7 +12,7 @@
 <div class="tabs"><button data-tab="dashboard" class="active">Resumen</button><button data-tab="planes">Planificación</button><button data-tab="aprendizaje">Mi aprendizaje</button><button data-tab="oportunidades">Oportunidades</button><button data-tab="radar">Radar de cursos</button><button data-tab="staff" id="staffTab" class="hidden">Asignaciones</button><button data-tab="validacion" id="validationTab" class="hidden">Validar cursos</button><button data-tab="docs">Documentos</button></div>
 <section id="view"></section>
 </main>
-<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script src="plantillas-formativas.js?v=20261114"></script>
 <script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
 let profile=null,teams=[],assignments=[],plans=[],catalog=[],progress=[],profiles=[],opportunities=[],tab='dashboard';
@@ -56,7 +56,7 @@ function planesView(){
 }
 function formPlan(p){
  const ats=activeTeams(),x=p||{},team=x.team_id||ats[0]?.id||'';
- return '<div class="card" style="margin:12px 0"><h3>'+(x.id?'Editar':'Nueva')+' planificación</h3><div class="form">'+
+ return '<div class="card" style="margin:12px 0"><h3>'+(x.id?'Editar':'Nueva')+' planificación</h3>'+ '<div class="note" style="margin:10px 0"><b>Base formativa Gigantes (opcional)</b><p>Elige categoría y tipo de plan, carga una propuesta y ajusta lo que necesites. No guarda ni publica automáticamente.</p><button type="button" class="btn secondary" onclick="applyPlanBase()">🌱 Cargar planificación base editable</button> <a href="https://passport.world.rugby/es/entrenadores/introduccion-al-coaching/los-principios-de-una-sesion-de-coaching/" target="_blank" rel="noopener">Principios World Rugby</a></div><div class="form">'+
  '<label>Categoría<select id="pTeam">'+ats.map(t=>'<option value="'+t.id+'" '+(t.id===team?'selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select></label>'+
  '<label>Tipo<select id="pType"><option value="annual">Anual</option><option value="monthly">Mensual</option><option value="weekly">Semanal</option><option value="session">Sesión</option></select></label>'+
  '<label class="span2">Título<input id="pTitle" value="'+esc(x.title||'')+'" placeholder="Ej: Objetivos de octubre · M12"></label>'+
@@ -71,6 +71,17 @@ function formPlan(p){
  '<label class="span2">Contenido de sesión / metodología<textarea id="pSession">'+esc(x.session_content||'')+'</textarea></label>'+
  '<label class="span2">Reflexión privada del entrenador<textarea id="pReflection">'+esc(x.coach_reflection||'')+'</textarea></label></div>'+
  '<div class="actions"><button class="btn primary" onclick="savePlan(\''+(x.id||'')+'\')">Guardar borrador</button><button class="btn secondary" onclick="document.getElementById(\'planEditor\').innerHTML=\'\'">Cancelar</button></div></div>';
+}
+function applyPlanBase(){
+ const lib=window.GIGANTES_PLAN_BASES, team=teams.find(t=>t.id===document.getElementById('pTeam')?.value);
+ if(!lib||!team)return alert('No se pudo cargar la biblioteca de planificaciones.');
+ const code=String(team.code||team.name||'M12').toUpperCase().replace(/[^A-Z0-9]/g,'');
+ const model=lib.get(code,document.getElementById('pType').value);
+ const ids={pTitle:'title',pSummary:'summary',pTechnical:'technical_objectives',pTactical:'tactical_objectives',pPhysical:'physical_objectives',pCognitive:'cognitive_objectives',pValues:'values_objectives',pSafety:'safety_notes',pSession:'session_content',pReflection:'coach_reflection'};
+ const hasContent=Object.keys(ids).some(id=>document.getElementById(id)?.value.trim());
+ if(hasContent&&!confirm('¿Reemplazar los textos actuales por la propuesta base? No se guardará nada hasta que presiones Guardar borrador.'))return;
+ Object.keys(ids).forEach(id=>{const el=document.getElementById(id);if(el)el.value=model[ids[id]]||''});
+ alert('Propuesta base cargada. Revísala, ajústala a tus jugadores y guarda un borrador. No es un programa oficial ni se publica automáticamente.');
 }
 function openNewPlan(teamId){tab='planes';render();planEditor.innerHTML=formPlan({team_id:teamId});}
 function editPlan(id){const p=plans.find(x=>x.id===id);planEditor.innerHTML=formPlan(p);document.getElementById('pType').value=p.period_type||'monthly';}
