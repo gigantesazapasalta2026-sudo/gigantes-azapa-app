@@ -1,0 +1,44 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Auditoría de Planteles · Gigantes</title>
+<style>body{margin:0;background:#f5f7f9;color:#162335;font:14px/1.5 system-ui,Arial}*{box-sizing:border-box}header{background:#101b2b;color:white;padding:19px}header .wrap,main{max-width:1100px;margin:auto}header h1{font-size:23px;margin:0}header a{color:white}main{padding:15px}.card{background:white;border:1px solid #dce4ee;border-radius:13px;padding:16px;margin:13px 0}.card h2{margin:0 0 9px;font-size:18px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{border:1px solid #e0e5ed;border-radius:11px;padding:13px}.metric strong{display:block;font-size:25px}.row{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}button,a.btn{font:inherit;font-weight:700;padding:9px 12px;border-radius:9px;border:1px solid #d5dde9;color:#152235;background:white;text-decoration:none;cursor:pointer}select{padding:9px;font:inherit;border-radius:8px;border:1px solid #bac7d5}.muted{font-size:12px;color:#667589}.issue{padding:9px;border-bottom:1px solid #eef0f3}.warn{background:#fff5e7;border:1px solid #efcfaa;border-radius:9px;padding:10px;margin:10px 0}.hidden{display:none!important}@media(max-width:680px){.grid{grid-template-columns:repeat(2,1fr)}main{padding:10px}}</style></head><body>
+<header><div class="wrap row"><div><h1>🔎 Auditoría deportiva</h1><small>Estado de planteles, registros y solicitudes</small></div><a href="mi-entrenamiento.html">← Mi Entrenamiento</a></div></header>
+<main><p id="identity" class="muted">Validando autorización…</p><div id="notice"></div><section class="card"><div class="row"><h2>Revisión de categorías</h2><div><select id="team"><option value="all">Todas las categorías</option></select><button id="reload">Actualizar</button></div></div><p class="muted">Consulta de supervisión; no edita fichas ni elimina registros. Los datos se muestran únicamente a roles autorizados.</p><div class="grid" id="metrics"></div></section>
+<section class="card"><h2>Situaciones a revisar</h2><div id="issues"></div></section>
+<section class="card"><h2>Solicitudes de traslado pendientes</h2><div id="transfers"></div></section>
+<section class="card"><h2>Movimientos recientes de plantel</h2><div id="audit"></div></section>
+<div class="card"><div class="row"><a class="btn" href="plantel-entrenadores.html">Gestionar plantel</a><a class="btn" href="informe-deportivo.html">Informe mensual</a><a class="btn" href="centro-tecnico.html">Control Center</a></div></div>
+</main><script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>(function(){
+'use strict';
+const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));let db,profile,teams=[],members=[],visits=[],transfers=[],audits=[],plans=[],sessions=[];
+const admin=()=>['superadmin','board'].includes(profile?.role),teamSet=()=>new Set(teams.filter(t=>$('team').value==='all'||$('team').value===t.id).map(t=>t.id));
+function msg(s,bad){$('notice').innerHTML=s?'<div class="warn">'+esc(s)+'</div>':''}
+function metric(a,b){return '<div class="metric"><span class="muted">'+esc(a)+'</span><strong>'+esc(b)+'</strong></div>'}
+function render(){const ids=teamSet(),m=members.filter(x=>ids.has(x.team_id)),v=visits.filter(x=>ids.has(x.team_id)&&x.status==='pending'),p=plans.filter(x=>ids.has(x.team_id)),s=sessions.filter(x=>ids.has(x.team_id)),r=transfers.filter(x=>x.status==='pending'&&(ids.has(x.to_team_id)||ids.has(x.from_team_id))),a=audits.filter(x=>ids.has(x.team_id));
+ $('metrics').innerHTML=metric('Categorías',ids.size)+metric('Jugadores activos',m.filter(x=>x.active).length)+metric('Visitas pendientes',v.length)+metric('Traslados pendientes',r.length);
+ const issues=[];for(let t of teams.filter(x=>ids.has(x.id))){const roster=m.filter(x=>x.team_id===t.id&&x.active);if(t.status==='current'&&!roster.length)issues.push(t.name+': no hay integrantes vinculados');if(t.status==='current'&&!p.some(x=>x.team_id===t.id))issues.push(t.name+': no hay planificación');if(t.status==='current'&&!s.some(x=>x.team_id===t.id))issues.push(t.name+': no se han registrado sesiones de entrenamiento');}
+ const peopleMap=new Map();m.filter(x=>x.active).forEach(x=>{const value=peopleMap.get(x.person_id)||[];value.push(x.team_id);peopleMap.set(x.person_id,value)});let cross=0;peopleMap.forEach(t=>{if(new Set(t).size>1)cross++});if(cross)issues.push(cross+' jugadores aparecen activos en varias categorías; verificar dobles vinculaciones');
+ if(v.length)issues.push(v.length+' visitantes provisionales necesitan formalización');
+ if(r.length)issues.push(r.length+' cambios de categoría pendientes de revisión');
+ $('issues').innerHTML=issues.length?issues.map(x=>'<div class="issue">⚠️ '+esc(x)+'</div>').join(''):'<p class="muted">No se detectaron incidencias en las tablas consultadas.</p>';
+ $('transfers').innerHTML=r.length?r.map(x=>'<div class="issue"><b>'+esc(x.people?.full_name||'Jugador')+'</b> · '+esc(x.status)+'<div class="muted">'+esc(x.reason||'Sin observación')+'</div><a href="plantel-entrenadores.html">Revisar solicitud</a></div>').join(''):'<p class="muted">No hay traslados pendientes.</p>';
+ $('audit').innerHTML=a.slice(0,30).map(x=>'<div class="issue"><b>'+esc(x.people?.full_name||'Jugador')+'</b> · '+esc(x.action)+'<span class="muted"> · '+new Date(x.event_time).toLocaleString('es-CL')+'</span></div>').join('')||'<p class="muted">No hay movimientos registrados desde la activación de la auditoría.</p>';
+}
+async function load(){
+ if(!teams.length)return;
+ const ids=teams.map(t=>t.id);
+ const q=await Promise.all([db.from('sport_team_members').select('team_id,person_id,active').in('team_id',ids).limit(3000),db.from('sport_trial_players').select('team_id,status').in('team_id',ids).limit(800),db.from('sport_roster_transfer_requests').select('person_id,from_team_id,to_team_id,status,reason,people(full_name)').limit(800),db.from('sport_roster_audit').select('team_id,person_id,action,event_time,people(full_name)').in('team_id',ids).order('event_time',{ascending:false}).limit(300),db.from('sport_plans').select('team_id').in('team_id',ids).limit(1000),db.from('sport_training_sessions').select('team_id').in('team_id',ids).limit(1000)]);
+ const errors=q.filter(x=>x.error);if(errors.length){msg('No se pudieron cargar todos los datos: '+errors.map(x=>x.error.message).join('; '),true);return}
+ [members,visits,transfers,audits,plans,sessions]=q.map(x=>x.data||[]);msg('');render();
+}
+async function init(){
+ db=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+ const {data:{session}}=await db.auth.getSession();if(!session){location.replace('login.html?next=auditoria-planteles.html');return}
+ const p=await db.from('profiles').select('user_id,display_name,role,active').eq('user_id',session.user.id).maybeSingle();
+ if(p.error||!p.data?.active||!['superadmin','board'].includes(p.data.role)){location.replace('mi-entrenamiento.html');return}
+ profile=p.data;$('identity').textContent=(profile.display_name||session.user.email)+' · Auditoría de directiva';
+ const t=await db.from('sport_teams').select('id,code,name,status').neq('status','inactive').order('sort_order');if(t.error)throw Error(t.error.message);
+ teams=t.data||[];$('team').innerHTML='<option value="all">Todas las categorías</option>'+teams.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join('');
+ $('team').onchange=render;$('reload').onclick=load;await load();
+}
+init().catch(e=>msg('Error: '+e.message,true));
+})();</script></body></html>
