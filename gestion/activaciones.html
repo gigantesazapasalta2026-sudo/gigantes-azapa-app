@@ -63,7 +63,7 @@ function instruction(p){
 function filtered(){
  const word=$('search').value.toLowerCase().trim(),status=$('status').value,grp=$('group').value;
  return db.people.filter(p=>(!word||(p.name+' '+p.email+' '+p.category).toLowerCase().includes(word))&&
- (status==='all'||status==='needs'?!['own_visited','own_confirmed','guardian_linked','inactive'].includes(p.state):status===p.state)&&
+ (status==='all'||(status==='needs'?!['own_visited','own_confirmed','guardian_linked','inactive'].includes(p.state):status===p.state))&&
  (grp==='all'||group(p)===grp));
 }
 function csvValue(v){return '"'+String(v??'').replace(/^[\s]*[=+\-@]/,'_').replace(/"/g,'""')+'"'}
