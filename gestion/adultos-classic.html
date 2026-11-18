@@ -1,0 +1,86 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Adultos y Classic · Control Center Gigantes</title>
+<style>
+:root{--o:#ef6a20;--d:#111827;--muted:#667085;--line:#e5e7eb;--surface:#fff}
+*{box-sizing:border-box}body{margin:0;background:#f3f5f8;color:var(--d);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}header{background:#111827;color:white;padding:18px max(15px,calc((100vw - 1160px)/2));display:flex;justify-content:space-between;gap:12px;align-items:center}header strong{font-size:1.08rem}header a{color:white;text-decoration:none;font-size:.9rem}
+main{max-width:1180px;margin:auto;padding:18px 13px 55px}h1{font-size:clamp(1.5rem,3vw,2rem);margin:0 0 10px}h2{font-size:1.05rem;margin:0 0 10px}.muted{color:var(--muted)}p{line-height:1.5}.card{background:white;border-radius:15px;border:1px solid var(--line);padding:17px;margin:13px 0;box-shadow:0 2px 5px #00000008}.notice{border-left:4px solid #d97706;background:#fffbeb;padding:12px 15px;border-radius:8px;margin:12px 0}.alert{border-left-color:#dc2626;background:#fef2f2}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.kpi{background:white;border:1px solid var(--line);border-radius:14px;padding:12px}.kpi b{font-size:1.6rem;display:block}.kpi small{color:var(--muted);font-size:.76rem}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}input,select,textarea{font:inherit;border:1px solid #cbd5e1;border-radius:9px;padding:9px;background:white;max-width:100%}input[type=search]{flex:1;min-width:200px}.btn{padding:10px 13px;border:0;border-radius:9px;background:#111827;color:white;font-weight:700;cursor:pointer;display:inline-block;text-decoration:none}.btn.secondary{background:#f1f5f9;color:#1f2937;border:1px solid #cbd5e1}.btn.orange{background:var(--o)}.btn:disabled{opacity:.5;cursor:wait}
+table{border-collapse:collapse;width:100%;font-size:.85rem}th{text-align:left;background:#f8fafc;color:#475467}th,td{padding:11px 9px;border-bottom:1px solid var(--line);vertical-align:top}td{overflow-wrap:anywhere}.scroll{overflow:auto}th{white-space:nowrap}.pill{display:inline-block;border-radius:100px;font-size:.72rem;font-weight:700;background:#f1f5f9;padding:4px 7px;margin:2px 2px 2px 0}.good{color:#166534;background:#dcfce7}.bad{color:#991b1b;background:#fee2e2}.warn{color:#92400e;background:#fef3c7}.name{font-weight:750}.details{font-size:.79rem;color:#667085;line-height:1.5}details{margin-top:7px}summary{cursor:pointer;color:#c2410c;font-weight:700}.actionrow{display:flex;gap:7px;flex-wrap:wrap}label{display:block;font-size:.8rem;color:#475467;margin:5px 0}label select,label textarea{display:block;width:100%;margin-top:4px}textarea{min-height:54px;resize:vertical}.empty{text-align:center;padding:20px;color:#667085}footer{font-size:.78rem;color:#667085;margin:10px}
+@media(max-width:780px){.grid{grid-template-columns:repeat(2,1fr)}.scroll table{min-width:800px}header{padding:15px}main{padding:12px}th,td{padding:9px 7px}}
+</style></head><body><header><strong>🏉 Gigantes · Adultos / Classic</strong><a href="../mi_gigantes.html">← Mi Gigantes</a></header>
+<main><div id="loading" class="card">Comprobando tu acceso a la coordinación…</div><section id="app" hidden>
+ <div class="card"><h1>Control Center · Adultos y Classic</h1><p>Panel reservado para el responsable de la categoría y el superadministrador. Nómina real del club, contactos de emergencia, estados de Chile Rugby y convocatoria de Arequipa.</p>
+ <div class="notice alert"><b>Arequipa · sábado 21 de noviembre de 2026 (Perú)</b><p>La inscripción en Chile Rugby y el seguro deportivo chileno <b>NO demuestran cobertura de accidentes en Perú</b>. Verificar asistencia médica y seguro internacional antes del viaje. Ningún estado de esta pantalla sustituye la decisión formal de habilitación deportiva.</p></div></div>
+ <div class="grid">
+  <div class="kpi"><b id="kTotal">—</b><small>Fichas actuales Adultos/Classic</small></div>
+  <div class="kpi"><b id="kActive">—</b><small>Jugadores activos en base</small></div>
+  <div class="kpi"><b id="kMissing">—</b><small>Históricos sin ficha coincidente</small></div>
+  <div class="kpi"><b id="kConfirmed">—</b><small>Convocados confirmados</small></div>
+ </div>
+ <div class="card"><h2>Nómina y seguimiento</h2><div class="controls"><input type="search" id="search" placeholder="Buscar jugador, categoría o correo…"><select id="filter"><option value="all">Todos</option><option value="active">Activos</option><option value="incomplete">Pendientes</option><option value="confirmed">Confirmados a Arequipa</option><option value="missing">Sin cuenta de acceso</option></select><button class="btn secondary" id="refresh">Actualizar</button><button class="btn secondary" id="export">Exportar CSV</button></div>
+ <p class="muted" style="font-size:.83rem">El semáforo diferencia registros oficiales de una anotación de convocatoria. No marca a nadie como asegurado en Perú sin verificación.</p><div class="scroll"><table><thead><tr><th>Jugador</th><th>Contacto y emergencia</th><th>Ficha y acceso</th><th>Chile Rugby / seguro</th><th>Arequipa · coordinación</th></tr></thead><tbody id="players"><tr><td colspan="5">Cargando…</td></tr></tbody></table></div></div>
+ <div class="card"><h2>Nómina histórica Adultos / Classic</h2><p class="muted">Referencia del club: sus nombres no equivalen a inscripción ni seguro vigente. «Sin coincidencia» puede requerir confirmar identidad y RUT en el Registro Maestro.</p><div class="scroll"><table><thead><tr><th>Nombre en nómina</th><th>Estado histórico</th><th>Registro Maestro</th></tr></thead><tbody id="historic"></tbody></table></div></div>
+ <div class="card"><h2>Solicitudes nuevas de Adultos / Classic</h2><p class="muted">Solo aparecen solicitudes cuya categoría haya sido declarada expresamente como adulto o Classic. Las solicitudes sin categoría se mantienen en revisión del superadministrador para proteger a los menores.</p><div id="requests" class="empty">Revisando…</div><p><a class="btn secondary" href="../regularizar-correo.html" target="_blank" rel="noopener noreferrer">Enviar enlace de inscripción</a></p></div>
+ <p id="msg" aria-live="polite" class="muted"></p></section>
+</main><script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+const $=id=>document.getElementById(id);const esc=v=>String(v??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
+const statuses=['sin_definir','convocado','confirmado','no_viaja','baja'];
+const statusNames={'sin_definir':'Sin definir','convocado':'Convocado','confirmado':'Confirmado','no_viaja':'No viaja','baja':'Baja'};
+const travelStates=['sin_verificar','en_revision','confirmado'];
+const travelNames={'sin_verificar':'Sin verificar','en_revision':'En revisión','confirmado':'Cobertura Perú verificada'};
+let payload={current:[],roster:[],requests:[]},token='';
+async function api(method='GET',body=null){
+ const h={apikey:GIGANTES_SUPABASE_PUBLISHABLE_KEY,authorization:'Bearer '+token};
+ if(body)h['content-type']='application/json';
+ const res=await fetch(GIGANTES_SUPABASE_URL+'/functions/v1/adult-classic-control',{method,headers:h,body:body?JSON.stringify(body):undefined});
+ const data=await res.json().catch(()=>({error:'No se pudo leer respuesta del sistema'}));
+ if(!res.ok)throw Error(data.error||'Error '+res.status);return data;
+}
+const valid=(v,yes)=>yes?'<span class="pill good">'+esc(v)+'</span>':'<span class="pill warn">'+esc(v)+'</span>';
+const ok=s=>/^(fichado|pago|tiene)$/i.test(String(s||'').trim());
+function options(items,labels,val){return items.map(i=>'<option value="'+esc(i)+'"'+(i===val?' selected':'')+'>'+esc(labels[i])+'</option>').join('')}
+function display(){
+ const txt=$('search').value.toLowerCase().trim(),filter=$('filter').value;
+ const active=payload.current.filter(x=>x.member_status==='active');
+ $('kTotal').textContent=payload.current.length;$('kActive').textContent=active.length;
+ $('kMissing').textContent=payload.roster.filter(x=>!x.registered).length;
+ $('kConfirmed').textContent=payload.current.filter(x=>x.selection_status==='confirmado').length;
+ const list=payload.current.filter(p=>(p.name+' '+p.category+' '+p.email).toLowerCase().includes(txt)&&(
+ filter==='all'||filter==='active'&&p.member_status==='active'||filter==='incomplete'&&(p.pending_requirements>0||!p.access_active||!ok(p.insurance_status)||!ok(p.payment_status))||filter==='confirmed'&&p.selection_status==='confirmado'||filter==='missing'&&!p.access_active));
+ $('players').innerHTML=list.length?list.map(p=>{
+  const c=valid(p.member_status,p.member_status==='active');
+  const cov=p.travel_insurance_status==='confirmado';
+  return '<tr data-id="'+esc(p.id)+'"><td><div class="name">'+esc(p.name)+'</div><div class="details">'+esc(p.category)+'</div>'+c+'</td>'+
+  '<td><div>'+esc(p.phone||'Sin teléfono')+'</div><div class="details">'+esc(p.email||'Sin correo')+'</div><hr style="border:0;border-top:1px solid #e5e7eb"><div class="details">🚑 '+esc(p.emergency_name||'Contacto no registrado')+'</div><b>'+esc(p.emergency_phone||'Sin teléfono de emergencia')+'</b></td>'+
+  '<td>'+valid('Ficha '+p.completion_percent+'%',p.pending_requirements===0)+valid(p.access_active?'Mi Gigantes activo':'Acceso pendiente',p.access_active)+'</td>'+
+  '<td>'+valid('BD: '+p.federation_status,ok(p.federation_status))+valid('Registro: '+p.payment_status,ok(p.payment_status))+valid('EPC: '+p.epc_status,ok(p.epc_status))+
+   valid('Seguro Chile: '+p.insurance_status,ok(p.insurance_status))+'</td>'+
+  '<td>'+valid('Convocatoria: '+statusNames[p.selection_status],p.selection_status==='confirmado')+
+  valid('Perú: '+travelNames[p.travel_insurance_status],cov)+
+  '<details><summary>Editar convocatoria / seguro Perú</summary><label>Estado de participación<select class="selection">'+options(statuses,statusNames,p.selection_status)+'</select></label>'+
+  '<label>Cobertura de asistencia en Perú<select class="travel">'+options(travelStates,travelNames,p.travel_insurance_status)+'</select></label>'+
+  '<label>Observaciones de coordinación<textarea class="notes" maxlength="400">'+esc(p.notes||'')+'</textarea></label><button type="button" class="btn orange save">Guardar seguimiento</button></details></td></tr>';
+ }).join(''):'<tr><td colspan="5" class="empty">No hay jugadores que cumplan el filtro.</td></tr>';
+ $('historic').innerHTML=payload.roster.map(p=>'<tr><td>'+esc(p.name)+'</td><td>'+valid(p.expected_status,p.expected_status==='ACTIVO')+'</td><td>'+valid(p.registered?'Coincide con ficha':'Verificar / sin coincidencia',p.registered)+'</td></tr>').join('')||'<tr><td colspan="3">Sin nómina histórica.</td></tr>';
+ $('requests').innerHTML=payload.requests.length?payload.requests.map(p=>'<div style="border-bottom:1px solid #e5e7eb;padding:8px 0"><b>'+esc(p.name)+'</b> · '+esc(p.category)+' <span class="pill warn">Pendiente de aprobación</span></div>').join(''):'No hay solicitudes Adultos / Classic clasificadas pendientes.';
+}
+async function load(){const x=await api();payload=x;display();$('msg').textContent='Información consultada. Los datos del club se actualizan desde el Registro Maestro y Chile Rugby.';}
+$('players').addEventListener('click',async e=>{
+ const b=e.target.closest('button.save');if(!b)return;const row=b.closest('tr');if(!row)return;const id=row.dataset.id;
+ const body={action:'update_callup',person_id:id,selection_status:row.querySelector('.selection').value,travel_insurance_status:row.querySelector('.travel').value,notes:row.querySelector('.notes').value};
+ if(body.travel_insurance_status==='confirmado'&&!confirm('¿Verificaste la cobertura de accidentes/asistencia médica VÁLIDA EN PERÚ por una fuente independiente? El seguro de Chile Rugby no basta.'))return;
+ b.disabled=true;$('msg').textContent='Guardando…';
+ try{const res=await api('POST',body);const p=payload.current.find(x=>x.id===id);Object.assign(p,res.callup);display();$('msg').textContent='Seguimiento guardado correctamente.'}
+ catch(err){$('msg').textContent='No se pudo guardar: '+err.message;b.disabled=false}
+});
+$('filter').onchange=display;$('search').oninput=display;$('refresh').onclick=async()=>{try{await load()}catch(e){$('msg').textContent=e.message}};
+$('export').onclick=()=>{
+ const keys=['Nombre','Categoría','Estado club','Teléfono','Correo','Contacto emergencia','Teléfono emergencia','Ficha %','Chile Rugby','Pago registro','Seguro Chile','Convocatoria','Seguro Perú'];
+ const rows=payload.current.map(p=>[p.name,p.category,p.member_status,p.phone,p.email,p.emergency_name,p.emergency_phone,p.completion_percent,p.federation_status,p.payment_status,p.insurance_status,statusNames[p.selection_status],travelNames[p.travel_insurance_status]]);
+ const csv=[keys,...rows].map(a=>a.map(x=>'"'+String(x??'').replace(/^[=+\-@]/,'_').replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ const obj=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(obj);const a=document.createElement('a');a.href=url;a.download='Gigantes_Adultos_Classic_Arequipa_2026.csv';a.click();URL.revokeObjectURL(url);
+};
+(async function(){try{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=adultos-classic.html';return}token=session.access_token;await load();$('loading').hidden=true;$('app').hidden=false;}catch(e){$('loading').textContent='No se pudo abrir tu panel: '+e.message;}})();
+</script></body></html>
