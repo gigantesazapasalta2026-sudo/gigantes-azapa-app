@@ -11,18 +11,22 @@ button{border:0;background:var(--orange);color:white;border-radius:10px;width:10
 .note{font-size:12px;color:var(--muted)}a{color:#9a3412;font-weight:800}.error{color:#b42318}.success{color:#166534}
 </style></head><body><main class="card">
 <div class="brand"><img alt="Gigantes de Azapa Rugby" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg"><div><b>Gigantes de Azapa</b><span>Actualización del Registro Maestro</span></div></div>
-<h1>¡Hola, Gigante! Activa tu acceso 🏉</h1>
-<p class="notice"><b>¿Te llegó este enlace por WhatsApp?</b> Completa tus propios datos, aunque quien te escribió no conozca tu correo o nombre completo. Buscaremos tu ficha en el Registro Maestro sin duplicarla. <b>La Directiva verificará tus antecedentes antes de autorizar el acceso.</b></p>
+<h1>🏉 Identifica tu ficha y solicita acceso</h1>
+<p class="notice"><b>¿Te llegó este enlace por WhatsApp?</b> Puedes completar tus datos aunque el club solo conozca tu nombre o teléfono. Buscaremos posibles coincidencias en el Registro Maestro. <b>Si tu ficha ya existe, conservaremos su historial. Si eres nuevo, la Directiva podrá abrirte una ficha provisional para que termines de completarla en Mi Gigantes.</b> La coincidencia y el acceso se validan antes de aprobarlos.</p>
 <form id="f">
+<label for="intake">¿Ya apareces en el registro del club?</label><select id="intake" required><option value="unsure">No estoy seguro/a</option><option value="existing">Sí, ya soy integrante</option><option value="new">Soy nuevo/a y quiero ingresar</option></select>
 <label for="email">Tu correo electrónico</label><input id="email" type="email" autocomplete="email" maxlength="254" required placeholder="ejemplo@correo.cl">
-<label for="name">Tu nombre y apellido (como apareces en el club)</label><input id="name" autocomplete="name" maxlength="160" required>
+<label for="name">Nombre completo y apellidos</label><input id="name" autocomplete="name" maxlength="160" required>
 <label for="role">Tu relación con Gigantes</label><select id="role" required><option value="" selected disabled>Selecciona una opción</option><option value="guardian">Apoderado/a</option><option value="player">Jugador/a</option><option value="coach">Entrenador/a</option><option value="member">Directiva u otro integrante</option></select>
 <label for="child">Nombre de tu hijo/a, jugador/a o categoría (si corresponde)</label><input id="child" maxlength="160" placeholder="Ej.: José Pérez, M12">
 <label for="phone">Teléfono de contacto</label><input id="phone" type="tel" autocomplete="tel" maxlength="30" required placeholder="+56 9 ...">
+<label for="rut">RUT chileno (opcional, ayuda a identificarte)</label><input id="rut" type="text" autocomplete="off" maxlength="15" placeholder="12.345.678-9"><p class="note">Si eres extranjero y no tienes RUT chileno, deja este campo vacío. Nunca envíes tu RUT por WhatsApp.</p>
+<label for="birth">Fecha de nacimiento (opcional)</label><input id="birth" type="date">
+<label for="category">Categoría o equipo (si lo sabes)</label><select id="category"><option value="">Por definir</option><option>M8</option><option>M10</option><option>M12</option><option>M14</option><option>M16</option><option>M18</option><option>Mayores</option><option>Classic</option><option>Otra / no sé</option></select>
 <p class="note">Con estos datos buscaremos tu ficha existente. No debes enviar RUT, contraseñas ni códigos por WhatsApp. Si ya tienes cuenta, <a href="gestion/login.html">ingresa aquí</a>.</p><label style="display:flex;align-items:flex-start;gap:8px;font-weight:normal;color:#475467;font-size:12px"><input id="consent" type="checkbox" required style="width:18px;height:18px;flex:0 0 18px;margin:2px 0 0"><span>Autorizo al club a usar estos datos de contacto exclusivamente para revisar mi ficha y gestionar mi acceso a Mi Gigantes.</span></label>
-<button id="send" type="submit">Solicitar actualización de mi ficha</button></form>
+<button id="send" type="submit">Buscar mi ficha y solicitar acceso</button></form>
 <p id="feedback" role="status" aria-live="polite"></p>
-<p><a href="gestion/login.html">← Volver al acceso de Mi Gigantes</a></p><p class="note">¿Aún no perteneces al club? Utiliza la <a href="inscripcion.html">inscripción de nuevos integrantes</a>; esta solicitud es para personas que ya forman parte de Gigantes.</p>
+<p><a href="gestion/login.html">← Volver al acceso de Mi Gigantes</a></p><p class="note">La solicitud no equivale a una inscripción federativa ni acredita un seguro. Una vez habilitada tu cuenta, tendrás enlaces de Chile Rugby, documentos y pasos pendientes en Mi Gigantes.</p>
 </main><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script>
 const sb=supabase.createClient(window.GIGANTES_SUPABASE_URL,window.GIGANTES_SUPABASE_PUBLISHABLE_KEY);
 const get=id=>document.getElementById(id);
@@ -30,13 +34,13 @@ const prefill=(new URLSearchParams(location.search)).get('email');if(prefill)get
 get('f').addEventListener('submit',async event=>{
  event.preventDefault();
  const email=get('email').value.trim().toLowerCase(),name=get('name').value.trim(),phone=get('phone').value.trim();
- const role=get('role').value,child=get('child').value.trim();
+ const role=get('role').value,child=get('child').value.trim();const rut=get('rut').value.trim(),birth_date=get('birth').value,category=get('category').value,intake_kind=get('intake').value;
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||name.length<4||phone.length<7||!['guardian','coach','player','member'].includes(role)||!get('consent').checked){get('feedback').textContent='Revisa el correo, nombre, teléfono, tipo de integrante y autorización de uso de datos.';get('feedback').className='error';return}
  get('send').disabled=true;get('feedback').className='';get('feedback').textContent='Registrando solicitud…';
  try {
-  const {data,error}=await sb.functions.invoke('master-access-gate',{body:{email,action:'claim',name,phone,role,child}});
+  const {data,error}=await sb.functions.invoke('master-access-gate',{body:{email,action:'claim',name,phone,role,child,rut,birth_date,category,intake_kind}});
   if(error||data?.error)throw new Error(data?.error||'No se pudo registrar');
-  get('f').hidden=true;get('feedback').className='success';get('feedback').textContent='Solicitud recibida. El club revisará la ficha y autorizará el acceso cuando corresponda. Aún no tienes una cuenta activa ni se ha enviado un correo de activación. La Secretaría te indicará el siguiente paso. No te inscribas de nuevo.';
+  get('f').hidden=true;get('feedback').className='success';get('feedback').textContent='¡Solicitud recibida! El sistema buscará tu ficha y propondrá coincidencias al Control Center. La Secretaría revisará si ya existes o si necesita crearte una ficha nueva. Tras aprobar el acceso podrás ingresar a Mi Gigantes para completar los campos y documentos pendientes. Guarda el correo que registraste. No debes repetir la solicitud.';
  }catch(error){
   get('feedback').className='error';get('feedback').textContent='No pudimos registrar tu solicitud. Puedes escribir a gigantesazapa.salta2026@gmail.com si el problema continúa.';
  }finally{get('send').disabled=false}
