@@ -94,7 +94,7 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);
-function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\\'':'&#39;'}[m]))}
+function esc(s){const entities={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'};return String(s||'').replace(/[&<>"']/g,m=>m.charCodeAt(0)===39?'&#39;':entities[m])}
 (async()=>{try{
     const [ann,ps]=await Promise.all([
       sb.from('announcements').select('id,title,body,pinned,published_at,audience_type,project_id,team_id').eq('public_visible',true).eq('active',true).lte('published_at',new Date().toISOString()).order('pinned',{ascending:false}).order('published_at',{ascending:false}).limit(100),
