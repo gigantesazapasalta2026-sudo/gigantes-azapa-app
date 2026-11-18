@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<title>Completar ficha personal · Mi Gigantes</title>
+<style>
+:root{--o:#f36b21;--ink:#111827;--muted:#667085}*{box-sizing:border-box}
+body{margin:0;background:#f4f6f8;color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+main{max-width:780px;margin:20px auto;padding:0 14px 30px}.box{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:20px;margin:13px 0}
+h1{font-size:clamp(1.55rem,4vw,2rem);margin:0 0 7px}h2{font-size:1.12rem;margin:0 0 14px}p{line-height:1.5;color:#475467}
+.banner{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px;color:#9a3412}
+label{font-size:.85rem;font-weight:750;display:block;margin-bottom:6px}
+input,select,textarea{font:inherit;width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;background:white}
+textarea{min-height:74px;resize:vertical}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.wide{grid-column:1/-1}.btn{background:var(--o);border:0;color:white;padding:14px 18px;border-radius:10px;font-weight:800;font-size:1rem;cursor:pointer;width:100%}.btn:disabled{opacity:.5;cursor:wait}
+.note{font-size:.82rem;color:var(--muted)}.hidden{display:none!important}.success{color:#166534;background:#dcfce7;border-radius:10px;padding:16px}.error{color:#991b1b;background:#fee2e2;border-radius:10px;padding:16px}
+@media(max-width:600px){.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}}
+</style></head><body><main>
+<div class="box"><h1>🏉 Completa tu ficha de jugador</h1><p>Gigantes de Azapa · Datos personales, salud y contacto familiar de emergencia</p>
+<div class="banner"><strong>Prioridad: tu seguridad.</strong> Completa tus datos antes de viajar o participar en partidos. Este formulario no confirma inscripción federativa, pago de seguro ni autorización para jugar. Los trámites deportivos se validan por separado.</div>
+<p id="state" role="status">Comprobando el enlace seguro…</p></div>
+<form id="form" class="hidden">
+<div class="box"><h2>1. Tu identidad y dirección</h2><p id="who" class="note"></p>
+<div class="formgrid">
+<div><label>Fecha de nacimiento *</label><input id="birth" type="date" required></div>
+<div><label>Categoría *</label><select id="category" required><option value="">Seleccionar</option><option value="Adulto">Adulto</option><option value="Classic">Classic</option><option value="Mayores">Mayores</option></select></div>
+<div><label>Documento de identidad *</label><select id="documentType" required><option value="rut">RUT chileno</option><option value="passport">Pasaporte / documento extranjero</option></select></div>
+<div><label>Número de documento *</label><input id="documentNumber" autocomplete="off" required maxlength="32"></div>
+<div class="wide"><label>Dirección *</label><input id="address" autocomplete="street-address" required maxlength="200"></div>
+<div><label>Comuna *</label><input id="commune" required maxlength="80" value="Arica"></div>
+</div></div>
+<div class="box"><h2>2. 🚑 Contacto familiar de emergencia</h2><p>Registra a una persona que podamos llamar si sufres un accidente, especialmente durante un partido o viaje.</p>
+<div class="formgrid">
+<div><label>Nombre completo del contacto *</label><input id="emergencyName" autocomplete="off" required maxlength="160" placeholder="Nombre y apellido"></div>
+<div><label>Teléfono de contacto de emergencia *</label><input id="emergencyPhone" type="tel" required maxlength="30" placeholder="+56 9 ..."></div>
+</div><p class="note">Debe ser un número distinto al tuyo. No envíes datos de salud ni fotos de cédula por WhatsApp.</p></div>
+<div class="box"><h2>3. Salud y autorizaciones</h2>
+<div class="formgrid">
+<div><label>Previsión / sistema de salud *</label><select id="health" required><option value="">Seleccionar</option><option>Fonasa</option><option>Isapre</option><option>PRAIS</option><option>Otro</option><option>Sin previsión</option></select></div>
+<div class="wide"><label>Alergias, enfermedades, medicamentos o condiciones relevantes para una emergencia (si corresponde)</label><textarea id="conditions" maxlength="450" placeholder="Escribe 'Sin antecedentes conocidos' si es el caso."></textarea></div>
+<div><label>¿Autorizas coordinación de atención médica de urgencia? *</label><select id="medical" required><option value="">Seleccionar</option><option value="yes">Sí</option><option value="no">No</option></select></div>
+<div><label>¿Autorizas el uso de tu imagen por el club? *</label><select id="image" required><option value="">Seleccionar</option><option value="yes">Sí</option><option value="no">No</option></select></div>
+<div><label>¿Autorizas actividades y viajes del club? *</label><select id="travel" required><option value="">Seleccionar</option><option value="yes">Sí</option><option value="no">No</option></select></div>
+</div><label style="margin-top:15px;font-weight:500"><input id="privacy" type="checkbox" style="width:auto;margin-right:8px" required>Autorizo el uso privado de estos datos por Gigantes de Azapa para administrar mi ficha y coordinar emergencias.</label>
+<p class="note">Las autorizaciones no sustituyen el seguro, los requisitos federativos ni consentimientos específicos de viaje.</p></div>
+<div class="box"><button class="btn" id="save" type="submit">Guardar mi ficha y contacto de emergencia</button><p id="msg" role="status"></p></div>
+</form>
+<div class="box"><p class="note">¿Problemas para completar tus datos? Contacta a la administración de Gigantes de Azapa. Este enlace es personal y no debe reenviarse.</p></div>
+</main>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const token=new URLSearchParams(location.search).get('t')||'';
+const base=window.GIGANTES_SUPABASE_URL+'/functions/v1/player-intake-continue';
+async function call(action,fields={}){
+ const r=await fetch(base,{method:'POST',headers:{'Content-Type':'application/json','apikey':window.GIGANTES_SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({action,token,...fields})});
+ const body=await r.json().catch(()=>({error:'No hay respuesta válida'}));
+ if(!r.ok)throw Error(body.error||'No pudimos completar tu solicitud');
+ return body;
+}
+(async()=>{
+ try{
+ if(!/^[a-f0-9]{64}$/i.test(token))throw Error('Este enlace no es válido.');
+ const data=await call('check');
+ $('who').textContent='Ficha solicitada por '+(data.claimant_name||'jugador')+'. Confirma que los datos correspondan a tu identidad.';
+ $('state').textContent='Enlace confirmado. Completa los campos marcados con *.';
+ $('form').classList.remove('hidden');
+ }catch(e){$('state').className='error';$('state').textContent=e.message;}
+})();
+$('form').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const save=$('save');save.disabled=true;$('msg').textContent='Guardando tus datos de forma privada…';
+ const fields={
+ birth_date:$('birth').value,category:$('category').value,
+ document_type:$('documentType').value,document_number:$('documentNumber').value,
+ address:$('address').value,commune:$('commune').value,
+ emergency_contact_name:$('emergencyName').value,emergency_contact_phone:$('emergencyPhone').value,
+ health_system:$('health').value,allergies_conditions:$('conditions').value,
+ medical_authorization:$('medical').value==='yes',
+ image_authorization:$('image').value==='yes',travel_authorization:$('travel').value==='yes',
+ privacy_accepted:$('privacy').checked
+ };
+ try{
+ const result=await call('complete',fields);
+ $('form').classList.add('hidden');$('state').className='success';
+ $('state').textContent='✅ Tus datos personales, de salud y contacto de emergencia quedaron guardados. No necesitas volver a inscribirte. La administración revisará tu identidad y te enviará el enlace de activación a Mi Gigantes.';
+ }catch(err){$('msg').className='error';$('msg').textContent=err.message;save.disabled=false;}
+});
+</script></body></html>
