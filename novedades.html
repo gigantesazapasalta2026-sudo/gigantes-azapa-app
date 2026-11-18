@@ -59,53 +59,21 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);
 <main>
 <section class="section">
   <div class="kicker">Destacado</div>
-  <h2>Lo próximo en Gigantes</h2>
-  <p class="lead">Tres hitos que hoy necesitan la atención de jugadores, familias y comunidad.</p>
+  <h2>Actualidad del club</h2>
+  <p class="lead">Próximas actividades, cambios de programación y memoria deportiva del club.</p>
 
   <div class="featured">
     <article class="feature sale">
-      <div class="feature-media" id="saleMedia">
-        <img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/app-2026/venta-solidaria-06-octubre-2026.jpg" alt="Gran Venta Solidaria Gigantes de Azapa · Sopaipillas y empanadas de queso" loading="eager">
-        <span class="flag today" id="saleFlag">HOY · 6 OCT</span>
-      </div>
-      <div class="feature-body">
-        <div class="kicker">Recaudación · actividad del día</div>
-        <h3 id="saleTitle">Gran Venta Solidaria · Sopaipillas + Empanadas de queso</h3>
-        <div class="feature-meta">Martes 6 de octubre · desde las 19:00 · Cancha 3, Estadio Carlos Dittborn</div>
-        <p id="saleSummary">Todo lo recaudado va en directo beneficio del desarrollo de nuestros jugadores y actividades deportivas.</p>
-        <div class="prices" id="salePrices">
-          <span>Sopaipilla · $700</span><span>4 · $2.000</span><span>Empanada queso · $1.500</span><span>3 · $3.500</span>
-        </div>
-        <a class="btn orange" href="recaudacion.html">Ver venta y apoyar →</a>
-      </div>
+      <div class="feature-media"><img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/app-2026/entrenamiento-m10-m12-m14.jpg" alt="Jugadores infantiles de Gigantes de Azapa" loading="eager"><span class="flag today">21 NOVIEMBRE</span></div>
+      <div class="feature-body"><div class="kicker">Próximo evento · Arica</div><h3>Festival Infantil Gigantes de Azapa</h3><div class="feature-meta">Sábado 21 de noviembre de 2026 · Horario por confirmar</div><p>Con la cancha confirmada, seguimos preparando una jornada de rugby y familia. Las invitaciones a otros clubes y la programación se anunciarán oficialmente.</p><div class="prices"><span>🏉 Rugby infantil</span><span>🤝 Clubes por confirmar</span></div><a class="btn orange" href="eventos.html">Ver próximos eventos →</a></div>
     </article>
-
     <article class="feature">
-      <div class="feature-media">
-        <img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/ALVARO_FUFY_MEMORIAL_APP.jpg" alt="Copa Internacional FUFY 2026" loading="lazy">
-        <span class="flag">24 OCTUBRE</span>
-      </div>
-      <div class="feature-body">
-        <div class="kicker">Copa Internacional FUFY 2026</div>
-        <h3>Arica se prepara para una jornada de rugby y tradición</h3>
-        <div class="feature-meta">24 de octubre · Estadio Carlos Dittborn</div>
-        <p>La Copa FUFY se acerca. Organización, auspicios, logística, cancha, alimentación, seguridad y comunicaciones ya están en marcha.</p>
-        <a class="btn" href="fufy.html">Ver Copa FUFY →</a>
-      </div>
+      <div class="feature-media"><img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/app-2026/m14-equipo.jpg" alt="Equipo M14 Gigantes de Azapa" loading="lazy"><span class="flag">SUSPENDIDO</span></div>
+      <div class="feature-body"><div class="kicker">Comunicado deportivo</div><h3>Encuentro M14 con Antofagasta suspendido</h3><div class="feature-meta">Actividad originalmente prevista para el 21 de noviembre</div><p>La Selección de Antofagasta no podrá viajar a Arica. El partido se suspende sin nueva fecha confirmada y será reemplazado por un festival infantil.</p><a class="btn" href="eventos.html">Consultar la agenda →</a></div>
     </article>
-
     <article class="feature">
-      <div class="feature-media">
-        <img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/app-2026/m10-equipo.jpg" alt="Gira Santiago 2026" loading="lazy">
-        <span class="flag">6–9 NOVIEMBRE</span>
-      </div>
-      <div class="feature-body">
-        <div class="kicker">Gira Santiago 2026</div>
-        <h3>La delegación se prepara para viajar a Santiago</h3>
-        <div class="feature-meta">6 al 9 de noviembre · Santiago</div>
-        <p>Avanzan nómina, pasajes, alojamiento y documentación. Stade Français está confirmado como rival de nuestras categorías infantiles.</p>
-        <a class="btn" href="santiago.html">Ver Gira Santiago →</a>
-      </div>
+      <div class="feature-media"><img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/copa-fufy/ALVARO_FUFY_MEMORIAL_APP.jpg" alt="Homenaje Copa FUFY 2026" loading="lazy"><span class="flag">REALIZADA · 24 OCT</span></div>
+      <div class="feature-body"><div class="kicker">Memoria deportiva</div><h3>Copa FUFY 2026 · Una jornada para recordar</h3><div class="feature-meta">24 de octubre de 2026 · Estadio Carlos Dittborn, Arica</div><p>La Copa FUFY ya se disputó. Gracias a jugadores, clubes, familias y auspiciadores. La gira a Santiago del 6 al 8 de noviembre también está disponible en la memoria del club.</p><a class="btn" href="fufy.html">Ver memoria de la Copa →</a></div>
     </article>
   </div>
 </section>
@@ -126,43 +94,12 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script>
 const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY);
-const money=v=>new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(Number(v));
-function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-(async()=>{
-  const now=new Date();
-  const todayCL=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
-  saleFlag.textContent=todayCL==='2026-10-06'?'HOY · 6 OCT':'6 OCTUBRE';
-
-  try{
-    const [sale,ann,ps]=await Promise.all([
-      sb.from('fundraising_activities')
-        .select('title,event_date,public_summary,sales_menu,flyer_url,status')
-        .eq('public_visible',true)
-        .eq('event_date','2026-10-06')
-        .in('status',['planned','active','pending_close','completed'])
-        .order('event_date',{ascending:true})
-        .limit(5),
-      sb.from('announcements')
-        .select('id,title,body,pinned,published_at,audience_type,project_id,team_id')
-        .eq('public_visible',true).eq('active',true)
-        .lte('published_at',new Date().toISOString())
-        .order('pinned',{ascending:false})
-        .order('published_at',{ascending:false})
-        .limit(100),
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\\'':'&#39;'}[m]))}
+(async()=>{try{
+    const [ann,ps]=await Promise.all([
+      sb.from('announcements').select('id,title,body,pinned,published_at,audience_type,project_id,team_id').eq('public_visible',true).eq('active',true).lte('published_at',new Date().toISOString()).order('pinned',{ascending:false}).order('published_at',{ascending:false}).limit(100),
       sb.from('projects').select('id,public_slug,code').eq('public_visible',true)
     ]);
-
-    const saleRow=(sale.data||[]).find(x=>/sopaip|empanad|venta solidaria/i.test(String(x.title||'')))||(sale.data||[])[0];
-    if(saleRow){
-      saleTitle.textContent=saleRow.title||saleTitle.textContent;
-      saleSummary.textContent=saleRow.public_summary||saleSummary.textContent;
-      const menu=Array.isArray(saleRow.sales_menu)?saleRow.sales_menu:[];
-      if(menu.length){
-        salePrices.innerHTML=menu.map(x=>'<span>'+esc(x.item||'Producto')+(x.price!=null?' · '+money(x.price):'')+'</span>').join('');
-      }
-      if(saleRow.flyer_url){ /* El afiche principal de hoy queda fijado para evitar depender del flyer dinámico. */ }
-    }
-
     loading.remove();
     if(ann.error){
       feed.innerHTML='<div class="card empty">Las novedades destacadas están disponibles arriba. Las publicaciones adicionales se volverán a cargar automáticamente cuando estén disponibles.</div>';
@@ -171,7 +108,7 @@ function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
     const pmap=Object.fromEntries((ps.data||[]).map(p=>[p.id,p.public_slug||p.code]));
     feed.innerHTML=(ann.data||[]).length
       ?ann.data.map(x=>'<article class="card">'+(x.pinned?'<span class="pin">DESTACADO</span>':'')+'<h2>'+esc(x.title)+'</h2><div class="meta">'+new Date(x.published_at).toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'})+'</div><p class="body">'+esc(x.body)+'</p>'+(x.project_id&&pmap[x.project_id]?'<p><a href="proyecto.html?slug='+encodeURIComponent(pmap[x.project_id])+'">Ver proyecto y avances →</a></p>':'')+'</article>').join('')
-      :'<div class="card empty">No hay publicaciones adicionales por ahora. Las tres novedades principales están destacadas arriba.</div>';
+      :'<div class="card empty">No hay publicaciones adicionales por ahora. Las principales novedades están destacadas arriba.</div>';
   }catch(e){
     loading.remove();
     feed.innerHTML='<div class="card empty">Las novedades destacadas están disponibles arriba.</div>';
