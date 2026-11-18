@@ -156,16 +156,30 @@ async function refreshAccessRequests(){
 async function approveMemberClaim(requestId,personId,button){
  if(currentAdminRole!=='superadmin'||!session?.user)return alert('Solo el superadministrador puede aprobar accesos.');
  const r=accessRequests.find(x=>x.id===requestId);if(!r||r.status!=='pending')return alert('La solicitud ya no está pendiente. Actualiza la lista.');
- const p=personId?peopleRows.find(x=>x.id===personId):null;
+ let p=personId?peopleRows.find(x=>x.id===personId):null;
  if(personId&&!p)return alert('No se encontró la ficha seleccionada.');
+ const email=String(r.email||'').trim().toLowerCase(),name=String(r.claimant_name||'').trim();
+ if(!email||!name)return alert('Falta nombre o correo. Pide al solicitante completar su formulario.');
+ // Recuperación de aprobaciones parciales: el primer intento pudo crear una ficha provisional
+ // y detenerse antes de la invitación. Reutilizarla solo con identidad exacta y única.
+ const sameEmail=peopleRows.filter(x=>String(x.email||'').trim().toLowerCase()===email);
+ if(!p&&sameEmail.length===1){
+   const candidate=sameEmail[0];
+   const sameIdentity=normName(candidate.full_name)===normName(name)
+     &&!!r.claimed_rut&&normRut(candidate.rut_key||candidate.rut_passport)===normRut(r.claimed_rut)
+     &&!!r.claimed_birth_date&&candidate.birth_date===r.claimed_birth_date
+     &&candidate.member_status==='pending'&&!candidate.auth_user_id;
+   if(sameIdentity){
+     if(!confirm('Ya existe una ficha provisional con el MISMO correo, RUT, fecha de nacimiento y nombre de '+name+'. Se vinculará a esa ficha sin duplicarla. ¿Confirmas que verificaste personalmente su identidad y correo?'))return;
+     p=candidate;
+   }
+ }
+ const duplicate=peopleRows.find(x=>x.id!==p?.id&&String(x.email||'').trim().toLowerCase()===email);
+ if(duplicate)return alert('Este correo ya está asociado a '+duplicate.full_name+'. Revisa la coincidencia desde la opción «Verificar y vincular a esta ficha». No se creará otro registro.');
  if(p?.member_status==='inactive')return alert('La ficha está inactiva. La Directiva debe reactivarla formalmente antes de otorgar acceso.');
  const ranked=rankedMatches(r);
  if(!p&&ranked.some(x=>x.score>=40)&&!confirm('Hay una o más posibles fichas existentes. Crear otra podría duplicar al integrante. ¿Comprobaste que esta persona es distinta de todos los candidatos?'))return;
  if(!p&&r.matched_person_id)return alert('Ya existe una ficha candidata por RUT. Revisa y resuelve la coincidencia antes de crear una nueva.');
- const email=String(r.email||'').trim().toLowerCase(),name=String(r.claimant_name||'').trim();
- if(!email||!name)return alert('Falta nombre o correo. Pide al solicitante completar su formulario.');
- const duplicate=peopleRows.find(x=>x.id!==p?.id&&String(x.email||'').trim().toLowerCase()===email);
- if(duplicate)return alert('Este correo está asociado también a '+duplicate.full_name+'. No se puede activar mientras esté compartido.');
  if(p&&p.email&&String(p.email).trim().toLowerCase()!==email)return alert('La ficha usa otro correo. Confirma con la persona cuál es correcto antes de cambiarlo.');
  if(p&&r.claimed_rut&&normRut(p.rut_key||p.rut_passport)&&normRut(p.rut_key||p.rut_passport)!==normRut(r.claimed_rut))return alert('El RUT no coincide con la ficha. No vincular.');
  const activeProfile=profileRows.find(x=>String(x.email||'').toLowerCase()===email);
