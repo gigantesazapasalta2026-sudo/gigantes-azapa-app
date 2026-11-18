@@ -155,6 +155,7 @@ async function approveMemberClaim(requestId,personId,button){
  const r=accessRequests.find(x=>x.id===requestId);if(!r||r.status!=='pending')return alert('La solicitud ya no está pendiente. Actualiza la lista.');
  const p=personId?peopleRows.find(x=>x.id===personId):null;
  if(personId&&!p)return alert('No se encontró la ficha seleccionada.');
+ if(p?.member_status==='inactive')return alert('La ficha está inactiva. La Directiva debe reactivarla formalmente antes de otorgar acceso.');
  const ranked=rankedMatches(r);
  if(!p&&ranked.some(x=>x.score>=40)&&!confirm('Hay una o más posibles fichas existentes. Crear otra podría duplicar al integrante. ¿Comprobaste que esta persona es distinta de todos los candidatos?'))return;
  if(!p&&r.matched_person_id)return alert('Ya existe una ficha candidata por RUT. Revisa y resuelve la coincidencia antes de crear una nueva.');
@@ -169,7 +170,7 @@ async function approveMemberClaim(requestId,personId,button){
  if(activeProfile&&!p)return alert('El correo ya tiene cuenta. Revisa su identidad antes de crear otra ficha.');
  const birth=r.claimed_birth_date||p?.birth_date||null;
  const isMinor=birth&&new Date(birth+'T12:00:00Z').getTime()>Date.now()-18*365.2425*24*60*60*1000;
- if(isMinor&&r.requested_role==='player')return alert('Es un jugador menor de edad. Regístralo a través de su apoderado; no se autoriza una cuenta infantil independiente.');
+ if((isMinor||/^M(6|8|10|12|14|16|18)(\b|\b-)/i.test(r.claimed_category||p?.category||''))&&r.requested_role==='player')return alert('Es un jugador juvenil o menor de edad. Debe utilizar la cuenta de su apoderado; no se autoriza una cuenta infantil independiente.');
  if(!birth&&r.requested_role==='player'&&!confirm('No hay fecha de nacimiento comprobada. ¿Confirmaste personalmente que el solicitante es MAYOR DE EDAD y que su correo le pertenece?'))return;
  const manualText=p?'Vincular a '+p.full_name+' conservando su historial':'Crear ficha provisional sin validar aún seguro ni fichaje';
  if(!confirm('¿Verificaste la identidad y el correo por un canal independiente del formulario?\n'+manualText+'\nEl usuario recibirá permiso para completar SU ficha. ¿Continuar?'))return;
