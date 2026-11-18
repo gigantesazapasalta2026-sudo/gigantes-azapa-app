@@ -112,7 +112,7 @@ function memberAccessState(p){
 function requestCategory(r){return r.claimed_category&&r.claimed_category!=='Otra / no sé'?r.claimed_category:'Por definir'}
 async function refreshAccessRequests(){
  const area=document.getElementById('accessReqList');if(!area)return;
- const {data,error}=await sb.from('access_requests').select('id,email,claimant_name,claimant_phone,claimant_relation,requested_role,associated_member,status,created_at,claimed_rut,claimed_birth_date,claimed_category,intake_kind,matched_person_id').eq('status','pending').order('created_at',{ascending:false}).limit(120);
+ const {data,error}=await sb.from('access_requests').select('id,email,claimant_name,claimant_phone,claimant_relation,requested_role,associated_member,status,created_at,claimed_rut,claimed_birth_date,claimed_category,intake_kind,matched_person_id,intake_completed_at,claimed_passport,address,commune,health_system,allergies_conditions,emergency_contact_name,emergency_contact_phone,medical_authorization,image_authorization,travel_authorization').eq('status','pending').order('created_at',{ascending:false}).limit(120);
  if(error){area.textContent='No se pudieron cargar las solicitudes: '+error.message;return}
  accessRequests=data||[];
  if(!accessRequests.length){area.textContent='Sin solicitudes de acceso pendientes.';return}
@@ -125,12 +125,15 @@ async function refreshAccessRequests(){
    (currentAdminRole==='superadmin'?'<button class="btn ok" type="button" data-approve-request="'+r.id+'" data-assign-person="'+x.p.id+'">Verificar y vincular a esta ficha</button>':'')+
    '</div></div>').join(''):'<p class="meta">No se encontró una coincidencia confiable. Verifica manualmente antes de crear una nueva ficha.</p>';
   const kind=r.intake_kind==='new'?'Dice ser nuevo':r.intake_kind==='existing'?'Indica ficha existente':'Sin confirmar';
-  const completeness=[r.claimed_rut?'RUT informado':'RUT pendiente',r.claimed_birth_date?'Nacimiento informado':'Nacimiento pendiente',r.claimed_category||'Categoría por definir'].join(' · ');
+  const completeness=[(r.claimed_rut||r.claimed_passport)?'Documento informado':'Documento pendiente',r.claimed_birth_date?'Nacimiento informado':'Nacimiento pendiente',r.claimed_category||'Categoría por definir'].join(' · ');
+  const intakeInfo=r.intake_completed_at
+   ?'<div class="auto" style="background:#f0fdf4;border-color:#bbf7d0"><b>✅ Ficha personal y contacto de emergencia enviados</b><br>Dirección: '+esc([r.address,r.commune].filter(Boolean).join(', '))+'<br>Previsión: '+esc(r.health_system||'Pendiente')+'<br><b>🚑 Emergencia: '+esc(r.emergency_contact_name||'Pendiente')+' · '+esc(r.emergency_contact_phone||'Pendiente')+'</b><br>Autorización médica: '+(r.medical_authorization===true?'Sí':r.medical_authorization===false?'No':'Pendiente')+'<br><b>IMPORTANTE: todavía corresponde validar identidad y habilitar acceso. Seguro y Chile Rugby continúan sin validar.</b></div>'
+   :'<div class="auto" style="background:#fff7ed;border-color:#fed7aa"><b>⏳ Solo entregó datos iniciales.</b> Falta que complete el contacto familiar de emergencia y antecedentes de salud.</div>';
   return '<div class="masterbox" style="margin-top:14px;padding:13px;border-left:4px solid var(--o)">'+
    '<h3>'+esc(r.claimant_name||'Nombre no indicado')+' <span class="status documents_pending">'+esc(kind)+'</span></h3>'+
    '<div class="meta">'+esc(r.email)+' · Tel: '+esc(r.claimant_phone||'No indicado')+
    '<br>Solicita: '+esc(r.requested_role||r.claimant_relation||'')+(r.associated_member?' · referencia: '+esc(r.associated_member):'')+
-   '<br>'+esc(completeness)+'<br>Solicitud: '+new Date(r.created_at).toLocaleString('es-CL')+'</div>'+
+   '<br>'+esc(completeness)+'<br>Solicitud: '+new Date(r.created_at).toLocaleString('es-CL')+'</div>'+intakeInfo+
    '<div class="auto"><b>Reconocimiento automático:</b> solo propone posibles coincidencias. No se modifican fichas ni se entregan permisos sin verificación de la Directiva.</div>'+
    matchHtml+
    '<div class="masteractions"><button class="btn neutral" data-find-request="'+r.id+'">Buscar manualmente</button>'+
@@ -184,6 +187,10 @@ async function approveMemberClaim(requestId,personId,button){
    if(!p.rut_passport&&r.claimed_rut)update.rut_passport=r.claimed_rut;
    if(!p.birth_date&&r.claimed_birth_date)update.birth_date=r.claimed_birth_date;
    if(!p.category&&r.claimed_category)update.category=requestCategory(r);
+   // Preferir los datos enviados por el propio jugador si son nuevos y no hay datos existentes.
+   for(const field of ['address','commune','health_system','allergies_conditions','emergency_contact_name','emergency_contact_phone','medical_authorization','image_authorization','travel_authorization']){
+     if((p[field]===null||p[field]===undefined||p[field]==='')&&r[field]!==null&&r[field]!==undefined&&r[field]!=='')update[field]=r[field];
+   }
    if(activeProfile&&!p.auth_user_id)update.auth_user_id=activeProfile.user_id;
    const v=await sb.from('people').update(update).eq('id',p.id).select('id').single();
    if(v.error)throw v.error;
@@ -192,6 +199,12 @@ async function approveMemberClaim(requestId,personId,button){
     full_name:name,email,phone:r.claimant_phone||null,rut_passport:r.claimed_rut||null,
     birth_date:r.claimed_birth_date||null,
     category:r.requested_role==='player'?requestCategory(r):null,
+    address:r.address||null,commune:r.commune||null,health_system:r.health_system||null,
+    allergies_conditions:r.allergies_conditions||null,
+    emergency_contact_name:r.emergency_contact_name||null,
+    emergency_contact_phone:r.emergency_contact_phone||null,
+    medical_authorization:r.medical_authorization,
+    image_authorization:r.image_authorization,travel_authorization:r.travel_authorization,
     member_status:'pending',
     source:'Solicitud de acceso Mi Gigantes',
     notes:'Ficha provisional: inscripción federativa, seguro y documentos pendientes de verificación'
@@ -215,6 +228,7 @@ async function approveMemberClaim(requestId,personId,button){
   }
   const close=await sb.from('access_requests').update({
     status:'approved',matched_person_id:targetId,reviewed_by:session.user.id,reviewed_at:new Date().toISOString(),
+    continuation_token_hash:null,continuation_expires_at:null,continuation_consumed_at:new Date().toISOString(),
     last_error:null,updated_at:new Date().toISOString()
    }).eq('id',r.id).eq('status','pending').select('id').single();
    if(close.error)throw close.error;
