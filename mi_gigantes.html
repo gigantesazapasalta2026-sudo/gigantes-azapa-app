@@ -3,6 +3,7 @@
 <header class="top"><div class="topin"><img src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg" class="logo"><div><b>Mi Gigantes</b><small>Club Deportivo · jugadores y familias</small></div><button class="logout" id="logout">Salir</button></div></header>
 <main><div id="staffControlShortcut" class="card hidden" style="margin:12px 0;border:2px solid #f36b21;background:#fff7ed"></div><div id="loading" class="notice">Cargando tu familia…</div><section id="portal" class="hidden"><div id="projectAdminShortcut" class="card hidden" style="margin:12px 0;border:2px solid #f36b21;background:#fff7ed"><h2>🏉 Mi acceso administrativo · Copa FUFY</h2><p class="empty">Gestiona las actividades y revisa las cuentas del proyecto con tu propia sesión.</p><div class="profileActions"><a class="btn" href="gestion/fufy.html">ABRIR CONTROL COPA FUFY</a><a class="btn secondary" href="gestion/fufy-presupuesto.html">💰 VER PRESUPUESTO Y CUENTAS FUFY</a></div></div><div id="family" class="family"></div>
 <div class="hero"><div class="heroMedia"><img id="avatar" class="avatar" src="https://raw.githubusercontent.com/gigantesazapasalta2026-sudo/gigantes-media-archive/main/LOGO%20GIGANTES.jpeg" alt="Foto del jugador"></div><div class="heroBody"><h1 id="name">Jugador</h1><p id="meta"></p><p id="overall"></p><div class="kpis"><div class="kpi"><b id="completionKpi">0%</b>Ficha completa</div><div class="kpi"><b id="pendingKpi">0</b>Pendientes</div><div class="kpi"><b id="dueKpi">$0</b>Cuotas</div></div><div class="progressWrap"><div class="progressBar"><div id="completionFill" class="progressFill"></div></div><div id="completionText" class="progressText">Revisando requisitos…</div></div></div></div>
+<div class="card" id="welcomeDiplomaCard" style="margin:14px 0;border:2px solid #f36b21;background:#fffaf5"><h2 style="font-size:1.1rem">🏆 Mi Diploma de Bienvenida</h2><div id="welcomeDiplomaContent" class="empty">Comprobando si tu incorporación está completa…</div></div>
 <div class="accordionHint"><span><b>Tu menú</b><br>Toca cada sección para abrirla o cerrarla.</span><button type="button" onclick="collapseAll()">Cerrar todo</button></div>
 <div class="grid"><div id="pendingCard" class="card"><h2>✅ Qué me falta</h2><a class="btn secondary" href="guia-mi-gigantes.html#pendientes" target="_blank" rel="noopener noreferrer" style="margin:0 0 12px">ⓘ ¿Qué significa cada pendiente? ↗</a><div id="pendingRequirements" class="pendingList"></div></div><div id="personalDataCard" class="card wide"><h2>👤 Datos personales</h2><a class="btn secondary" href="guia-mi-gigantes.html#perfil" target="_blank" rel="noopener noreferrer">ⓘ Cómo completar la ficha ↗</a><p class="empty">Tus datos ya aparecen precargados. Corrige sólo lo necesario y guarda los cambios.</p><div id="personalProfile"></div></div><div id="rugbyCard" class="card"><h2>🏉 Rugby · Chile Rugby</h2><div id="federation"></div><div class="profileActions" style="margin-top:12px"><a class="btn" href="https://bd.chile.rugby/users/login" target="_blank" rel="noopener noreferrer">🛡️ GESTIONAR / CONTRATAR SEGURO ↗</a><a class="btn secondary" href="guia-mi-gigantes.html#seguro" target="_blank" rel="noopener noreferrer">ⓘ Cómo comprar y comprobar</a></div><p class="empty" style="line-height:1.5">El pago se realiza solo en Chile Rugby. Si ya existe una solicitud de inscripción, no la repitas. Al terminar, vuelve aquí y sube tu comprobante en «Documentos requeridos».</p><div class="profileActions"><a class="btn secondary" href="https://chile.rugby/bd-chile-rugby/" target="_blank" rel="noopener noreferrer">Rugby Seguro · condiciones oficiales ↗</a><a class="btn secondary" href="guia-mi-gigantes.html#fichaje" target="_blank" rel="noopener noreferrer">ⓘ Fichaje / BD</a><a class="btn secondary" href="guia-mi-gigantes.html#pago-federativo" target="_blank" rel="noopener noreferrer">ⓘ Pago federativo</a><a class="btn secondary" href="guia-mi-gigantes.html#epc" target="_blank" rel="noopener noreferrer">ⓘ EPC</a></div><div class="status"><b>Sistema de salud</b><span id="health" class="badge warn">Pendiente</span></div></div>
 <div id="familyCard" class="card wide"><h2>👨‍👩‍👧‍👦 Familia y apoderados</h2><a class="btn secondary" href="guia-mi-gigantes.html#familia" target="_blank" rel="noopener noreferrer">ⓘ Cómo corregir apoderados ↗</a><p class="empty">Revisa quién aparece vinculado a este jugador. Si falta alguien o un dato está incorrecto, envía la corrección desde aquí.</p><div id="familyContacts"></div></div><div id="documentsCard" class="card wide"><h2>📄 Documentos requeridos</h2><a class="btn secondary" href="guia-mi-gigantes.html#documentos" target="_blank" rel="noopener noreferrer" style="margin-bottom:12px">ⓘ Qué documento subir y por qué ↗</a><div id="documents"></div></div><div id="developmentCard" class="card"><h2>📈 Desarrollo deportivo</h2><a class="btn secondary" href="guia-mi-gigantes.html#desarrollo" target="_blank" rel="noopener noreferrer" style="margin-bottom:12px">ⓘ Ver explicación ↗</a><div id="playerDevelopment"><div class="empty">Sin revisión compartida por el cuerpo técnico.</div></div></div>
@@ -83,10 +84,44 @@ async function selectPerson(id){person=people.find(x=>x.id===id);family.querySel
  const completedRequirements=(reqStatus||[]).filter(x=>x.complete).length;
  const pct=originalRequirements?Math.round(100*(completedRequirements+(insurancePaid&&reqStatus?.some(x=>x.requirement_code==='insurance_document'&&!x.complete)?1:0))/originalRequirements):Number(reqSummary?.completion_percent||0);
  const pendingCount=statusRows.filter(x=>!x.complete).length;completionKpi.textContent=pct+'%';pendingKpi.textContent=pendingCount;completionFill.style.width=Math.max(0,Math.min(100,pct))+'%';completionText.textContent=pendingCount?pct+'% completa · '+pendingCount+' requisito(s) por resolver':'100% completa · ficha al día';dueKpi.textContent='$'+sum.toLocaleString('es-CL');overall.textContent=(pendingCount+pendingCharges.length)?'Tienes requisitos por resolver':'Ficha al día';renderPendingRequirements(statusRows);
+ renderWelcomeDiploma(id,statusRows);
  if(person.member_status==='pending'){pendingRequirements.insertAdjacentHTML('afterbegin','<div class="notice" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412"><b>⏳ Ficha provisional · acceso para completar tus antecedentes.</b> Tu inscripción al club sigue en revisión. La cobertura del seguro y el fichaje federativo deben verificarse antes de participar.</div>');overall.textContent='Ficha provisional · completa tus requisitos';}
  renderDues(c||[],pay||[]);renderPayments(pay||[]);renderPlayerDevelopment((dev||[])[0]);renderFamilyContacts(contacts||[],contactReqs||[]);injuryLink.href='lesionado.html?person='+encodeURIComponent(id);renderPersonalProfile();renderLeaveClub()
 }
 function escv(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+const WELCOME_REQUIRED=['rut','birth_date','health','address','emergency','photo','identity_card','medical_authorization','image_authorization','federation_registration','federation_payment','epc','insurance_status'];
+async function renderWelcomeDiploma(id, requirements) {
+ const root=document.getElementById('welcomeDiplomaContent');
+ if(!root)return;
+ root.textContent='Comprobando tu diploma de bienvenida…';
+ const needed=(requirements||[]).filter(r=>WELCOME_REQUIRED.includes(r.requirement_code)&&!r.complete);
+ if(person?.member_status!=='active'){
+   root.innerHTML='<p class="empty">Tu ficha todavía necesita validación administrativa. Completa los datos personales y documentos pendientes.</p>';
+   return;
+ }
+ let data=null,error=null;
+ try{const result=await sb.rpc('my_welcome_diploma',{target_person:id});data=result.data;error=result.error}
+ catch(e){error=e}
+ if(person?.id!==id)return;
+ if(error){
+   root.innerHTML='<p class="empty">No pudimos comprobar el diploma. Vuelve a intentarlo actualizando la página.</p>';
+   console.warn('Diploma de bienvenida',error);return;
+ }
+ if(data?.token){
+   const token=encodeURIComponent(data.token);
+   const date=data.issued_at?new Date(data.issued_at).toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric',timeZone:'America/Santiago'}):'';
+   root.innerHTML='<p class="empty">¡Bienvenido a Gigantes de Azapa! Tu diploma fue emitido'+(date?' el '+date:'')+'.</p><div class="profileActions"><a class="btn" href="diploma.html?t='+token+'" target="_blank" rel="noopener noreferrer">⬇️ DESCARGAR MI DIPLOMA DE BIENVENIDA</a></div><p class="empty">Ábrelo y selecciona «Descargar / Guardar PDF» para conservarlo en tu teléfono.</p>';
+   return;
+ }
+ if(!requirements?.length){
+   root.innerHTML='<p class="empty">Tu diploma estará disponible cuando la Directiva valide tu ficha y tu seguro. Revisa «Qué me falta».</p>';
+   return;
+ }
+ const missing=needed.slice(0,5).map(x=>'<li>'+escv(x.label)+'</li>').join('');
+ root.innerHTML='<p class="empty"><b>Tu diploma aún no está disponible.</b> Se emitirá automáticamente cuando estén completos tu ficha, contacto de emergencia, documentos y los pagos de Chile Rugby y Rugby Seguro.</p>'+
+   (needed.length?'<p class="empty">Te faltan '+needed.length+' requisito(s):</p><ul class="empty" style="padding-left:18px">'+missing+(needed.length>5?'<li>Y '+(needed.length-5)+' requisito(s) más</li>':'')+'</ul>':'<p class="empty">Si ya completaste todo, actualiza esta pantalla o consulta a la Directiva para verificar la emisión.</p>')+
+   '<div class="profileActions"><button class="btn secondary" onclick="openSection(\'pendingCard\')">✅ VER MIS PENDIENTES</button></div>';
+}
 function renderPendingRequirements(rows){
  const pending=(rows||[]).filter(x=>!x.complete);
  if(!pending.length){pendingRequirements.innerHTML='<div class="notice" style="background:#ecfdf3;border-color:#bbf7d0;color:#166534"><b>✓ Ficha completa.</b> No tienes requisitos pendientes.</div>';return}
