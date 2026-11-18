@@ -220,7 +220,16 @@ async function approveMemberClaim(requestId,personId,button){
    if(close.error)throw close.error;
   await refreshMaster();await refreshAccessRequests();
   const url='https://gigantesdeazapa.cl/activar.html?email='+encodeURIComponent(email);
-  alert('Acceso autorizado y ficha '+(p?'vinculada':'provisional creada')+'.\nEnvía a la persona este enlace privado de activación:\n'+url+'\nSu seguro y fichaje permanecen pendientes de verificación.');
+  const digits=String(r.claimant_phone||'').replace(/\D/g,'');
+  const wa=digits.startsWith('56')?digits:(digits.length===9&&digits.startsWith('9')?'56'+digits:null);
+  const message='Hola '+(r.claimant_name||'Gigante')+', ya revisamos tu registro y habilitamos el proceso de activación de Mi Gigantes. Ingresa desde tu celular aquí: '+url+' . Después de activar tu cuenta, completa los datos y documentos pendientes en Mi Gigantes. Tu seguro y fichaje deportivo requieren validación por separado. 🏉';
+  const sendLink=wa?'https://wa.me/'+wa+'?text='+encodeURIComponent(message):'';
+  const area=document.getElementById('accessReqList');
+  if(area){
+    area.insertAdjacentHTML('afterbegin','<div class="auto" style="margin-bottom:12px"><b>✅ Ficha '+(p?'vinculada':'provisional creada')+' y acceso preparado para '+esc(r.claimant_name)+'.</b><p>La activación todavía requiere que la persona confirme su correo.</p><a class="btn neutral" target="_blank" rel="noopener noreferrer" href="'+url+'">Abrir enlace de activación</a> '+(sendLink?'<a class="btn ok" target="_blank" rel="noopener noreferrer" href="'+sendLink+'">📲 Enviar enlace por WhatsApp</a>':'<span class="meta">Sin WhatsApp confirmado; comparte el enlace de forma privada.</span>')+'<p class="meta">Fichaje Chile Rugby y seguro: pendientes de verificación.</p></div>');
+    area.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
  }catch(err){
   console.error('Aprobación de solicitud parcial',err);
   alert('La operación no terminó. Puede haber pasos ya guardados. Recarga el Registro Maestro antes de reintentar para evitar duplicados.\n'+(err?.message||String(err)));
