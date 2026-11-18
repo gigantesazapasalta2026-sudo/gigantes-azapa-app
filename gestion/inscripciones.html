@@ -146,7 +146,7 @@ async function refreshAccessRequests(){
   personSearch.value=x?.claimant_name||x?.associated_member||'';renderMasterList();
   personSearch.scrollIntoView({behavior:'smooth',block:'center'});
  });
- area.querySelectorAll('[data-approve-request]').forEach(b=>b.onclick=>
+ area.querySelectorAll('[data-approve-request]').forEach(b=>b.onclick=()=>
   approveMemberClaim(b.dataset.approveRequest,b.dataset.assignPerson||null,b)
  );
 }
