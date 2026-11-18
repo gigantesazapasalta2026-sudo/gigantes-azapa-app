@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Activación de accesos · Gigantes</title>
+<style>
+:root{--dark:#111827;--orange:#e9651e;--muted:#64748b;--border:#e2e8f0}
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:#f6f8fb;color:#111827;margin:0}header{background:#111827;color:#fff;padding:18px max(15px,calc((100vw - 1190px)/2));display:flex;justify-content:space-between;align-items:center;gap:12px}header a{color:white;text-decoration:none}
+main{max-width:1200px;margin:auto;padding:18px 14px 60px}.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:17px;margin:14px 0}h1{font-size:clamp(1.4rem,3vw,2rem);margin:0 0 8px}h2{font-size:1.06rem;margin:0 0 10px}p{color:#475467;line-height:1.5}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.metric{border:1px solid var(--border);background:#fff;border-radius:12px;padding:14px}.metric b{font-size:1.9rem;display:block}.metric span{font-size:.78rem;color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;gap:9px;margin:13px 0}select,input{border:1px solid #cbd5e1;border-radius:9px;padding:10px;font:inherit;background:white}input[type=search]{flex:2;min-width:190px}select{flex:1;min-width:160px}
+button,.button{background:#111827;border:0;border-radius:9px;padding:10px 12px;color:white;font-weight:700;text-decoration:none;cursor:pointer;font-size:.84rem;display:inline-block}button.secondary,.button.secondary{background:#f1f5f9;color:#182230;border:1px solid #cbd5e1}
+table{width:100%;border-collapse:collapse;font-size:.87rem}th,td{border-bottom:1px solid #e5e7eb;text-align:left;padding:10px 9px;vertical-align:top}th{background:#f8fafc;color:#475467;white-space:nowrap}.scroll{overflow-x:auto}
+.tag{border-radius:100px;padding:4px 7px;font-weight:650;font-size:.73rem;background:#f1f5f9;display:inline-block}.good{color:#166534;background:#dcfce7}.warn{color:#92400e;background:#fef3c7}.bad{color:#991b1b;background:#fee2e2}
+.muted{color:var(--muted);font-size:.81rem}.notice{background:#fff7ed;border-left:4px solid var(--orange);padding:12px 15px;border-radius:7px;color:#78350f}.actions{display:flex;gap:5px;flex-wrap:wrap}
+@media(max-width:700px){.metrics{grid-template-columns:repeat(2,1fr)}.scroll table{min-width:900px}}
+</style></head><body>
+<header><strong>🏉 Gigantes · Acceso de todos</strong><a href="index.html">← Control Center</a></header>
+<main><div class="card"><h1>Activaciones de Mi Gigantes</h1>
+<p>Una cuenta por adulto o apoderado, sin crear fichas duplicadas. Desde aquí identificas qué personas necesitan su correo, activar su cuenta o verificar un vínculo familiar.</p>
+<div class="notice">Este tablero es exclusivo del superadministrador. <b>Los niños no necesitan cuentas individuales:</b> el apoderado administra su ficha. Una cuenta creada o un correo coincidente no prueban automáticamente que la persona sea el titular. No se envían mensajes ni contraseñas desde este tablero.</div></div>
+<div id="loading" class="card">Verificando acceso al registro…</div>
+<section id="app" hidden>
+<div class="metrics">
+<div class="metric"><b id="mTotal">—</b><span>Fichas del Registro Maestro</span></div>
+<div class="metric"><b id="mAccess">—</b><span>Con acceso propio o familiar validado</span></div>
+<div class="metric"><b id="mReview">—</b><span>Fichas por gestionar</span></div>
+<div class="metric"><b id="mVisit">—</b><span>Cuentas con ingreso registrado</span></div>
+</div>
+<div class="card"><h2>Filtros y acciones</h2>
+<div class="controls"><input id="search" type="search" placeholder="Buscar nombre, correo o categoría…">
+<select id="status"><option value="all">Todas las situaciones</option><option value="needs">Solo pendientes de gestión</option>
+<option value="own_visited">Ha ingresado</option><option value="own_confirmed">Cuenta confirmada, sin ingreso registrado</option><option value="own_unverified">Cuenta sin validar</option><option value="guardian_linked">Acceso de apoderado vinculado</option>
+<option value="guardian_missing">Falta vínculo de apoderado</option><option value="email_exists_unlinked">Correo con cuenta existente, sin vincular</option><option value="invited">Invitación preparada</option><option value="email_missing">Falta correo</option><option value="request_access">Solicitar activación</option><option value="inactive">Inactivos</option></select>
+<select id="group"><option value="all">Todas las categorías</option><option value="adult">Adultos / Classic</option><option value="youth">Infantiles / juveniles</option><option value="other">Otras / por definir</option></select>
+<button class="secondary" id="refresh">Actualizar</button><button class="secondary" id="export">Exportar lista visible CSV</button></div>
+<div class="scroll"><table><thead><tr><th>Persona</th><th>Categoría / situación</th><th>Correo registrado</th><th>Acceso</th><th>Próximo paso</th><th>Gestión</th></tr></thead><tbody id="people"></tbody></table></div>
+<p id="count" class="muted"></p></div>
+<div class="card"><h2>Procedimiento único para todo el club</h2>
+<p><b>1.</b> Si ya tiene contraseña, ingresa directamente a Mi Gigantes y completa su ficha.</p>
+<p><b>2.</b> Si está registrado pero no tiene contraseña, confirma su correo y solicita activación. La Directiva valida identidad y vínculo antes de aprobar.</p>
+<p><b>3.</b> Si es menor, su padre, madre o apoderado accede con su propia cuenta. Si tiene varios hijos, administra todas sus fichas desde el mismo acceso.</p>
+<p><b>4.</b> Si el sistema detecta un correo ya utilizado, no se crea otra ficha: se revisa a quién pertenece y se enlaza correctamente.</p>
+<p class="muted">La activación de Mi Gigantes no acredita seguro deportivo ni habilitación para jugar.</p>
+</div><p id="msg" class="muted" role="status"></p></section></main>
+<script src="../config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script>
+const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:window.GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
+const $=id=>document.getElementById(id);
+const esc=x=>String(x??'').replace(/[&<>"']/g,a=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[a]));
+const states={own_visited:['Ingresó a Mi Gigantes','good','Listo. Puede completar los datos pendientes.'],own_confirmed:['Cuenta confirmada','good','Puede ingresar. Si no recuerda la clave, recuperar acceso.'],own_unverified:['Confirmar correo','warn','Abrir activación, verificar el correo y crear contraseña.'],guardian_linked:['Apoderado con acceso','good','El apoderado administra esta ficha; no generar cuenta infantil.'],guardian_missing:['Sin vínculo familiar','warn','Verificar apoderado y enlazar su cuenta existente.'],email_exists_unlinked:['Correo usado, sin vínculo','warn','Comprobar titular antes de vincular la ficha. No duplicar usuario.'],invited:['Invitación autorizada','warn','Entrar a activación y solicitar enlace al correo.'],email_missing:['Falta correo','warn','Solicitar correo personal del adulto o apoderado y verificar identidad.'],request_access:['Solicitar acceso','warn','Completar formulario para identificar la ficha y solicitar activación.'],inactive:['Registro inactivo','bad','Requiere revisión de la Directiva antes de reactivar.']};
+let db={people:[],counts:{},totals:{}},token='';
+function group(p){return p.is_youth?'youth':/adulto|classic|mayores/i.test(p.category)?'adult':'other'}
+function instruction(p){
+ const state=p.state;
+ if(state==='own_visited'||state==='own_confirmed')return 'Ingresar y completar ficha.';
+ if(state==='guardian_linked')return 'Apoderado completa ficha familiar.';
+ if(state==='guardian_missing')return 'Vincular al apoderado (no activar cuenta del menor).';
+ if(state==='inactive')return 'Revisión administrativa.';
+ if(state==='email_exists_unlinked')return 'Verificar titular y vincular cuenta existente.';
+ if(state==='email_missing')return 'Solicitar correo; luego activar.';
+ if(state==='request_access')return 'Pedir formulario de identificación.';
+ if(state==='invited'||state==='own_unverified')return 'Crear o confirmar contraseña mediante correo.';
+ return 'Revisar.';
+}
+function filtered(){
+ const word=$('search').value.toLowerCase().trim(),status=$('status').value,grp=$('group').value;
+ return db.people.filter(p=>(!word||(p.name+' '+p.email+' '+p.category).toLowerCase().includes(word))&&
+ (status==='all'||status==='needs'?!['own_visited','own_confirmed','guardian_linked','inactive'].includes(p.state):status===p.state)&&
+ (grp==='all'||group(p)===grp));
+}
+function csvValue(v){return '"'+String(v??'').replace(/^[\s]*[=+\-@]/,'_').replace(/"/g,'""')+'"'}
+function render(){
+ const r=filtered();
+ $('mTotal').textContent=db.totals.profiles??0;
+ $('mAccess').textContent=db.totals.with_verified_access??0;
+ $('mReview').textContent=db.people.filter(p=>!['own_visited','own_confirmed','guardian_linked','inactive'].includes(p.state)).length;
+ $('mVisit').textContent=db.people.filter(p=>p.state==='own_visited').length;
+ $('people').innerHTML=r.map(p=>{
+  const v=states[p.state]||['Revisar','warn','Revisar acceso'];
+  const url='https://gigantesdeazapa.cl/activar.html'+(p.email?'?email='+encodeURIComponent(p.email):'');
+  return '<tr><td><b>'+esc(p.name)+'</b></td>'+
+   '<td>'+esc(p.category||'Sin definir')+'<div class="muted">'+esc(p.member_status)+'</div></td>'+
+   '<td>'+esc(p.email||'Sin correo')+'</td>'+
+   '<td><span class="tag '+v[1]+'">'+esc(v[0])+'</span></td>'+
+   '<td>'+esc(instruction(p))+'</td>'+
+   '<td><div class="actions">'+
+   (p.state==='own_visited'||p.state==='guardian_linked'?'<a class="button secondary" href="../mi_gigantes.html" target="_blank">Mi Gigantes</a>':
+   p.email&&['own_unverified','invited','own_confirmed'].includes(p.state)?'<a class="button secondary" href="'+esc(url)+'" target="_blank" rel="noopener">Activación</a>':
+   '<a class="button secondary" href="../regularizar-correo.html" target="_blank" rel="noopener">Identificar ficha</a>')+
+   (p.email?'<button type="button" class="secondary copy" data-id="'+esc(p.id)+'">Copiar WhatsApp</button>':'')+
+   '</div></td></tr>';
+ }).join('')||'<tr><td colspan="6" style="text-align:center;padding:20px">Sin registros para el filtro seleccionado.</td></tr>';
+ $('count').textContent=r.length+' registros visibles. Datos consultados: '+(db.as_of?new Date(db.as_of).toLocaleString('es-CL'):'—')+'.';
+}
+$('search').addEventListener('input',render);$('status').addEventListener('change',render);$('group').addEventListener('change',render);
+$('people').addEventListener('click',e=>{
+ const b=e.target.closest('button.copy');if(!b)return;
+ const p=db.people.find(x=>x.id===b.dataset.id);if(!p)return;
+ const name=p.name.split(' ')[0];
+ const url='https://gigantesdeazapa.cl/activar.html?email='+encodeURIComponent(p.email);
+ const needsExisting=p.state==='email_exists_unlinked';
+ const msg=needsExisting?'Hola '+name+' 🏉🧡🖤 Tenemos tu ficha en Gigantes, pero necesitamos verificar el correo y vincular tu acceso existente. No crees otra cuenta. Ingresa aquí: https://gigantesdeazapa.cl/regularizar-correo.html y elige «Ya soy integrante». Avísame al terminar para revisar el vínculo.':
+ ['own_unverified','invited'].includes(p.state)?
+ 'Hola '+name+' 🏉🧡🖤 Tu ficha de Gigantes ya tiene una invitación de acceso. Ingresa a '+url+', solicita el enlace de activación, revisa tu correo y establece tu contraseña personal. Después podrás completar los datos que faltan en Mi Gigantes. Avísame si tienes problemas.':
+ 'Hola '+name+' 🏉🧡🖤 Queremos ayudarte a acceder a Mi Gigantes. Ingresa a https://gigantesdeazapa.cl/regularizar-correo.html, selecciona «Ya soy integrante», completa tus datos y envía la solicitud. Después la Directiva verificará el vínculo y podrás activar tu contraseña. No es necesario volver a inscribirte en el club.';
+ if(navigator.clipboard?.writeText){navigator.clipboard.writeText(msg).then(()=>$('msg').textContent='Mensaje copiado para '+p.name+'.',()=>$('msg').textContent='No se pudo copiar automáticamente.')}else $('msg').textContent='El navegador no permite copiar automáticamente.';
+});
+async function load(){
+ const res=await fetch(GIGANTES_SUPABASE_URL+'/functions/v1/member-access-audit',{headers:{apikey:GIGANTES_SUPABASE_PUBLISHABLE_KEY,authorization:'Bearer '+token}});
+ const value=await res.json().catch(()=>({error:'Error del servidor'}));if(!res.ok)throw Error(value.error||'Error al consultar');
+ db=value;render();
+}
+$('refresh').addEventListener('click',async()=>{try{await load();$('msg').textContent='Datos actualizados.'}catch(e){$('msg').textContent=e.message}});
+$('export').addEventListener('click',()=>{
+ const rows=[['Nombre','Categoría','Estado club','Correo','Estado acceso','Acción recomendada'],...filtered().map(p=>[p.name,p.category,p.member_status,p.email,states[p.state]?.[0]||p.state,instruction(p)])];
+ const csv='\ufeff'+rows.map(r=>r.map(csvValue).join(';')).join('\r\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Gigantes_Control_Activaciones.csv';a.click();URL.revokeObjectURL(url);
+});
+(async()=>{
+ try{const {data:{session},error}=await sb.auth.getSession();if(error)throw error;if(!session){location.replace('login.html?next=activaciones.html');return}
+ const {data:check,error:authErr}=await sb.auth.getUser();if(authErr||!check?.user)throw Error('Sesión caducada. Vuelve a ingresar.');
+ token=session.access_token;await load();$('loading').hidden=true;$('app').hidden=false;
+ }catch(e){$('loading').textContent='No se pudo mostrar el panel: '+e.message}
+})();
+</script></body></html>
