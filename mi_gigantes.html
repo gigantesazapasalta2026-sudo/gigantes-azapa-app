@@ -141,14 +141,15 @@ function renderPersonalProfile(){
  '<label>Sistema de salud<select id="pfHealth"><option value="">Seleccionar</option><option value="Fonasa">Fonasa</option><option value="Isapre">Isapre</option><option value="Particular">Particular</option><option value="Otro">Otro</option></select></label>'+
  '<label>Isapre / prestador<input id="pfProvider" value="'+escv(person.health_provider)+'"></label>'+
  '<label class="span2">Alergias / condiciones relevantes<textarea id="pfAllergies">'+escv(person.allergies_conditions)+'</textarea></label>'+
- '<label>Contacto de emergencia<input id="pfEmergencyName" value="'+escv(person.emergency_contact_name)+'"></label>'+
- '<label>Teléfono de emergencia<input id="pfEmergencyPhone" value="'+escv(person.emergency_contact_phone)+'"></label>'+
+ '<label>Contacto familiar de emergencia *<input id="pfEmergencyName" required placeholder="Nombre y apellido de la persona a llamar" value="'+escv(person.emergency_contact_name)+'"></label>'+
+ '<label>Teléfono familiar de emergencia *<input id="pfEmergencyPhone" required type="tel" placeholder="+56 9 ..." value="'+escv(person.emergency_contact_phone)+'"></label>'+
  '</div><div class="readonlyHint">Categoría, roles, Chile Rugby, cuotas y permisos no se modifican desde esta ficha.</div><div class="profileActions"><button class="btn" onclick="savePersonalProfile()">Guardar / actualizar</button><button class="btn secondary" onclick="renderPersonalProfile()">Descartar cambios</button></div><div id="profileMsg" class="saveMsg"></div>';
  pfSex.value=person.sex||'';pfHealth.value=person.health_system||'';
 }
 async function savePersonalProfile(){
  const payload={full_name:pfName.value.trim(),rut_passport:pfRut.value.trim(),birth_date:pfBirth.value||'',sex:pfSex.value,phone:pfPhone.value.trim(),email:pfEmail.value.trim().toLowerCase(),address:pfAddress.value.trim(),commune:pfCommune.value.trim(),nationality:pfNationality.value.trim(),health_system:pfHealth.value,health_provider:pfProvider.value.trim(),allergies_conditions:pfAllergies.value.trim(),emergency_contact_name:pfEmergencyName.value.trim(),emergency_contact_phone:pfEmergencyPhone.value.trim()};
  if(!payload.full_name){profileMsg.textContent='El nombre no puede quedar vacío.';return}
+ if(!payload.emergency_contact_name||payload.emergency_contact_phone.replace(/\D/g,'').length<8){profileMsg.textContent='Completa el nombre y un teléfono válido de la persona a llamar en caso de emergencia (obligatorio).';return}
  profileMsg.textContent='Guardando cambios…';
  const {data,error}=await sb.from('person_profile_updates').insert({person_id:person.id,payload}).select('new_snapshot').single();
  if(error){profileMsg.textContent='No fue posible guardar: '+error.message;return}
