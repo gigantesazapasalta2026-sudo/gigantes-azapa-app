@@ -11,14 +11,18 @@ table{border-collapse:collapse;width:100%;font-size:.85rem}th{text-align:left;ba
 </style></head><body><header><strong>🏉 Gigantes · Adultos / Classic</strong><a href="../mi_gigantes.html">← Mi Gigantes</a></header>
 <main><div id="loading" class="card">Comprobando tu acceso a la coordinación…</div><section id="app" hidden>
  <div class="card"><h1>Control Center · Adultos y Classic</h1><p>Panel reservado para el responsable de la categoría y el superadministrador. Nómina real del club, contactos de emergencia, estados de Chile Rugby y convocatoria de Arequipa.</p>
- <div class="notice alert"><b>Arequipa · sábado 21 de noviembre de 2026 (Perú)</b><p>La inscripción en Chile Rugby y el seguro deportivo chileno <b>NO demuestran cobertura de accidentes en Perú</b>. Verificar asistencia médica y seguro internacional antes del viaje. Ningún estado de esta pantalla sustituye la decisión formal de habilitación deportiva.</p></div></div>
+ <div class="notice alert"><b>Arequipa · sábado 28 de noviembre de 2026 (Perú)</b><p>La inscripción en Chile Rugby y el seguro deportivo chileno <b>NO demuestran cobertura de accidentes en Perú</b>. Verificar asistencia médica y seguro internacional antes del viaje. La nómina proviene de WhatsApp y es provisional. Ningún estado de esta pantalla sustituye la habilitación deportiva.</p></div></div>
  <div class="grid">
-  <div class="kpi"><b id="kTotal">—</b><small>Fichas actuales Adultos/Classic</small></div>
-  <div class="kpi"><b id="kActive">—</b><small>Jugadores activos en base</small></div>
-  <div class="kpi"><b id="kMissing">—</b><small>Históricos sin ficha coincidente</small></div>
+  <div class="kpi"><b id="kTotal">—</b><small>Integrantes en nómina Arequipa 28/11</small></div>
+  <div class="kpi"><b id="kActive">—</b><small>Identidad coincidente por RUT</small></div>
+  <div class="kpi"><b id="kMissing">—</b><small>Identidades pendientes o en conflicto</small></div>
   <div class="kpi"><b id="kConfirmed">—</b><small>Convocados confirmados</small></div>
  </div>
- <div class="card"><h2>Nómina y seguimiento</h2><div class="controls"><input type="search" id="search" placeholder="Buscar jugador, categoría o correo…"><select id="filter"><option value="all">Todos</option><option value="active">Activos</option><option value="incomplete">Pendientes</option><option value="confirmed">Confirmados a Arequipa</option><option value="missing">Sin cuenta de acceso</option></select><button class="btn secondary" id="refresh">Actualizar</button><button class="btn secondary" id="export">Exportar CSV</button></div>
+ <div class="card"><h2>Convocados Arequipa · 28 de noviembre de 2026</h2>
+ <p class="muted">Nómina inicial de 16 nombres comunicada por WhatsApp. Convocado significa anotado en la lista; no significa viaje confirmado, habilitación médica ni seguro en Perú. Por seguridad, la confirmación final exige coincidencia de identidad.</p>
+ <div class="scroll"><table><thead><tr><th>N°</th><th>Nombre en lista</th><th>Registro Maestro</th><th>Datos de emergencia y acceso</th><th>Seguro y documentación</th><th>Coordinación de Sergio</th></tr></thead><tbody id="arequipaPlayers"><tr><td colspan="6">Cargando nómina…</td></tr></tbody></table></div>
+ </div>
+ <div class="card"><h2>Registro Maestro · Adultos y Classic</h2><div class="controls"><input type="search" id="search" placeholder="Buscar jugador, categoría o correo…"><select id="filter"><option value="all">Todos</option><option value="active">Activos</option><option value="incomplete">Pendientes</option><option value="confirmed">Confirmados a Arequipa</option><option value="missing">Sin cuenta de acceso</option></select><button class="btn secondary" id="refresh">Actualizar</button><button class="btn secondary" id="export">Exportar CSV</button></div>
  <p class="muted" style="font-size:.83rem">El semáforo diferencia registros oficiales de una anotación de convocatoria. No marca a nadie como asegurado en Perú sin verificación.</p><div class="scroll"><table><thead><tr><th>Jugador</th><th>Contacto y emergencia</th><th>Ficha y acceso</th><th>Chile Rugby / seguro</th><th>Arequipa · coordinación</th></tr></thead><tbody id="players"><tr><td colspan="5">Cargando…</td></tr></tbody></table></div></div>
  <div class="card"><h2>Nómina histórica Adultos / Classic</h2><p class="muted">Referencia del club: sus nombres no equivalen a inscripción ni seguro vigente. «Sin coincidencia» puede requerir confirmar identidad y RUT en el Registro Maestro.</p><div class="scroll"><table><thead><tr><th>Nombre en nómina</th><th>Estado histórico</th><th>Registro Maestro</th></tr></thead><tbody id="historic"></tbody></table></div></div>
  <div class="card"><h2>Solicitudes nuevas de Adultos / Classic</h2><p class="muted">Solo aparecen solicitudes cuya categoría haya sido declarada expresamente como adulto o Classic. Las solicitudes sin categoría se mantienen en revisión del superadministrador para proteger a los menores.</p><div id="requests" class="empty">Revisando…</div><p><a class="btn secondary" href="../regularizar-correo.html" target="_blank" rel="noopener noreferrer">Enviar enlace de inscripción</a></p></div>
@@ -30,7 +34,7 @@ const statuses=['sin_definir','convocado','confirmado','no_viaja','baja'];
 const statusNames={'sin_definir':'Sin definir','convocado':'Convocado','confirmado':'Confirmado','no_viaja':'No viaja','baja':'Baja'};
 const travelStates=['sin_verificar','en_revision','confirmado'];
 const travelNames={'sin_verificar':'Sin verificar','en_revision':'En revisión','confirmado':'Cobertura Perú verificada'};
-let payload={current:[],roster:[],requests:[]},token='';
+let payload={current:[],roster:[],rosterNov28:[],requests:[]},token='';
 async function api(method='GET',body=null){
  const h={apikey:GIGANTES_SUPABASE_PUBLISHABLE_KEY,authorization:'Bearer '+token};
  if(body)h['content-type']='application/json';
@@ -41,12 +45,52 @@ async function api(method='GET',body=null){
 const valid=(v,yes)=>yes?'<span class="pill good">'+esc(v)+'</span>':'<span class="pill warn">'+esc(v)+'</span>';
 const ok=s=>/^(fichado|pago|tiene)$/i.test(String(s||'').trim());
 function options(items,labels,val){return items.map(i=>'<option value="'+esc(i)+'"'+(i===val?' selected':'')+'>'+esc(labels[i])+'</option>').join('')}
+function renderArequipa(){
+ const identities={rut_verified:'RUT coincide',name_only:'Nombre coincide · verificar RUT',unmatched:'Sin ficha verificada',conflict:'RUT diferente: revisar'};
+ const rows=payload.rosterNov28||[];
+ $('arequipaPlayers').innerHTML=rows.map(r=>{
+  const p=r.player;
+  const complete=p&&p.pending_requirements===0;
+  const insuranceOk=p&&ok(p.insurance_status);
+  const canConfirm=r.identity_status==='rut_verified';
+  return '<tr data-row="'+Number(r.row_number)+'"><td><b>'+Number(r.row_number)+'</b></td>'+
+    '<td><b>'+esc(r.display_name)+'</b><div class="details">'+esc(r.verification_note||'')+'</div></td>'+
+    '<td>'+valid(identities[r.identity_status]||'Revisar',r.identity_status==='rut_verified')+
+    (p?'<div class="details">'+esc(p.name)+' · '+esc(p.category)+'</div>'+valid('Club: '+p.member_status,p.member_status==='active'):'<div class="details">Solicitar nombre completo y documento; no se ha vinculado una identidad.</div>')+'</td>'+
+    '<td>'+(p?valid(p.access_active?'Acceso Mi Gigantes vinculado':'Acceso sin vincular',p.access_active)+
+      valid('Ficha '+p.completion_percent+'%',complete)+
+      '<div class="details">🚑 '+esc(p.emergency_name||'Sin contacto')+' · '+esc(p.emergency_phone||'Sin teléfono')+'</div>':'Sin ficha asociada')+'</td>'+
+    '<td>'+valid('Chile Rugby: '+(p?p.federation_status:'Sin verificar'),!!p&&ok(p.federation_status))+
+      valid('Seguro Chile: '+(p?p.insurance_status:'Sin verificar'),insuranceOk)+
+      valid('Seguro Perú: '+(travelNames[r.travel_insurance_status]||'Sin verificar'),r.travel_insurance_status==='confirmado')+'</td>'+
+    '<td>'+valid(statusNames[r.selection_status]||'Convocado',r.selection_status==='confirmado')+
+    '<details><summary>Actualizar estado</summary>'+
+    '<label>Asistencia<select class="roster-selection">'+options(['convocado','confirmado','no_viaja','baja'],statusNames,r.selection_status)+'</select></label>'+
+    '<label>Seguro válido en Perú<select class="roster-travel">'+options(travelStates,travelNames,r.travel_insurance_status)+'</select></label>'+
+    '<label>Observaciones<textarea class="roster-notes" maxlength="400">'+esc(r.coordination_notes||'')+'</textarea></label>'+
+    (!canConfirm?'<div class="details">Antes de confirmar: validar identidad y RUT en el Registro Maestro.</div>':'')+
+    '<button class="btn orange save-roster" type="button">Guardar seguimiento</button></details></td></tr>';
+ }).join('')||'<tr><td colspan="6">No se pudo consultar la nómina.</td></tr>';
+}
+$('arequipaPlayers').addEventListener('click',async e=>{
+ const b=e.target.closest('button.save-roster');if(!b)return;
+ const row=b.closest('tr');if(!row)return;
+ const n=Number(row.dataset.row);
+ const body={action:'update_roster_status',row_number:n,selection_status:row.querySelector('.roster-selection').value,
+ travel_insurance_status:row.querySelector('.roster-travel').value,coordination_notes:row.querySelector('.roster-notes').value};
+ if(body.travel_insurance_status==='confirmado'&&!confirm('¿Verificaste por fuente independiente que la póliza cubre lesiones de rugby en Perú en la fecha del viaje?'))return;
+ b.disabled=true;$('msg').textContent='Guardando convocatoria…';
+ try{const res=await api('POST',body);const person=payload.rosterNov28.find(x=>x.row_number===n);Object.assign(person,res.roster_row);display();$('msg').textContent='Cambio guardado.';}
+ catch(err){$('msg').textContent='No se pudo guardar: '+err.message;b.disabled=false;}
+});
 function display(){
  const txt=$('search').value.toLowerCase().trim(),filter=$('filter').value;
  const active=payload.current.filter(x=>x.member_status==='active');
- $('kTotal').textContent=payload.current.length;$('kActive').textContent=active.length;
- $('kMissing').textContent=payload.roster.filter(x=>!x.registered).length;
- $('kConfirmed').textContent=payload.current.filter(x=>x.selection_status==='confirmado').length;
+ $('kTotal').textContent=payload.rosterNov28.length;
+ $('kActive').textContent=payload.rosterNov28.filter(r=>r.identity_status==='rut_verified').length;
+ $('kMissing').textContent=payload.rosterNov28.filter(r=>r.identity_status!=='rut_verified').length;
+ $('kConfirmed').textContent=payload.rosterNov28.filter(r=>r.selection_status==='confirmado').length;
+ renderArequipa();
  const list=payload.current.filter(p=>(p.name+' '+p.category+' '+p.email).toLowerCase().includes(txt)&&(
  filter==='all'||filter==='active'&&p.member_status==='active'||filter==='incomplete'&&(p.pending_requirements>0||!p.access_active||!ok(p.insurance_status)||!ok(p.payment_status))||filter==='confirmed'&&p.selection_status==='confirmado'||filter==='missing'&&!p.access_active));
  $('players').innerHTML=list.length?list.map(p=>{
@@ -67,20 +111,12 @@ function display(){
  $('requests').innerHTML=payload.requests.length?payload.requests.map(p=>'<div style="border-bottom:1px solid #e5e7eb;padding:8px 0"><b>'+esc(p.name)+'</b> · '+esc(p.category)+' <span class="pill warn">Pendiente de aprobación</span></div>').join(''):'No hay solicitudes Adultos / Classic clasificadas pendientes.';
 }
 async function load(){const x=await api();payload=x;display();$('msg').textContent='Información consultada. Los datos del club se actualizan desde el Registro Maestro y Chile Rugby.';}
-$('players').addEventListener('click',async e=>{
- const b=e.target.closest('button.save');if(!b)return;const row=b.closest('tr');if(!row)return;const id=row.dataset.id;
- const body={action:'update_callup',person_id:id,selection_status:row.querySelector('.selection').value,travel_insurance_status:row.querySelector('.travel').value,notes:row.querySelector('.notes').value};
- if(body.travel_insurance_status==='confirmado'&&!confirm('¿Verificaste la cobertura de accidentes/asistencia médica VÁLIDA EN PERÚ por una fuente independiente? El seguro de Chile Rugby no basta.'))return;
- b.disabled=true;$('msg').textContent='Guardando…';
- try{const res=await api('POST',body);const p=payload.current.find(x=>x.id===id);Object.assign(p,res.callup);display();$('msg').textContent='Seguimiento guardado correctamente.'}
- catch(err){$('msg').textContent='No se pudo guardar: '+err.message;b.disabled=false}
-});
 $('filter').onchange=display;$('search').oninput=display;$('refresh').onclick=async()=>{try{await load()}catch(e){$('msg').textContent=e.message}};
 $('export').onclick=()=>{
  const keys=['Nombre','Categoría','Estado club','Teléfono','Correo','Contacto emergencia','Teléfono emergencia','Ficha %','Chile Rugby','Pago registro','Seguro Chile','Convocatoria','Seguro Perú'];
- const rows=payload.current.map(p=>[p.name,p.category,p.member_status,p.phone,p.email,p.emergency_name,p.emergency_phone,p.completion_percent,p.federation_status,p.payment_status,p.insurance_status,statusNames[p.selection_status],travelNames[p.travel_insurance_status]]);
+ const rows=payload.rosterNov28.map(r=>{const p=r.player||{};return [r.display_name,p.category||'',p.member_status||'',p.phone||'',p.email||'',p.emergency_name||'',p.emergency_phone||'',p.completion_percent??'',p.federation_status||'',p.payment_status||'',p.insurance_status||'',statusNames[r.selection_status],travelNames[r.travel_insurance_status]]});
  const csv=[keys,...rows].map(a=>a.map(x=>'"'+String(x??'').replace(/^[=+\-@]/,'_').replace(/"/g,'""')+'"').join(';')).join('\r\n');
- const obj=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(obj);const a=document.createElement('a');a.href=url;a.download='Gigantes_Adultos_Classic_Arequipa_2026.csv';a.click();URL.revokeObjectURL(url);
+ const obj=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(obj);const a=document.createElement('a');a.href=url;a.download='Gigantes_Arequipa_28-11-2026.csv';a.click();URL.revokeObjectURL(url);
 };
 (async function(){try{const {data:{session}}=await sb.auth.getSession();if(!session){location.href='login.html?next=adultos-classic.html';return}token=session.access_token;await load();$('loading').hidden=true;$('app').hidden=false;}catch(e){$('loading').textContent='No se pudo abrir tu panel: '+e.message;}})();
 </script></body></html>
