@@ -222,7 +222,7 @@ async function approveMemberClaim(requestId,personId,button){
   const url='https://gigantesdeazapa.cl/activar.html?email='+encodeURIComponent(email);
   const digits=String(r.claimant_phone||'').replace(/\D/g,'');
   const wa=digits.startsWith('56')?digits:(digits.length===9&&digits.startsWith('9')?'56'+digits:null);
-  const message='Hola '+(r.claimant_name||'Gigante')+', ya revisamos tu registro y habilitamos el proceso de activación de Mi Gigantes. Ingresa desde tu celular aquí: '+url+' . Después de activar tu cuenta, completa los datos y documentos pendientes en Mi Gigantes. Tu seguro y fichaje deportivo requieren validación por separado. 🏉';
+  const message='Hola '+(r.claimant_name||'Gigante')+', tu acceso a Mi Gigantes ya está preparado. Actívalo aquí: '+url+' . Apenas ingreses, abre Mi Gigantes → Datos personales y completa tu ficha: RUT, fecha de nacimiento, dirección, sistema de salud y, MUY IMPORTANTE, nombre y teléfono de un contacto familiar de emergencia. Guarda los cambios y revisa en «Qué me falta» los documentos pendientes. No te inscribas nuevamente. El fichaje en Chile Rugby y el seguro se validan por separado. 🏉';
   const sendLink=wa?'https://wa.me/'+wa+'?text='+encodeURIComponent(message):'';
   const area=document.getElementById('accessReqList');
   if(area){
