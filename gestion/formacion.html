@@ -150,7 +150,7 @@ logout.onclick=async()=>{await sb.auth.signOut();location.replace('login.html')}
 (async()=>{
  const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('login.html');return}
  const {data:p}=await sb.from('profiles').select('user_id,display_name,email,role,active').eq('user_id',session.user.id).maybeSingle();
- if(!p||!p.active||!['superadmin','board','coach','commission'].includes(p.role)){location.replace('../mi_jugador.html');return}
+ if(!p||!p.active||!['superadmin','board','coach','commission','guardian'].includes(p.role)){location.replace('../mi_jugador.html');return}
  profile=p;who.textContent=(p.display_name||session.user.email)+' · '+p.role;if(canAdmin()){staffTab.classList.remove('hidden');validationTab.classList.remove('hidden')}await load();
 })();
 </script></body></html>
