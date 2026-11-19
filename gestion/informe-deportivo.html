@@ -59,7 +59,7 @@ async function init(){
  app.db=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
  const {data:{session}}=await app.db.auth.getSession();if(!session){location.replace('login.html?next=informe-deportivo.html');return}
  const p=await app.db.from('profiles').select('user_id,display_name,role,active').eq('user_id',session.user.id).maybeSingle();
- if(p.error||!p.data?.active||!['superadmin','board','coach','commission'].includes(p.data.role)){location.replace('../mi_gigantes.html');return}app.profile=p.data;
+ if(p.error||!p.data?.active||!['superadmin','board','coach','commission','guardian'].includes(p.data.role)){location.replace('../mi_gigantes.html');return}app.profile=p.data;
  $('identity').textContent=(p.data.display_name||session.user.email)+' · '+(admin()?'Dirección deportiva':'Entrenador');
  const [ts,ass]=await Promise.all([app.db.from('sport_teams').select('id,code,name,status,sort_order').neq('status','inactive').order('sort_order'),app.db.from('sport_staff_assignments').select('user_id,team_id,ends_on').eq('active',true)]);
  if(ts.error||ass.error)return err('No fue posible cargar categorías y permisos.',true);
