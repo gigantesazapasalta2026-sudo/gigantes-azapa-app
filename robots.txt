@@ -1,2 +1,8 @@
 User-agent: *
-Disallow: /
+Allow: /
+Disallow: /gestion/
+Disallow: /mi_gigantes.html
+Disallow: /mi_formacion.html
+Disallow: /registro-maestro.html
+Disallow: /control-center/
+Sitemap: https://gigantesdeazapa.cl/sitemap.xml
