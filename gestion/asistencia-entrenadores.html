@@ -34,7 +34,7 @@ const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,
 const states={pending:'Sin marcar',present:'Presente',late:'Atrasado',absent:'Ausente',excused:'Justificado',injured:'Lesionado'};
 const app={db:null,profile:null,teams:[],members:[],sessions:[],records:[],selectedSession:null,visitors:[],guestAttendance:[],tab:'list',pendingOnly:false,busy:false,readOnly:true,offlineQueue:[],syncing:false};
 function notice(s,bad=false){$('message').innerHTML=s?'<div class="alert '+(bad?'error':'')+'">'+esc(s)+'</div>':''}
-const isManager=()=>['superadmin','board'].includes(app.profile?.role),canWrite=()=>app.profile?.role==='superadmin'||(['coach','commission'].includes(app.profile?.role)&&app.teams.some(t=>t.id===$('team').value&&t.assigned));
+const isManager=()=>['superadmin','board'].includes(app.profile?.role),canWrite=()=>app.profile?.role==='superadmin'||(['coach','commission','guardian'].includes(app.profile?.role)&&app.teams.some(t=>t.id===$('team').value&&t.assigned));
 const currentTeam=()=>app.teams.find(x=>x.id===$('team').value),roster=()=>app.members.filter(m=>m.team_id===$('team').value&&m.active);
 const sessionsForDay=()=>app.sessions.filter(s=>s.team_id===$('team').value&&s.session_date===$('date').value&&s.status!=='cancelled').sort((a,b)=>String(a.title).localeCompare(String(b.title)));
 const todayLocal=()=>{const n=new Date(),d=new Date(n.getTime()-n.getTimezoneOffset()*60000);return d.toISOString().slice(0,10)};
@@ -184,7 +184,7 @@ async function init(){
  const sb=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});app.db=sb;
  const {data:{session},error:authErr}=await sb.auth.getSession();if(authErr||!session){location.replace('login.html?next=asistencia-entrenadores.html');return}
  const profile=await sb.from('profiles').select('user_id,display_name,role,active').eq('user_id',session.user.id).maybeSingle();
- if(profile.error||!profile.data?.active||!['superadmin','board','coach','commission'].includes(profile.data.role)){location.replace('../mi_gigantes.html');return}
+ if(profile.error||!profile.data?.active||!['superadmin','board','coach','commission','guardian'].includes(profile.data.role)){location.replace('../mi_gigantes.html');return}
  app.profile=profile.data;$('who').textContent=(profile.data.display_name||session.user.email)+' · '+(isManager()?'Dirección deportiva':'Entrenador');
  const [teams,assignments]=await Promise.all([sb.from('sport_teams').select('id,code,name,status,sort_order').neq('status','inactive').order('sort_order'),sb.from('sport_staff_assignments').select('team_id,user_id,active,ends_on,staff_role').eq('active',true)]);
  if(teams.error||assignments.error)throw new Error('Error cargando permisos y categorías.');
