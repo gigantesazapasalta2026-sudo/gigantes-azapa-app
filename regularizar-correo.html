@@ -38,7 +38,7 @@ get('f').addEventListener('submit',async event=>{
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||name.length<4||phone.length<7||!['guardian','coach','player','member'].includes(role)||!get('consent').checked){get('feedback').textContent='Revisa el correo, nombre, teléfono, tipo de integrante y autorización de uso de datos.';get('feedback').className='error';return}
  get('send').disabled=true;get('feedback').className='';get('feedback').textContent='Registrando solicitud…';
  try {
-  const {data,error}=await sb.functions.invoke('master-access-gate',{body:{email,action:'claim',name,phone,role,child,rut,birth_date,category,intake_kind}});
+  const {data,error}=await sb.functions.invoke('master-access-gate',{body:{email,action:'claim',name,phone,role,child,rut,birth_date,category,intake_kind,intake_privacy_accepted:get('consent').checked}});
   if(error||data?.error)throw new Error(data?.error||'No se pudo registrar');
   get('f').hidden=true;get('feedback').className='success';get('feedback').textContent='¡Solicitud recibida! El sistema buscará tu ficha y propondrá coincidencias al Control Center. La Secretaría revisará si ya existes o si necesita crearte una ficha nueva. Tras aprobar el acceso podrás ingresar a Mi Gigantes para completar los campos y documentos pendientes. Guarda el correo que registraste. No debes repetir la solicitud.';
  }catch(error){
