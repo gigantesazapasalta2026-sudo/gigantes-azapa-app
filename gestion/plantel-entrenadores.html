@@ -129,7 +129,7 @@ async function init(){
  db=supabase.createClient(GIGANTES_SUPABASE_URL,GIGANTES_SUPABASE_PUBLISHABLE_KEY,{auth:{storage:GIGANTES_AUTH_STORAGE,persistSession:true,autoRefreshToken:true}});
  const session=(await db.auth.getSession()).data.session;if(!session){location.replace('login.html?next=plantel-entrenadores.html');return}
  const p=await db.from('profiles').select('user_id,display_name,role,active').eq('user_id',session.user.id).maybeSingle();
- if(p.error||!p.data?.active||!['superadmin','board','coach','commission'].includes(p.data.role)){location.replace('../mi_gigantes.html');return}
+ if(p.error||!p.data?.active||!['superadmin','board','coach','commission','guardian'].includes(p.data.role)){location.replace('../mi_gigantes.html');return}
  profile=p.data;$('identity').textContent=(p.data.display_name||session.user.email)+' · '+(admin()?'Directiva':'Entrenador');
  const [ts,as]=await Promise.all([db.from('sport_teams').select('id,code,name,status,sort_order').neq('status','inactive').order('sort_order'),db.from('sport_staff_assignments').select('user_id,team_id,active,ends_on').eq('active',true)]);
  if(ts.error||as.error)throw Error('No se pudieron cargar categorías autorizadas.');
