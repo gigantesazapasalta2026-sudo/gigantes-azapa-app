@@ -252,11 +252,24 @@ function renderHealthDeclaration(h){
  if(!root)return;
  root.innerHTML='<div class="notice" style="background:#fff7ed;border-color:#fed7aa"><b>Participación segura:</b> la declaración permite identificar situaciones que requieren revisión. No constituye alta médica ni garantiza cobertura del seguro. Si hay síntomas de alarma o lesión activa, no participes en rugby de contacto hasta una evaluación adecuada.</div>'+
  (h?.submitted_at?'<p class="empty">Última declaración: '+escv(new Date(h.submitted_at).toLocaleDateString('es-CL'))+'</p>':'')+
- '<div class="profileForm">'+HEALTH_QUESTIONS.map(([key,label])=>'<label class="span2">'+escv(label)+'<select data-health-question="'+key+'"><option value="">Seleccionar</option><option value="no" '+(answers[key]==='no'?'selected':'')+'>No</option><option value="yes" '+(answers[key]==='yes'?'selected':'')+'>Sí</option></select></label>').join('')+'</div>'+
+ '<div class="profileForm">'+HEALTH_QUESTIONS.map(([key,label])=>'<div class="span2"><label style="display:block">'+escv(label)+'<select data-health-question="'+key+'" onchange="toggleHealthDetail(this)"><option value="">Seleccionar</option><option value="no" '+(answers[key]==='no'?'selected':'')+'>No</option><option value="yes" '+(answers[key]==='yes'?'selected':'')+'>Sí</option></select></label><label data-health-detail-block="'+key+'" style="display:'+(answers[key]==='yes'?'block':'none')+';margin-top:9px;padding:12px;border-radius:9px;background:#fff7ed;border:1px solid #fed7aa;font-weight:700">Cuéntanos cuál es la condición, lesión o antecedente y qué debemos saber para cuidarte<textarea data-health-detail="'+key+'" maxlength="1000" rows="3" placeholder="Ej.: lesión de rodilla en recuperación, fecha aproximada y restricciones indicadas" style="width:100%;box-sizing:border-box;margin-top:7px" '+(answers[key]==='yes'?'required':'')+'>'+escv(answers[key+'_detail']||'')+'</textarea><small style="display:block;margin-top:6px;font-weight:400">Esta información es privada. Si hay una alerta, se requiere evaluación médica antes de jugar.</small></label></div>').join('')+'</div>'+
  '<label style="display:block;margin:12px 0"><input type="checkbox" id="healthConsent" style="width:auto;margin-right:8px" '+(h?.participation_consent?'checked':'')+'>Declaro que las respuestas son verdaderas, autorizo la participación según las reglas del club y me comprometo a avisar cambios de salud. Comprendo que no reemplaza indicación médica.</label>'+
  (minor?'<label style="display:block;margin:12px 0"><input type="checkbox" id="guardianHealthConsent" style="width:auto;margin-right:8px" '+(h?.guardian_consent?'checked':'')+'>Soy el padre, madre o apoderado responsable y autorizo la participación del menor, sujeta a seguros, normativa y condiciones de salud.</label>':'')+
- (risk?'<div class="notice" style="background:#fef2f2;border-color:#fecaca;color:#991b1b"><b>⚠ Respuestas de alerta.</b> Se requiere evaluación médica antes de jugar rugby de contacto. Puedes subir el certificado en «Documentos requeridos» y debe ser validado por el club. No basta la firma de esta declaración.</div>':'')+
+ '<div id="healthAlertLive" class="notice" style="background:#fef2f2;border-color:#fecaca;color:#991b1b" '+(risk?'':'hidden')+'><b>⚠ Respuestas de alerta.</b> Se requiere evaluación médica antes de jugar rugby de contacto. Puedes subir el certificado en «Documentos requeridos» y debe ser validado por el club. No basta la firma de esta declaración.</div>'+
  '<div class="profileActions"><button class="btn" type="button" onclick="saveHealthDeclaration()">Guardar declaración de salud</button></div><div id="healthDeclarationMsg" class="saveMsg" role="status" aria-live="polite"></div>';
+}
+function toggleHealthDetail(select){
+ const key=select?.dataset?.healthQuestion;
+ const block=document.querySelector('[data-health-detail-block="'+key+'"]');
+ if(!block)return;
+ const yes=select.value==='yes';
+ block.style.display=yes?'block':'none';
+ const input=block.querySelector('[data-health-detail]');
+ if(input){input.required=yes;if(!yes)input.value=''}
+ const selectors=[...document.querySelectorAll('#healthDeclarationForm [data-health-question]')];
+ const hasAlert=selectors.some(el=>el.value==='yes');
+ const alert=document.getElementById('healthAlertLive');
+ if(alert)alert.hidden=!hasAlert;
 }
 async function saveHealthDeclaration(){
  if(!person)return;
@@ -264,7 +277,13 @@ async function saveHealthDeclaration(){
  const answers={};
  for(const input of root.querySelectorAll('[data-health-question]')){
   if(!['yes','no'].includes(input.value)){healthDeclarationMsg.textContent='Responde todas las preguntas Sí o No.';return}
-  answers[input.dataset.healthQuestion]=input.value;
+  const key=input.dataset.healthQuestion;
+  answers[key]=input.value;
+  if(input.value==='yes'){
+   const detail=root.querySelector('[data-health-detail="'+key+'"]')?.value.trim()||'';
+   if(detail.length<5){healthDeclarationMsg.textContent='Explica brevemente la respuesta Sí: '+HEALTH_QUESTIONS.find(q=>q[0]===key)?.[1];root.querySelector('[data-health-detail="'+key+'"]')?.focus();return}
+   answers[key+'_detail']=detail;
+  }
  }
  if(!document.getElementById('healthConsent')?.checked){healthDeclarationMsg.textContent='Confirma la declaración de participación.';return}
  const minor=isMinor(person);
